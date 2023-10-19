@@ -1,3 +1,6 @@
 /plotter
 /accuracy_vs_dataset
 /tester_code
+*.pt
+*.csv
+*.txt

@@ -78,7 +78,7 @@ def generate_model(net, in_layer, knots, norm):
 
     # Loading different networks according to the chosen setup
     if net == "FFNN":
-        model = NNmodel(in_layer, 320, len(knots), norm)
+        model = setup_NN(in_layer, len(knots), hidden_activation="relu", opt="adam", norm=norm)
     else:
         raise Exception("Network not available")
 
@@ -148,16 +148,16 @@ def get_params():
     par = ArgumentParser()
 
     par.add_argument("-p", "--problem", type=str, default="5Class", help="Options: Conway, 5Class, SQRGRN8, 10Crossings, ...")
-    par.add_argument("-d", "--datatype", type=str, default="SIGWRITHE", help="Options: XYZ, SIGWRITHE, UNSIGWRITHE, DENSXSIGWRITHE, 2DSIGWRITHE")
+    par.add_argument("-d", "--datatype", type=str, default="XYZ", help="Options: XYZ, SIGWRITHE, UNSIGWRITHE, DENSXSIGWRITHE, 2DSIGWRITHE")
     par.add_argument("-a", "--adjacent", type=bool, default=False, help="Flag to use adjacent datatype from XYZ (deprecated)")
     par.add_argument("-n", "--normalised", type=bool, default=False, help="Flag to use normalised version of datatype")
     par.add_argument("-nb", "--nbeads", type=str, default="100", help="Number of beads of the input files")
     par.add_argument("-t", "--network", type=str, default="FFNN", help="Type of neural network: FFNN, RNN, LocaliseFFNN, LocaliseRNN, ...")
-    par.add_argument("-e", "--epochs", type=int, default=1000, help="Set the number of training epochs")
+    par.add_argument("-e", "--epochs", type=int, default=100, help="Set the number of training epochs")
     par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train or test")
     par.add_argument("-ldb", "--len_db", type=int, default=100000, help="Database size for each of the classes")
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size")
-    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore02/groups/TAPLab/knots_database", help="Batch size")
+    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore04/projects/Knotdatabase", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
 
     args = par.parse_args()

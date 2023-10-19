@@ -1,72 +1,72 @@
-import torch 
+import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 
+class NNModel(nn.Module):
+    def __init__(self, input_shape, output_shape, hidden_activation, norm):
+        super(NNModel, self).__init__()
 
-device = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
-)
+        self.flatten_layer = nn.Flatten()
 
-print(f"Using {device} device")
-
-# nn.Linear applies linear transformation y = x*A^T + b
-
-class NNmodel(nn.Module):
-
-    #  Input layer (features) -->
-    #  Hidden Layer1 (x no. of neurons) --> ... --> 
-    #  Output (class of knot)
-
-    def __init__(self, in_features, h1, out_features, norm):
-        super().__init__() # instantiate nn.Module
-
-        # 4 hidden layers, fc1 --> fc4
         if norm:
-            in_features_norm = nn.BatchNorm2d(in_features)
-
-            self.fc1 = nn.Linear(in_features_norm, h1)
-
+            self.bn_layer = nn.BatchNorm1d(input_shape[0])
+            self.dense_layer1 = nn.Linear(input_shape[0]*input_shape[1], 320)
+            self.activation1 = nn.ReLU()
         else:
-            self.fc1 = nn.Linear(in_features, h1)
+            self.dense_layer1 = nn.Linear(input_shape[0]*input_shape[1], 320)
+            self.activation1 = nn.ReLU()
 
-        self.fc2 = nn.Linear(h1, h1)
-        self.fc3 = nn.Linear(h1, h1)
-        self.fc4 = nn.Linear(h1, h1)
-        self.out = nn.Linear(h1, out_features)
+        # Add hidden layers to NN
+        self.dense_layer2 = nn.Linear(320, 320)
+        self.activation2 = nn.ReLU()
 
+        self.dense_layer3 = nn.Linear(320, 320)
+        self.activation3 = nn.ReLU()
+
+        self.dense_layer4 = nn.Linear(320, 320)
+        self.activation4 = nn.ReLU()
+
+        # Add output layer
+        self.output_layer = nn.Linear(320, output_shape)
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        x = F.relu(self.fc1(x)) 
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = F.cross_entropy(self.out, dim = 1) # <-- not actually sure
+        x = self.flatten_layer(x)
+
+        if hasattr(self, 'bn_layer'):
+            x = self.bn_layer(x)
+
+        x = self.dense_layer1(x)
+        x = self.activation1(x)
+
+        x = self.dense_layer2(x)
+        x = self.activation2(x)
+
+        x = self.dense_layer3(x)
+        x = self.activation3(x)
+
+        x = self.dense_layer4(x)
+        x = self.activation4(x)
+
+        x = self.output_layer(x)
+        x = self.softmax(x)
 
         return x
-    
-class EarlyStopper:
-    def __init__(self, patience, min_delta):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.min_validation_loss = float('inf')
 
-    def early_stop(self, validation_loss):
-        if validation_loss < self.min_validation_loss:
-            self.min_validation_loss = validation_loss
-            self.counter = 0
-        elif validation_loss > (self.min_validation_loss + self.min_delta):
-            self.counter += 1
-            if self.counter >= self.patience:
-                return True
-        return False
+def setup_NN(input_shape, output_shape, hidden_activation, opt, norm):
+    model = NNModel(input_shape, output_shape, hidden_activation, norm)
+
+    # loss function compares y_pred to y_true: in this case sparse categorical cross-entropy
+    loss_fn = nn.CrossEntropyLoss()
+
+    # optimizer
+    if opt == 'adam':
+        optimizer = optim.Adam(model.parameters(), lr=0.01)
+    elif opt == 'sgd':
+        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    else:
+        raise ValueError("Invalid optimizer choice. Choose 'adam' or 'sgd'.")
+
+    return model, loss_fn, optimizer
 
 
-#def build_model(hp, input_shape, output_shape, hidden_activation, norm):
-    
-    
