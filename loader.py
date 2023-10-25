@@ -62,7 +62,7 @@ class KnotDataset(Dataset):
         else:
             return self.dataset[idx]
 
-def split_train_test_validation(dataset, train_size, test_size, val_size):
+def split_train_test_validation(dataset, sampler, train_size, test_size, val_size):
     """Generate splitted dataset
 
     Args:
@@ -79,7 +79,7 @@ def split_train_test_validation(dataset, train_size, test_size, val_size):
     train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size])
 
     train_loader = DataLoader(train_dataset, batch_size=Nbeads, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=Nbeads, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=Nbeads, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=Nbeads, shuffle=True)
 
     return train_loader, test_loader, val_loader

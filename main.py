@@ -1,19 +1,23 @@
 import os, csv
 import numpy as np
 import torch
-from torch.utils.data import ConcatDataset, DataLoader
+from torch.utils.data import ConcatDataset, DataLoader, RandomSampler
+from tqdm import tqdm
 
 from helper import get_knots, get_params, generate_model
 from loader import KnotDataset, split_train_test_validation
 from model import *
 from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sn
+import pandas as pd
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
 
 def main():
 
-    knots = ["0_1", "3_1"]
+    knots = ["0_1", "3_1", "4_1"]
     fname = "XYZ_0_1.dat.nos"
     dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/XYZ"
     Nbeads = 100
@@ -25,7 +29,7 @@ def main():
     mode = "test"
     norm = False
     bs = 256
-    epochs = 3
+    epochs = 50
     ch = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/"
 
 
@@ -33,11 +37,15 @@ def main():
     for i, knot in enumerate(knots):
         datasets.append(KnotDataset(dirname, knot, net, dtype, Nbeads, pers_len, i))
 
-    dataset = ConcatDataset(datasets)
+    dataset = ConcatDataset(datasets) # concatenate datasets together
+    sampler = RandomSampler(dataset) # create a random sampler for concatenated dataset (samples elements randomly)
+
+    # Create a DataLoader
+    # dataloader = DataLoader(dataset=dataset, batch_size=32, sampler=sampler)
 
     ninputs = len(knots) * len_db
 
-    train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)))
+    train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, sampler, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)))
 
     if mode == "train":
 
@@ -56,7 +64,7 @@ def main():
 
         model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
 
-        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_55.pt"
+        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_49.pt"
 
         test(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
 
@@ -76,13 +84,13 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
     val_dataset_size = len(val_loader.dataset)
 
     # Early Stopping Callback
-    es = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+    # es = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
 
     best_val_loss = float('inf')
     steps_per_epoch = 250
 
     # Fitting the model
-    for epoch in range(100):
+    for epoch in tqdm(range(epochs)):
         model.train()
         #for inputs, labels in train_loader:
         for i, (inputs, labels) in enumerate(train_loader):
@@ -90,11 +98,12 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
                 break
 
             # Forward pass
+            optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
 
             # Backward pass and optimization
-            optimizer.zero_grad()
+
             loss.backward()
             optimizer.step()
 
@@ -149,6 +158,7 @@ def test(model, test_loader, checkpoint_filepath):
         checkpoint_filepath (str): Filepath for loading the model checkpoint
         bs (int): Batch size
     """
+    knots = ["0_1", "3_1", "4_1"]
 
     # Loading the model
     checkpoint = torch.load(checkpoint_filepath)
@@ -202,6 +212,12 @@ def test(model, test_loader, checkpoint_filepath):
     print(cf_matrix)
     ch = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/"
     np.savetxt(os.path.join(ch, "conf_m.txt"), cf_matrix, fmt="%i")
+
+    df_cm = pd.DataFrame(cf_matrix, index=[i for i in knots],
+                         columns=[i for i in knots])
+    plt.figure(figsize = (10,7))
+    sn.heatmap(df_cm, annot=True,cmap="gray_r")
+    plt.show()
 
 
 # if __name__ == "__main__":

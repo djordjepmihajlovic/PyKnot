@@ -61,7 +61,7 @@ def setup_NN(input_shape, output_shape, hidden_activation, opt, norm):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.01)
+        optimizer = optim.Adam(model.parameters(), lr=0.0001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     else:
