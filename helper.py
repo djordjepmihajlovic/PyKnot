@@ -78,7 +78,7 @@ def generate_model(net, in_layer, knots, norm):
 
     # Loading different networks according to the chosen setup
     if net == "FFNN":
-        model = setup_NN(in_layer, len(knots), hidden_activation="relu", opt="adam", norm=norm)
+        model = setup_NN(in_layer, len(knots), opt="adam", norm=norm)
     else:
         raise Exception("Network not available")
 

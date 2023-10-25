@@ -6,30 +6,35 @@ from torchvision.transforms import functional as F
 
 from helper import datafile_structure
 
-fname = "XYZ_0_1.dat.nos"
-dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/XYZ"
+# fname = "XYZ_0_1.dat.nos"
+# dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/XYZ"
 Nbeads = 100
-dtype = "XYZ"
-n_col = len([0, 1, 2])
-label = "0_1"
-knot = "0_1"
-net = 0
-pers_len = 0
+# dtype = "XYZ"
+# n_col = len([0, 1, 2])
+# label = "0_1"
+# knot = "0_1"
+# net = 0
+# pers_len = 0
 
 class KnotDataset(Dataset):
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
         super(KnotDataset, self).__init__()
 
-        # header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-        fname = (f"XYZ_{knot}.dat.nos")
-        select_cols = [0, 1, 2]
+        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
+        #fname = (f"XYZ_{knot}.dat.nos")
+        select_cols = [2] #  [0, 1, 2] for XYZ [2] for SIGWRITHE
 
         n_col = len(select_cols)
         type_list = [torch.float32] * n_col
         
         print((os.path.join(dirname, fname)))
         # Loading the dataset file
-        data = np.loadtxt(os.path.join(dirname, fname))
+        if dtype == "XYZ":
+            data = np.loadtxt(os.path.join(dirname, fname))
+
+        if dtype == "SIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+
         self.dataset = torch.tensor(data, dtype=torch.float32)
 
         # Reshape data
@@ -62,7 +67,7 @@ class KnotDataset(Dataset):
         else:
             return self.dataset[idx]
 
-def split_train_test_validation(dataset, sampler, train_size, test_size, val_size):
+def split_train_test_validation(dataset, train_size, test_size, val_size, batch_size):
     """Generate splitted dataset
 
     Args:
@@ -78,9 +83,9 @@ def split_train_test_validation(dataset, sampler, train_size, test_size, val_siz
     """
     train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size])
 
-    train_loader = DataLoader(train_dataset, batch_size=Nbeads, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=Nbeads, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=Nbeads, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
     return train_loader, test_loader, val_loader
 

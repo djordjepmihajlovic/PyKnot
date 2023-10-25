@@ -1,7 +1,7 @@
 import os, csv
 import numpy as np
 import torch
-from torch.utils.data import ConcatDataset, DataLoader, RandomSampler
+from torch.utils.data import ConcatDataset
 from tqdm import tqdm
 
 from helper import get_knots, get_params, generate_model
@@ -19,38 +19,39 @@ def main():
 
     knots = ["0_1", "3_1", "4_1"]
     fname = "XYZ_0_1.dat.nos"
-    dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/XYZ"
+    dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     Nbeads = 100
-    dtype = "XYZ"
+    dtype = "SIGWRITHE"
     n_col = len([0, 1, 2])
     net = "FFNN"
-    pers_len = 0
+    pers_len = 10
     len_db = 200000
-    mode = "test"
+    mode = "train"
     norm = False
     bs = 256
-    epochs = 50
+    epochs = 100
     ch = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/"
 
 
     datasets = []
     for i, knot in enumerate(knots):
         datasets.append(KnotDataset(dirname, knot, net, dtype, Nbeads, pers_len, i))
+        print(len(datasets[i]))
 
     dataset = ConcatDataset(datasets) # concatenate datasets together
-    sampler = RandomSampler(dataset) # create a random sampler for concatenated dataset (samples elements randomly)
-
     # Create a DataLoader
     # dataloader = DataLoader(dataset=dataset, batch_size=32, sampler=sampler)
 
     ninputs = len(knots) * len_db
 
-    train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, sampler, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)))
+    train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
+
+    if dtype  == "XYZ":
+        in_layer = (Nbeads, 3)
+    else:
+        in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
 
     if mode == "train":
-
-        if dtype  == "XYZ":
-            in_layer = (Nbeads, 3)
 
         model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
 
@@ -60,11 +61,9 @@ def main():
 
     if mode == "test":
 
-        in_layer = (Nbeads, 3)
-
         model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
 
-        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_49.pt"
+        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_8.pt"
 
         test(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
 
@@ -84,7 +83,7 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
     val_dataset_size = len(val_loader.dataset)
 
     # Early Stopping Callback
-    # es = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
+    es = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10, verbose=True)
 
     best_val_loss = float('inf')
     steps_per_epoch = 250
@@ -94,6 +93,7 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
         model.train()
         #for inputs, labels in train_loader:
         for i, (inputs, labels) in enumerate(train_loader):
+            # print(i)
             if i >= steps_per_epoch:
                 break
 
@@ -101,9 +101,7 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
-
             # Backward pass and optimization
-
             loss.backward()
             optimizer.step()
 
@@ -126,7 +124,7 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
             print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}, Val Loss: {val_loss:.4f}, Accuracy: {accuracy:.10f}")
 
             # Update learning rate based on validation loss
-            # es.step(val_loss)
+            es.step(val_loss)
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
@@ -241,3 +239,4 @@ def test(model, test_loader, checkpoint_filepath):
 #     main()
 
 main()
+
