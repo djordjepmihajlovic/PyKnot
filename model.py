@@ -36,13 +36,16 @@ class NNModel(nn.Module):
 
         x = self.output_layer(x)
 
-        return F.softmax(x, dim=1)
+        return F.softmax(x, dim=1)  
+        # x = F.sigmoid(x)
+        # return x.view(-1, 100, 3)
 
 def setup_NN(input_shape, output_shape, opt, norm):
     model = NNModel(input_shape, output_shape, norm)
 
     # loss function compares y_pred to y_true: in our case cross-entropy loss
-    loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss() 
+    # loss_fn = nn.MSELoss()
 
     # optimizer; i think we only use adam
     if opt == 'adam':

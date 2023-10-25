@@ -4,8 +4,8 @@ import torch
 from torch.utils.data import ConcatDataset
 from tqdm import tqdm
 
-from helper import get_knots, get_params, generate_model
-from loader import KnotDataset, split_train_test_validation
+from helper import *
+from loader import *
 from model import *
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ print("No. GPUs Available: ", available_gpus)
 
 def main():
 
-    knots = ["0_1", "3_1", "4_1"]
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
     fname = "XYZ_0_1.dat.nos"
     dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     Nbeads = 100
@@ -26,24 +26,22 @@ def main():
     net = "FFNN"
     pers_len = 10
     len_db = 200000
-    mode = "train"
+    mode = "test"
     norm = False
     bs = 256
-    epochs = 100
+    epochs = 20
     ch = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/"
+    dtype_f = "SIGWRITHE"
+    dtype_l = "XYZ"
 
 
     datasets = []
-    for i, knot in enumerate(knots):
+    for i, knot in enumerate(knots): 
         datasets.append(KnotDataset(dirname, knot, net, dtype, Nbeads, pers_len, i))
-        print(len(datasets[i]))
+        # datasets.append(Wr_2_XYZ(dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
 
     dataset = ConcatDataset(datasets) # concatenate datasets together
-    # Create a DataLoader
-    # dataloader = DataLoader(dataset=dataset, batch_size=32, sampler=sampler)
-
     ninputs = len(knots) * len_db
-
     train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
 
     if dtype  == "XYZ":
@@ -52,19 +50,12 @@ def main():
         in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
 
     if mode == "train":
-
         model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
-
-    if mode == "train":
-
         train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, epochs = epochs, checkpoint_filepath = ch)
-
+    
     if mode == "test":
-
         model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
-
-        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_8.pt"
-
+        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_11.pt"
         test(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
 
 def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoint_filepath):
@@ -93,10 +84,8 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
         model.train()
         #for inputs, labels in train_loader:
         for i, (inputs, labels) in enumerate(train_loader):
-            # print(i)
             if i >= steps_per_epoch:
                 break
-
             # Forward pass
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -114,13 +103,12 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
             for inputs, labels in val_loader:
                 outputs = model(inputs)
                 val_loss += loss_fn(outputs, labels).item()
-                _, predicted = torch.max(outputs.data, 1)
+                _, predicted = torch.max(outputs.data, 1) 
+                # predicted = outputs
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
-
             val_loss /= val_dataset_size
             accuracy = correct / total
-
             print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}, Val Loss: {val_loss:.4f}, Accuracy: {accuracy:.10f}")
 
             # Update learning rate based on validation loss
@@ -156,7 +144,7 @@ def test(model, test_loader, checkpoint_filepath):
         checkpoint_filepath (str): Filepath for loading the model checkpoint
         bs (int): Batch size
     """
-    knots = ["0_1", "3_1", "4_1"]
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 
     # Loading the model
     checkpoint = torch.load(checkpoint_filepath)

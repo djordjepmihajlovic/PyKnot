@@ -16,6 +16,44 @@ Nbeads = 100
 # net = 0
 # pers_len = 0
 
+class Wr_2_XYZ(Dataset):
+    def __init__(self, dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, label):
+        super(Wr_2_XYZ, self).__init__()
+
+        header, fname_f, select_cols_f = datafile_structure(dtype_f, knot, Nbeads, pers_len)
+        header, fname_l, select_cols_l = datafile_structure(dtype_l, knot, Nbeads, pers_len)
+        #fname = (f"XYZ_{knot}.dat.nos")
+        select_cols = [2] #  [0, 1, 2] for XYZ [2] for SIGWRITHE
+
+        n_col_feature = len(select_cols_f)
+        n_col_label = len(select_cols_l)
+        
+        print((os.path.join(dirname, fname_f)))
+        print((os.path.join(dirname, fname_l)))
+        # Loading the dataset file
+        data = np.loadtxt(os.path.join(dirname,fname_f), usecols=(2,))
+        label = np.loadtxt(os.path.join(dirname,fname_l))
+
+        self.dataset = torch.tensor(data, dtype=torch.float32)
+        self.label = torch.tensor(label, dtype=torch.float32)
+
+        # Reshape data
+        self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
+        self.label = self.label.view(-1, Nbeads, n_col_label)
+
+        if dtype_l == "XYZ":
+            self.label = self.label - torch.mean(self.label, dim=0)
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        if hasattr(self, 'label'):
+            return self.dataset[idx], self.label[idx]
+        else:
+            return self.dataset[idx]
+        
+
 class KnotDataset(Dataset):
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
         super(KnotDataset, self).__init__()
@@ -81,7 +119,8 @@ def split_train_test_validation(dataset, train_size, test_size, val_size, batch_
         DataLoader: test dataset
         DataLoader: validation dataset
     """
-    train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size])
+    generator = torch.Generator().manual_seed(42)
+    train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size], generator = generator)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
