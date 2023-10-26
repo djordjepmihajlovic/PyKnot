@@ -8,7 +8,24 @@ from helper import datafile_structure
 
 
 class Wr_2_XYZ(Dataset):
+
     def __init__(self, dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, label):
+        """Class wrapper for dataset generation --> prediction problem
+
+        Args:
+            (example: SIGWRITHE --> XYZ prediction)
+            dirname (str): knot master directory location
+            knot (str): knot being called
+            net (str): neural network trype
+            dtype_f (str): data type used for features (eg. SIGWRITHE)
+            dtype_l (str): data type used for labels (eg. XYZ)
+            Nbeads (int): number of beads
+            pers_len (int): persistence length
+            label: corresponding label of data being called
+
+        Returns:
+            torch.Dataset
+        """
         super(Wr_2_XYZ, self).__init__()
 
         header, fname_f, select_cols_f = datafile_structure(dtype_f, knot, Nbeads, pers_len)
@@ -45,7 +62,22 @@ class Wr_2_XYZ(Dataset):
         
 
 class KnotDataset(Dataset):
+
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
+        """Class wrapper for dataset generation --> classification problem
+
+        Args:
+            dirname (str): knot master directory location
+            knot (str): knot being called
+            net (str): neural network trype
+            dtype (str): problem type
+            Nbeads (int): number of beads
+            pers_len (int): persistence length
+            label (int): corresponding label of data being called
+
+        Returns:
+            torch.Dataset
+        """
         super(KnotDataset, self).__init__()
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
@@ -99,8 +131,8 @@ class KnotDataset(Dataset):
             return self.dataset[idx]
 
 def split_train_test_validation(dataset, train_size, test_size, val_size, batch_size):
-    """Generate splitted dataset
-
+    """Generate split dataset
+    
     Args:
         dataset (Dataset): Total dataset
         train_size (int): size of the train dataset

@@ -10,10 +10,13 @@
 # autoencoders are type of nn used to perform dim-reductionality
 # encoder -> decoder
 
+# torch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+#lightning
+import pytorch_lightning as pl
 
 class Encoder(nn.Module):
     def __init__(self, input_shape, latent_dims):
@@ -25,7 +28,6 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         x = self.flatten_layer(x)
-
         x = F.relu(self.linear1(x))
         return self.linear2(x)
     
@@ -43,15 +45,52 @@ class Decoder(nn.Module):
         return z.reshape((-1, 1, 100, 1)) # here x3 is output shape of data, in case of 100 beads XYZ that would be (-1, 1, 100, 3) I think
                                           # (-1, 1, 100, 1) for SIGWRITHE -> generating SIGWRITHE data
     
-class Autoencoder(nn.Module):
-    def __init__(self, latent_dims):
-        super(Autoencoder, self).__init__()
-        self.encoder = Encoder(latent_dims)
-        self.decoder = Decoder(latent_dims)
+class Autoencoder(pl.LightningModule):
 
+    def __init__(self,  stats,  loss):
+        # stats holds args for encoder and decoder
+        super().__init__()
+
+        self.stats = stats 
+        self.loss_fn = loss
+        self.encoder = Encoder(latent_dims = self.stats['latent_dims'],in_channels = self.stats["in_channels"], linear_size = self.stats["linear_size"])
+        self.decoder = Decoder(latent_dims = self.stats['latent_dims'],in_channels = self.stats["in_channels"][::-1], linear_size = self.stats["linear_size"])
+        
     def forward(self, x):
-        z = self.encoder(x)
-        return self.decoder(x)
+        # apply encoder
+        x = self.encoder(x)
+        # apply decoder
+        x = self.decoder(x)
+
+        return x
+    
+    def configure_optimizers(self):
+
+        opt = self.stats['opt']
+        lr = self.stats['lr']
+
+        if opt == 'Adam':
+            return torch.optim.Adam(self.parameters(), lr=lr)
+                
+
+    def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
+        x, y = batch
+        z = self.forward(x)
+
+        loss = self.loss_fn(z, x) 
+        self.log(loss_name, loss, on_epoch=True, on_step=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
+        x, y = batch
+        z = self.forward(x)
+        loss = self.loss_fn(z, x) 
+        self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch 
+        z = self.forward(x)
     
 
 # VAE

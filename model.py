@@ -10,10 +10,19 @@ import pytorch_lightning as pl
 class NNModel(nn.Module):
     # define model structure i.e. layers
     def __init__(self, input_shape, output_shape, norm):
+        """nn.Module initialization --> builds neural network
+
+        Args:
+            input_shape (list): dim of input array
+            output_shape (int): size of output array
+            norm (bool): norm
+
+        Returns:
+            nn.Module
+        """
         super(NNModel, self).__init__()
-
         self.flatten_layer = nn.Flatten()
-
+        
         # init layers
         if norm:
             self.bn_layer = nn.BatchNorm1d(input_shape[0])
@@ -50,6 +59,16 @@ class NNModel(nn.Module):
 
 class NN(pl.LightningModule):
     def __init__(self, model, loss, opt):
+        """pl.LightningModule --> builds train/val/test 
+
+        Args:
+            model (nn.Module): neural network module
+            loss (nn.loss): loss function
+            opt (torch.optim): optimizer
+
+        Returns:
+            loss
+        """
         super().__init__()
         self.model = model
         self.loss = loss
@@ -97,6 +116,20 @@ class NN(pl.LightningModule):
     
 
 def setup_NN(input_shape, output_shape, opt, norm, loss):
+    """setup function --> defines required network using helper
+
+    Args:
+        input_shape (list): dim of input array
+        output_shape (int): size of output array
+        opt (str): required optimizer (adam, sgd)
+        norm (bool): norm
+        loss (str): required loss function (CEL, MSE)
+
+    Returns:
+        model (nn.Module)
+        loss (nn.loss)
+        optimizer (torch.optim)
+    """
 
     # model
     model = NNModel(input_shape, output_shape, norm)
