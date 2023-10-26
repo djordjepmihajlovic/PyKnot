@@ -7,10 +7,13 @@ from tqdm import tqdm
 from helper import *
 from loader import *
 from model import *
+
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sn
 import pandas as pd
+
+from pytorch_lightning import Trainer
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
@@ -26,39 +29,83 @@ def main():
     net = "FFNN"
     pers_len = 10
     len_db = 200000
-    mode = "test"
+    mode = "train"
     norm = False
     bs = 256
-    epochs = 20
+    epochs = 5
     ch = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/"
     dtype_f = "SIGWRITHE"
     dtype_l = "XYZ"
+    predict = "std"
 
 
     datasets = []
-    for i, knot in enumerate(knots): 
-        datasets.append(KnotDataset(dirname, knot, net, dtype, Nbeads, pers_len, i))
-        # datasets.append(Wr_2_XYZ(dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
+    if predict == "std":
+        for i, knot in enumerate(knots): 
+            datasets.append(KnotDataset(dirname, knot, net, dtype, Nbeads, pers_len, i))
 
-    dataset = ConcatDataset(datasets) # concatenate datasets together
-    ninputs = len(knots) * len_db
-    train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
+        dataset = ConcatDataset(datasets) # concatenate datasets together
+        ninputs = len(knots) * len_db
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
 
-    if dtype  == "XYZ":
-        in_layer = (Nbeads, 3)
-    else:
-        in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
+        if dtype  == "XYZ":
+            in_layer = (Nbeads, 3)
+        else:
+            in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
+        
+        out_layer = len(knots)
 
-    if mode == "train":
-        model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
-        train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, epochs = epochs, checkpoint_filepath = ch)
+        if mode == "train":
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
+            train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
+            # train1(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, epochs = epochs, checkpoint_filepath = ch)
+        
+        if mode == "test":
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
+            test(model, loss_fn, optimizer, test_loader = test_dataset, epochs = epochs)
+
+            # checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_11.pt"
+            # test(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
+
+    elif predict == "Sig2XYZ":
+        for i, knot in enumerate(knots): 
+            datasets.append(Wr_2_XYZ(dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
+
+        dataset = ConcatDataset(datasets) # concatenate datasets together
+        ninputs = len(knots) * len_db
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
+
+        in_layer = (Nbeads, 1) 
+        out_layer = 300
+
+        if mode == "train":
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
+            train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
+            #train1(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, epochs = epochs, checkpoint_filepath = ch)
+        
+        if mode == "test":
+            model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
+            test(model, loss_fn, optimizer, test_loader = test_dataset, epochs = epochs)
+
+            # checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_11.pt"
+            # test1(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
+
+def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
     
-    if mode == "test":
-        model, loss_fn, optimizer = generate_model(net, in_layer, knots, norm)
-        checkpoint = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Code/PyKnot/checkpoint_epoch_11.pt"
-        test(model, test_loader = test_dataset, checkpoint_filepath=checkpoint)
+    neural = NN(model=model, loss=loss_fn, opt=optimizer)
+    trainer = Trainer(max_epochs=epochs, limit_train_batches=250)  # steps per epoch = 250
+    trainer.fit(neural, train_loader, val_loader)
+    trainer.test(dataloaders=test_loader)
 
-def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoint_filepath):
+def test(model, loss_fn, optimizer, test_loader, epochs):
+    neural = NN(model=model, loss=loss_fn, opt=optimizer)
+    trainer = Trainer(max_epochs=epochs)
+    trainer.test(dataloaders=test_loader)
+
+
+def train1(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoint_filepath):
     """Training function
 
     Args:
@@ -116,6 +163,7 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, epochs, checkpoin
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
+                print(outputs[0])
                 save_checkpoint(model, optimizer, epoch, val_loss, accuracy, checkpoint_filepath)
 
     # Saving training history

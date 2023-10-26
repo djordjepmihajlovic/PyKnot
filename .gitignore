@@ -1,6 +1,7 @@
 /plotter
 /accuracy_vs_dataset
 /tester_code
+/lightning_logs
 *.pt
 *.csv
 *.txt

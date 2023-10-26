@@ -60,7 +60,7 @@ def datafile_structure(dtype, knot, Nbeads, pers_len):
     return header, fname, select_cols
 
 
-def generate_model(net, in_layer, knots, norm):
+def generate_model(net, in_layer, out_layer, norm):
     """Generate the model depeding on the net name
 
     Args:
@@ -78,7 +78,7 @@ def generate_model(net, in_layer, knots, norm):
 
     # Loading different networks according to the chosen setup
     if net == "FFNN":
-        model = setup_NN(in_layer, len(knots), opt="adam", norm=norm)
+        model = setup_NN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL")
     else:
         raise Exception("Network not available")
 

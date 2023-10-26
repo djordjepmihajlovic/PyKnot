@@ -6,15 +6,6 @@ from torchvision.transforms import functional as F
 
 from helper import datafile_structure
 
-# fname = "XYZ_0_1.dat.nos"
-# dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/XYZ"
-Nbeads = 100
-# dtype = "XYZ"
-# n_col = len([0, 1, 2])
-# label = "0_1"
-# knot = "0_1"
-# net = 0
-# pers_len = 0
 
 class Wr_2_XYZ(Dataset):
     def __init__(self, dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, label):
@@ -22,8 +13,7 @@ class Wr_2_XYZ(Dataset):
 
         header, fname_f, select_cols_f = datafile_structure(dtype_f, knot, Nbeads, pers_len)
         header, fname_l, select_cols_l = datafile_structure(dtype_l, knot, Nbeads, pers_len)
-        #fname = (f"XYZ_{knot}.dat.nos")
-        select_cols = [2] #  [0, 1, 2] for XYZ [2] for SIGWRITHE
+        # select_cols = [0, 1, 2] for XYZ [2] for SIGWRITHE
 
         n_col_feature = len(select_cols_f)
         n_col_label = len(select_cols_l)
@@ -59,14 +49,17 @@ class KnotDataset(Dataset):
         super(KnotDataset, self).__init__()
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
+
         #fname = (f"XYZ_{knot}.dat.nos")
-        select_cols = [2] #  [0, 1, 2] for XYZ [2] for SIGWRITHE
+        #select_cols = [0, 1, 2] for XYZ [2] for SIGWRITHE
 
         n_col = len(select_cols)
         type_list = [torch.float32] * n_col
         
         print((os.path.join(dirname, fname)))
+
         # Loading the dataset file
+
         if dtype == "XYZ":
             data = np.loadtxt(os.path.join(dirname, fname))
 
