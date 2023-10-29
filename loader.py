@@ -38,8 +38,8 @@ class Wr_2_XYZ(Dataset):
         print((os.path.join(dirname, fname_f)))
         print((os.path.join(dirname, fname_l)))
         # Loading the dataset file
-        data = np.loadtxt(os.path.join(dirname,fname_f), usecols=(2,))
-        label = np.loadtxt(os.path.join(dirname,fname_l))
+        data = np.loadtxt(os.path.join(dirname,fname_f), usecols=(0, 1, 2))
+        label = np.loadtxt(os.path.join(dirname,fname_l), usecols=(2,))
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
         self.label = torch.tensor(label, dtype=torch.float32)
@@ -145,11 +145,11 @@ def split_train_test_validation(dataset, train_size, test_size, val_size, batch_
         DataLoader: validation dataset
     """
     generator = torch.Generator().manual_seed(42)
-    train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size], generator = generator)
+    train_dataset, test_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, test_size, val_size], generator=generator)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, test_loader, val_loader
 
