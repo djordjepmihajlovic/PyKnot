@@ -1,19 +1,24 @@
+# torch modules
 import torch
 from torch.utils.data import ConcatDataset
 import numpy as np
 from torch.autograd import Variable
 
+# PyTorch Lightning for training 
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 
-
+# code modules
 from helper import *
 from loader import *
 from model import *
+from generative import *
 
+# analysis
 import shap
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
@@ -44,6 +49,11 @@ def main():
         if mode == "test":
             print("error -> test attr. in train fn at the moment.")
 
+        if mode == "generate":
+            loss_fn = nn.MSELoss() 
+            optimizer = "adam"
+            generate(input_shape=in_layer, latent_dims= 2, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
     elif predict == "dual": # used for doing a 'dual' problem -> predict data a from b (eg. XYZ -> StA)
         for i, knot in enumerate(knots): 
             datasets.append(Wr_2_XYZ(master_knots_dir, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
@@ -70,7 +80,7 @@ def main():
 def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
     
     neural = NN(model=model, loss=loss_fn, opt=optimizer)
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=15, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
@@ -89,35 +99,35 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
 
     ## dual pred -----
 
-    true = y[0].detach().numpy()
-    prediction = dat[0].detach().numpy()
+    # true = y[0].detach().numpy()
+    # prediction = dat[0].detach().numpy()
 
-    print(true)
-    print(prediction)
+    # print(true)
+    # print(prediction)
 
-    x_list = np.arange(0, 100)
+    # x_list = np.arange(0, 100)
 
-    z = np.polyfit(x_list, prediction, 15)
-    z = [item for sublist in z.tolist() for item in sublist]
-    p = np.poly1d(z)
+    # z = np.polyfit(x_list, prediction, 15)
+    # z = [item for sublist in z.tolist() for item in sublist]
+    # p = np.poly1d(z)
 
-    plt.subplot(2, 1, 1)
-    plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
-    plt.xlabel('Bead index')
-    plt.ylabel('XYZ Predicted StA Writhe')
-    plt.grid()
+    # plt.subplot(2, 1, 1)
+    # plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
+    # plt.xlabel('Bead index')
+    # plt.ylabel('XYZ Predicted StA Writhe')
+    # plt.grid()
 
-    plt.subplot(2, 1, 2)
-    plt.plot(x_list, true)
-    # ax = plt.gca()
-    # yabs_max = abs(max(ax.get_ylim(), key=abs))
-    # ax.set_ylim([-yabs_max, yabs_max])
-    plt.xlabel('Bead index')
-    plt.ylabel('True StA Writhe')
-    plt.grid()
+    # plt.subplot(2, 1, 2)
+    # plt.plot(x_list, true)
+    # # ax = plt.gca()
+    # # yabs_max = abs(max(ax.get_ylim(), key=abs))
+    # # ax.set_ylim([-yabs_max, yabs_max])
+    # plt.xlabel('Bead index')
+    # plt.ylabel('True StA Writhe')
+    # plt.grid()
 
-    plt.suptitle(f"StA Writhe vs Bead Index (FFNN)")
-    plt.show()
+    # plt.suptitle(f"StA Writhe vs Bead Index (FFNN)")
+    # plt.show()
 
     ## regular shap -----
 
@@ -187,6 +197,64 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
     # plt.suptitle(f"Predicition: (5_2) {dat[v2]}")
     # plt.show()
 
+def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
+
+    neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
+    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+    trainer.fit(neural, train_loader, val_loader)
+    trainer.test(dataloaders=test_loader)
+
+    # for x,y in test_loader:
+    #     dat = neural.forward(x)
+    #     break
+
+    # x_list = np.arange(0, 100)
+
+    # true = x[0].detach().numpy()
+    # prediction = dat[0].detach().numpy()
+
+    # print(true)
+    # print(prediction)
+
+    # z = np.polyfit(x_list, prediction, 20)
+    # z = [item for sublist in z.tolist() for item in sublist]
+    # p = np.poly1d(z)
+
+    # plt.subplot(2, 1, 1)
+    # plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
+    # plt.xlabel('Bead index')
+    # plt.ylabel('Generated StA Writhe')
+    # plt.grid()
+
+    # plt.subplot(2, 1, 2)
+    # plt.plot(x_list, true)
+    # # ax = plt.gca()
+    # # yabs_max = abs(max(ax.get_ylim(), key=abs))
+    # # ax.set_ylim([-yabs_max, yabs_max])
+    # plt.xlabel('Bead index')
+    # plt.ylabel('True StA Writhe')
+    # plt.grid()
+
+    # label = int(y[0])
+    # names = {0: "unknot", 1: "3_1", 2: "4_1", 3: "5_1", 4: "5_2"}
+
+    # plt.suptitle(f"Autoencoded StA writhe {names[label]}")
+
+    plot_latent(neural, train_loader)
+    plt.suptitle("StA latent space - autoencoder")
+
+    plt.show()
+
+
+def plot_latent(autoencoder, data, num_batches=100):
+    for i, (x, y) in enumerate(data):
+        z = autoencoder.encoder(x.to('cpu'))
+        z = z.to('cpu').detach().numpy()
+        plt.scatter(z[:, 0], z[:, 1], c=y)
+        if i > num_batches:
+            plt.colorbar()
+            break
 
 
 if __name__ == "__main__":

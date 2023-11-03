@@ -7,6 +7,9 @@ import torch.nn.functional as F
 # lightning --> train/val/test initialization
 import pytorch_lightning as pl
 
+# analysis --> conf matrix gen.
+from sklearn.metrics import confusion_matrix
+
 ################## <--FFNN--> ###################
 
 class FFNNModel(nn.Module):
@@ -53,8 +56,8 @@ class FFNNModel(nn.Module):
 
         x = self.output_layer(x)
 
-        # return F.softmax(x, dim=1) 
-        return x.view(-1, 100, 1) # <- have: Sig2XYZ (-1, 100, 3) & XYZ2Sig (-1, 100, 1)
+        return F.softmax(x, dim=1) 
+        # return x.view(-1, 100, 1) # <- have: Sig2XYZ (-1, 100, 3) & XYZ2Sig (-1, 100, 1)
 
 
 ################## <--RNN--> ###################
@@ -177,16 +180,24 @@ class NN(pl.LightningModule):
         # calculate acc
 
         # std
-        #  _, predicted = torch.max(z.data, 1) 
-        #  test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        _, predicted = torch.max(z.data, 1) 
+        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
         # dual
-        predicted = z
-        el = (y-predicted)**2
-        test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
+        # predicted = z
+        # el = (y-predicted)**2
+        # test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
+
+        # predicted_np = predicted.cpu().numpy()
+        # y_np = y.cpu().numpy()
+
+        # # Calculate confusion matrix
+        # confusion_mat = confusion_matrix(y_np, predicted_np)
+        # print(confusion_mat)
+
         # self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
         return loss
 

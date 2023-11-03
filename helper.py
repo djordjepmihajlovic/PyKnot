@@ -78,7 +78,7 @@ def generate_model(net, in_layer, out_layer, norm):
 
     # Loading different networks according to the chosen setup
     if net == "FFNN":
-        model = setup_FFNN(in_layer, out_layer, opt="adam", norm=norm, loss="MSE")
+        model = setup_FFNN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL")
     
     elif net == "RNN":
         model = setup_RNN(in_layer, out_layer, opt="adam", norm=norm, loss="MSE")
@@ -111,6 +111,7 @@ def get_knots(problem):
         Knotind = ["0_1", "conway", "kt"]
 
     elif problem == "5Class":
+        #Knotind = ["3_1"]
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 
     elif problem == "5Class56":
@@ -160,7 +161,7 @@ def get_params():
     par.add_argument("-n", "--normalised", type=bool, default=False, help="Flag to use normalised version of datatype")
     par.add_argument("-nb", "--nbeads", type=str, default="100", help="Number of beads of the input files")
     par.add_argument("-t", "--network", type=str, default="FFNN", help="Type of neural network: FFNN, RNN, LocaliseFFNN, LocaliseRNN, ...")
-    par.add_argument("-e", "--epochs", type=int, default=1000, help="Set the number of training epochs")
+    par.add_argument("-e", "--epochs", type=int, default=100, help="Set the number of training epochs")
     par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train or test")
     par.add_argument("-ldb", "--len_db", type=int, default=200000, help="Database size for each of the classes")
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") # 256 std

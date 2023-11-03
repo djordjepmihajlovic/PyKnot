@@ -48,8 +48,8 @@ class Wr_2_XYZ(Dataset):
         self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
         self.label = self.label.view(-1, Nbeads, n_col_label)
 
-        if dtype_l == "XYZ":
-            self.label = self.label - torch.mean(self.label, dim=0)
+        if dtype_f == "XYZ":
+            self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
 
     def __len__(self):
         return len(self.dataset)

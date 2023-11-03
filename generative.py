@@ -42,21 +42,22 @@ class Decoder(nn.Module):
         z = F.relu(self.linear1(z))
 
         z = torch.sigmoid(self.linear2(z))
-        return z.reshape((-1, 1, 100, 1)) # here x3 is output shape of data, in case of 100 beads XYZ that would be (-1, 1, 100, 3) I think
+        return z.reshape((-1, 100, 1)) # here x3 is output shape of data, in case of 100 beads XYZ that would be (-1, 1, 100, 3) I think
                                           # (-1, 1, 100, 1) for SIGWRITHE -> generating SIGWRITHE data
     
 class Autoencoder(pl.LightningModule):
 
-    def __init__(self,  stats,  loss):
+    def __init__(self,  input_shape, latent_dims,  loss, opt):
         # stats holds args for encoder and decoder
         super().__init__()
 
-        self.stats = stats 
         self.loss_fn = loss
-        self.encoder = Encoder(latent_dims = self.stats['latent_dims'],in_channels = self.stats["in_channels"], linear_size = self.stats["linear_size"])
-        self.decoder = Decoder(latent_dims = self.stats['latent_dims'],in_channels = self.stats["in_channels"][::-1], linear_size = self.stats["linear_size"])
+        self.optimiser = opt
+        self.encoder = Encoder(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
+
         # apply encoder
         x = self.encoder(x)
         # apply decoder
@@ -66,12 +67,8 @@ class Autoencoder(pl.LightningModule):
     
     def configure_optimizers(self):
 
-        opt = self.stats['opt']
-        lr = self.stats['lr']
-
-        if opt == 'Adam':
-            return torch.optim.Adam(self.parameters(), lr=lr)
-                
+        if self.optimiser == 'adam':
+            return torch.optim.Adam(self.parameters(), lr=0.001)
 
     def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
         x, y = batch
@@ -98,9 +95,11 @@ class Autoencoder(pl.LightningModule):
 class VariationalEncoder(nn.Module):
     def __init__(self, latent_dims):
         super(VariationalEncoder, self).__init__()
+        x1 = 10
+        x2 = 10
         self.linear1 = nn.Linear(x1, x2)
         self.linear2 = nn.Linear(x2, latent_dims)
-        self.linear3 = nn.Linar(x2, latent_dims)
+        self.linear3 = nn.Linear(x2, latent_dims)
 
         self.N = torch.distributions.Normal(0, 1)
         # self.N.loc = self.N.loc.cuda()
