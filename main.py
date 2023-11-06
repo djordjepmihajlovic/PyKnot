@@ -52,7 +52,7 @@ def main():
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims= 2, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims= 5, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
     elif predict == "dual": # used for doing a 'dual' problem -> predict data a from b (eg. XYZ -> StA)
         for i, knot in enumerate(knots): 
@@ -199,9 +199,9 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
 
 def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=4)
-    neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_235/checkpoints/epoch=188-step=47250.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=3)
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
+    # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
+    neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_239/checkpoints/epoch=366-step=91750.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
+    # early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     # trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     # trainer.fit(neural, train_loader, val_loader)
     # trainer.test(dataloaders=test_loader)
@@ -250,38 +250,44 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # names = {0: "unknot", 1: "trefoil (3_1)", 2: "figure-8 (4_1)", 3: "pentafoil (5_1)", 4: "three twist (5_2)"}
 
     # plt.suptitle(f"VAE StA writhe: {names[label]}")
-    rand, gen = generation(neural)
-    gen = gen.detach().numpy()
-    x_list = np.arange(0, 100)
 
-    plt.subplot(2, 1, 1)
-    plt.plot(x_list, gen[0], '-b') #, x_list, gen[1], '-b', x_list, gen[2], '-g')
-    plt.xlabel('Bead index')
-    plt.ylabel('Newly Generated StA writhe')
+    # rand, gen = generation(neural)
+    # gen = gen.detach().numpy()
+    # x_list = np.arange(0, 100)
+
+    # plt.subplot(2, 1, 1)
+    # plt.plot(x_list, gen[0], '-b') #, x_list, gen[1], '-b', x_list, gen[2], '-g')
+    # plt.ylim([-2, 2])
+    # plt.xlabel('Bead index')
+    # plt.ylabel('Newly Generated StA writhe')
+    eval_dat = [[2.5, 0.0]] #, [1.5, 0.5], [2, 0.5], [1.5, -1.5]]
+    rand = torch.tensor(eval_dat)
 
     plt.subplot(2, 1, 2)
-    plot_latent(neural, train_loader, rand)
-    plt.suptitle("StA latent space VAE (5_1)")
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+    plot_latent(ax, neural, train_loader, rand)
+    plt.suptitle("StA latent space VAE")
 
     plt.show()
 
 
-def plot_latent(autoencoder, data, rand, num_batches=100):
+def plot_latent(ax, autoencoder, data, rand, num_batches=100):
     for i, (x, y) in enumerate(data):
         z, dev = autoencoder.encoder(x.to('cpu'))
         z = z.to('cpu').detach().numpy()
-        plt.scatter(z[:, 0], z[:, 1], c=y, s=10, alpha=0.7)
-        plt.scatter(rand[0, 0], rand[0, 1], c = 'red')
+        ax.scatter(z[:, 0], z[:, 1], z[:, 2], c=y, alpha=0.7)
+        # plt.scatter(rand[0, 0], rand[0, 1], c = 'red')
         # plt.scatter(rand[1, 0], rand[1, 1], c = 'blue')
         # plt.scatter(rand[2, 0], rand[2, 1], c = 'green')
         if i > num_batches:
-            plt.colorbar()
+            #ax.colorbar()
             break
 
 def generation(autoencoder):
     for i in range(1):
         rand = 2*torch.randn(7, 2).to('cpu')
-        eval_dat = [[1.5, -1.5]] #, [1.5, 0.5], [2, 0.5], [1.5, -1.5]]
+        eval_dat = [[2.5, 0.0]] #, [1.5, 0.5], [2, 0.5], [1.5, -1.5]]
         rand = torch.tensor(eval_dat)
         print(rand)
         with torch.no_grad():

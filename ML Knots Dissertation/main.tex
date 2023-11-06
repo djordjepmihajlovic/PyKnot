@@ -1,0 +1,94 @@
+
+\documentclass[12pt]{article}
+
+\usepackage{mphysproject}
+\usepackage[T1]{fontenc} 
+
+\usepackage{hyperref}  
+
+\usepackage[style=numeric, sorting=none]{biblatex}
+\usepackage{amssymb}
+\addbibresource{references.bib}
+\usepackage{color, soul}
+
+\usepackage{tikz}
+\usepackage{subfig}
+\usetikzlibrary{knots}
+
+\begin{document}
+
+\title{Machine Learning for Knot Discovery} % Place your project title in here
+\author{D. P. Mihajlovic} % Put your name here
+\supervisor{Professor D. Michieletto} % Place your principal supervisor here
+%\supervisor{Dr A. Smith} % If you have additional supervisors, list them with separate \supervisor commands
+\date{} % Today's date will appear on the title page by default, but if you want to tie this to a particular date, you can do so here
+
+% Insert your abstract below
+\begin{abstract}
+The abstract is a concise outline of the project, summarising (i) the research question addressed by the project; (ii) the motivation for that research question; (iii) the main method you used to answer it; (iv) your main result; and (v) the implications of this result in the field of study. Aim for one sentence (on average) for each. The entire abstract should be no more than 100 words, and should not contain display equations or references.
+\end{abstract}
+
+% This command is essential to make the title page appear: DO NOT REMOVE IT
+\maketitle
+
+% This command introduces the Personal Statement: DO NOT REMOVE IT
+\personalstatement
+
+\begin{it}
+
+Insert a personal statement of around one page (maximum two) that sets out the nature of the various tasks conducted in the project and an indication of the amount of time spent on them. You should highlight any unanticipated difficulties you encountered in the project, as this may help the assessors better understand---for example---why the quality or quantity of data obtained is less than one might normally expect. This statement may also help assessors understand your individual contribution to the work described in the report: however, this should also be evident from the report itself.
+
+The example below was submitted by a former MPhys Project student.
+
+\end{it}
+
+% I spent the first 6 weeks meeting regularly with my supervisor and becoming familiar with the equipment I would be using. I needed to learn about the electronic workings of the experimental system and the programming control I would be administering. I found this initially very time consuming but achieved it by working through the manuals for the pieces of equipment I would be using. I also ran and edited C++ code from an existing package I was given by my supervisor. I was fairly unfamiliar with C++ and so running existing code was a good way for me to begin to understand the language and also the way it could be used to control the equipment.
+
+% Outside the lab I began reading articles, LHCb manuals and information from the LHCb website that explained the workings of Multi-Anode Photomultiplier Tubes and how they were being incorporated into the LHCb experiment. As work in the lab was very much about coding and electronics at this stage it was easy to lose sight of the overall goal and so researching such topics kept me focused.
+
+% There was a problem with the QDC (charge to digital converter) module I was using, but after switching to the other one I was able to progress. I spent the next 5 weeks administering signals to the QDC module with an external pulse generator. This way I could view the pulse with an oscilloscope and manually set the characteristics I wished to use (width, period etc) before interpreting the resulting data. I edited the C++ code in order to produce text files containing information about each pulse of light, or `event', being administered. This information was in the form of ADC counts (digital conversions of analogue signals).
+
+% During this time, and continuing on through the Christmas break, I continued to research MaPMTs. I conducted a literature review and used this to compile the background knowledge section of my report. The LHCb manuals I was given by supervisor proved to be very informative and provided much of the information for this section. I not only focused on MaPMTs but looked into the Hybrid Photon Detector (HPD) models which are currently used in the LHCb experiment and that the MaPMTs are due to replace.
+
+% In Semester 2 I was able to use the MaPMT to obtain data. After initially being introduced to the MaPMT by my supervisor, I spent the first week familiarising myself with how it worked. My supervisor helped me set up an LED pulse which was directed to the photocathode surface of the MaPMT. I spent the next 3 weeks adjusting the equipment to cope with the new pulse source and taking data runs. Much of the code I had worked on in Semester 1 was useful here with constant improvements being made throughout the course of the semester.
+
+% I spent the next 2 weeks working learning about the graphical tool ROOT and using it to produce histograms of my results. I was continued working on my report with the Experimental Method section coming to form.
+
+% The following 2 weeks were spent altering experimental parameters such as the voltage being administered to the MaPMT and producing further histograms. I spent the remainder of my time analysing my histograms and working on my report.
+
+% If you have anyone that needs to be acknowledged (e.g., anyone who provided assistance with your project work,
+% provided data etc) please do so here. Delete this (or comment it out) if you have no-one to acknowledge.
+\acknowledgments
+
+\begin{it}
+If you received any assistance with your project (beyond the usual advice and support from your supervisor), this should be recorded in a section headed Acknowledgements at the end of your Personal Statement. You should also note here if your MPhys Project follows on from an earlier project (e.g., Senior Honours or a summer project) so that assessors can focus on the new work conducted during the MPhys project study period.
+
+Speak to your supervisor or the course organiser if you are not sure about what might be relevant to include here.
+\end{it}
+
+Much of the good advice to students for conducting the MPhys Project and writing the report was created by the previous Course Organiser, Victoria Martin. I have tried to incorporate as much as this as possible into the current generation of course materials. Any bugs in the \LaTeX\ style file are entirely my own.
+
+
+% This command inserts a table of contents, and sets things up for the main text of your report.
+% The page count starts from here. DO NOT DELETE OR DISABLE THIS COMMAND!
+\maintext
+
+\input{Chapters/Introduction}
+
+\input{Chapters/Background}
+
+\input{Chapters/Methods}
+
+\input{Chapters/Results_Discussion}
+
+\input{Chapters/Conclusion}
+
+
+\appendix
+
+\input{Chapters/Appendix}
+
+\newpage
+\printbibliography
+
+\end{document}

@@ -105,11 +105,13 @@ class CNNModel(nn.Module):
             self.bn_layer = nn.BatchNorm2d(input_shape[0])
 
         # hidden layers to CNN
-        self.conv_layer1 = nn.Conv2d(input_shape[0]*input_shape[1], 32, kernel_size=(3, 3), stride=1, padding=1)
-        self.max_pool_layer1 = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
-        self.conv_layer2 = nn.Conv2d(32, 32, kernel_size=(3, 3), stride=1, padding=1)
+        # in -> out -> kernel 
+        self.conv_layer1 = nn.Conv1d(input_shape[0]*input_shape[1], 32, kernel_size = 3, stride = 1, padding = 1)
+        # takes in input shape (100) -> outputs shape (32) with a 2D kernel size? (3, 3)
+        # self.max_pool_layer1 = nn.MaxPool1d(kernel_size = 2, stride = 2)
+        self.conv_layer2 = nn.Conv2d(256, 20, kernel_size = 3, stride=1, padding=1)
         self.flatten_layer = nn.Flatten()
-        self.dense_layer = nn.Linear(32 * (input_shape[1] // 2) * (input_shape[2] // 2), 80)
+        self.dense_layer = nn.Linear(32, 80)
 
         # output layer
         self.output_layer = nn.Linear(80, output_shape)
@@ -122,7 +124,7 @@ class CNNModel(nn.Module):
             x = self.bn_layer(x)
 
         x = F.relu(self.conv_layer1(x))
-        x = self.max_pool_layer1(x)
+        # x = self.max_pool_layer1(x)
         x = F.relu(self.conv_layer2(x))
         x = self.flatten_layer(x)
         x = F.relu(self.dense_layer(x))
@@ -158,6 +160,7 @@ class NN(pl.LightningModule):
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
         x, y = batch
+        print(x[0])
         z = self.forward(x)
         loss = self.loss(z, y)
         self.log(loss_name, loss, on_epoch=True, on_step=True)
@@ -321,26 +324,3 @@ def setup_CNN(input_shape, output_shape, opt, norm, loss):
 
     return model, loss_fn, optimizer
 
-
-
-
-### -- check documentation for metrics callback -- ###
-
-# class MetricsCallback(Callback):
-
-#      def __init__(self):
-#           super().__init__()
-#           self.metrics = {"train_loss":[], "val_loss":[]}
-
-#      def on_validation_end(self, trainer, pl_module):
-#           if "train_loss" in trainer.callback_metrics.keys(): 
-#                self.metrics["train_loss"].append(copy.deepcopy(trainer.callback_metrics["train_loss"]).np())
-#           if "val_loss" in trainer.callback_metrics.keys(): 
-#                self.metrics["val_loss"].append(copy.deepcopy(trainer.callback_metrics["val_loss"]).np())
-         
-#      def on_train_batch_end(self, trainer, pl_module, outputs,batch,batch_idx):
-#           if "train_loss" in trainer.callback_metrics.keys(): 
-#                self.metrics["train_loss"].append(copy.deepcopy(trainer.callback_metrics["train_loss"]).np())
-#           if "val_loss" in trainer.callback_metrics.keys(): 
-#                self.metrics["val_loss"].append(copy.deepcopy(trainer.callback_metrics["val_loss"]).np())
-         

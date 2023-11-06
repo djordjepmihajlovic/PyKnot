@@ -108,7 +108,8 @@ class KnotDataset(Dataset):
             self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
 
         if "CNN" in net:
-            self.dataset = self.dataset.unsqueeze(2)
+            # self.dataset = self.dataset.unsqueeze(2)
+            self.dataset = self.dataset
 
         # Add Kymoknot labels if loading for a localization problem
         if "localise" in net:

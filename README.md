@@ -1,4 +1,4 @@
-PyTorch version of MLKnotsProject code by TAPLAB
+PyTorch MLKnotsProject code by TAPLAB
 
 +Additions:
 
@@ -26,6 +26,15 @@ Currently, not implemented into the PyTorch version:
 The following methods are implemented differently to the TensorFlow base code and are subject to change:
 
     Currently no separate train/test functionality; testing occurs immediately after training
+
+
+!Current project work-points:
+
+    Implementation of XYZ to StA predicition & vice versa.
+
+    Generative models.
+
+    Model analysis.
 
 
 

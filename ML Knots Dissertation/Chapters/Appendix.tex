@@ -1,0 +1,62 @@
+\begin{it}
+(NB:  the above message is automatically inserted by the \verb|\appendix| command and you should not attempt to remove it).
+\end{it}
+
+% \section{Using Bib\TeX\ to manage your references}
+% \label{sec:bibtex}
+
+% As noted in Section~\ref{sec:refs} in the main text, it is quite a laborious task to construct a bibliography manually, and we recommend that instead you keep a separate database of references in Bib\TeX\ format. This database is a text file with its own markup conventions; again there are apps that will allow you to create and manage it in a more user friendly way, for example, \href{http://www.jabref.org}{\texttt{Jabref}} works on Linux, macOS and Windows, and the Mac\TeX\ distribution comes with an app called \texttt{BibDesk} that is very easy to use.
+
+% Like \LaTeX\, Bib\TeX\ is a very complex application capable of many things. We will again only scratch the surface here, and again this will likely be sufficient for the needs of an MPhys project. We refer you to the \href{https://en.wikipedia.org/wiki/BibTeX}{Bib\TeX\ Wikipedia page} for more details and some links.
+
+% The references themselves go into a file with a name ending in \verb|.bib|, for example, \verb|mphys-refs.bib|.  The Bib\TeX\ file for this document contains just three references, and looks like this
+% \begin{verbatim}
+% @article{Ashkin1986,
+%    Author = {A Ashkin and J M Dziedzic and J E Bjorkholm and S Chu},
+%    Journal = {Optics Letters},
+%    Pages = {288--290},
+%    Title = {Observation of a single beam gradient 
+%             force optical trap for dielectric particles},
+%    Volume = 11,
+%    Year = 1986}
+
+% @book{Kopka2003,
+%    Address = {Boston},
+%    Author = {H Kopka and F W Daly},
+%    Edition = {4th},
+%    Publisher = {Addison-Wesley},
+%    Title = {Guide to \LaTeX},
+%    Year = 2003}
+
+% @misc{Cmbr,
+%    Note = {\url{http://en.wikipedia.org/wiki/Cosmic_microwave_background}. 
+%            Accessed 1st Jan 2017},
+%    Title = {Cosmic microwave background, {Wikipedia}}}
+% \end{verbatim}
+
+% This example should be sufficient for you to be able to reverse-engineer most of the BiB\TeX\ file format. Entries are of the form \verb|@doctype{label, key-value-pairs}|. The two most common \verb|doctype|s are \verb|book| or \verb|article| (the latter being an article published in a research journal). The full set of types depends on the style file you use (see below): other types that are usually supported are \verb|mastersthesis|, \verb|phdthesis| and \verb|proceedings| for Masters and PhD thesis and conference proceedings, respectively. The \verb|misc| document type is a general purpose type that can be used when nothing else fits. Traditional Bib\TeX\ style files are pre-internet, and so are hazy on the notion of URLs for example. The above is one strategy you can use to reference web pages.
+
+% The \verb|label| that appears after the \verb|doctype| is the one that you will put inside the \verb|\cite| commands in your \LaTeX\ source. The \verb|key-value-pairs| are of the form \verb|key={value}|, and define things like the authors, the book title and so on. The braces around the \verb|value| are optional if the value is a number. Each key-value pair is separated by a comma. Two things to note are that each author in a list of authors must be separated with the word \verb|and|. Also, Bib\TeX\ will attempt to make things like the case of different entries consistent, sometimes by downcasing capitalised words. You can stop this happening by placing such words in curly brackets, as with \verb|{Wikipedia}| in the above example. You also need to use curly brackets if an author has a surname that comprises two separate words (i.e., without a hypen), as for example in the case of \verb|John {Maynard Smith}|, whose surname was Maynard Smith, and not Smith. Bib\TeX\ will think that Maynard is a middle name if you don't use curly brackets.
+
+% To tell \LaTeX\ to use an external bibliography file, you need to insert two commands into your source. The first tells Bib\TeX\ the style file to use. This determines which document types and key-value pairs are allowed, and also how these are converted into a common format in your list of references. This command is
+% \begin{verbatim}
+% \bibliographystyle{unsrt}                      
+% \end{verbatim}
+% where \verb|unsrt| is one of the basic style sheets, and lists your references in the order that they are cited (which is the usual convention in physics). This command can appear anywhere in the \LaTeX\ document, e.g., in the preamble (the part before \verb|\begin{document}|) or at the point where the bibliography appears in the report.
+
+% The second command actually inserts the source code for your bibliography into the document, and therefore \emph{must} appear at the point where you want it. This command is
+% \begin{verbatim}
+% \bibliography{mphys-refs}
+% \end{verbatim}
+% where the argument should have the same name as your Bib\TeX\ database file (but with the \verb|.bib| extension left off).
+
+% To get the bibliography to actually appear, and for all the citations to refer to the correct item, you have to run \LaTeX\ and Bib\TeX\ a number of times. Assuming you are working from the command line on in the CPLab you would do, and your \LaTeX\ file is called \verb|project-report.tex|, you would do:
+% \begin{itemize}
+% \item \verb|pdflatex project-report| --- on the first pass, the label in each \verb|\cite| command will be output into the auxiliary (\verb|.aux| file, see Section~\ref{sec:ref}) files, as will information about the style file and database(s) that Bib\TeX\ needs to refer to.
+% \item \verb|bibtex project-report| --- Bib\TeX\ now reads in the \verb|.aux| file, locates the database of references, and then goes through the items you have cited to construct the \LaTeX\ source for the bibliography in the format specified by the style file. This source code is inserted into a file with extension \verb|.bbl|. (You can look at this if you want).
+% \item \verb|pdflatex project-report| --- on the second pass, \LaTeX\ reads in the \verb|.bbl| file at the appropriate point. As with cross-references, \LaTeX\ does not yet know which label has which number, so at this stage all citations will appear as `?' in the text. However, this information is written into the \verb|.aux| file on this second pass.
+% \item \verb|pdflatex project-report| --- on the third pass, the information \LaTeX\ needs to resolve the references (i.e., insert numbers at the point where references are cited) is now in the \verb|.aux| file, and these can be inserted.
+% \end{itemize}
+% Exceptionally, one further compilation might be required if the insertion of numbers into the citations causes the page layout to change, and page references become outdates. However, this is very rare. Friendly front-end apps to \LaTeX\ and Bib\TeX\ may provide commands that perform the multiple runs for you automatically.
+
+% You only need to re-run \verb|bibtex| if you cite new references, or if you change the order that references are cited in (as in this case a new bibliography will need to be constructed). Consequently, after most edits to your source file, a single run through \LaTeX\ should be sufficient. However, before submitting your report, it is worth going through the full \LaTeX\-Bib\TeX\ cycle as described above, with additional runs of \LaTeX\ until any warnings about undefined references or citations go away. (It may be that you have misspelt a reference label, or omitted a reference from the \verb|.bib| file, so you should check the \LaTeX\ log carefully to fix such things).
