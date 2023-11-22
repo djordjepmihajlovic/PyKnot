@@ -15,10 +15,13 @@ from model import *
 from generative import *
 
 # analysis
+import pandas as pd
 import shap
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
@@ -31,8 +34,13 @@ def main():
             datasets.append(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
+        print(len(dataset))
         ninputs = len(knots) * len_db
-        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
+        ninputs = len(dataset)
+        train_len = int(ninputs * (0.9))
+        test_len = int(ninputs * (0.075))
+        val_len = ninputs - (train_len + test_len)
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
@@ -52,7 +60,7 @@ def main():
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims= 5, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
     elif predict == "dual": # used for doing a 'dual' problem -> predict data a from b (eg. XYZ -> StA)
         for i, knot in enumerate(knots): 
@@ -76,6 +84,11 @@ def main():
         if mode == "test":
             print("error -> test attr. in train fn at the moment.")
 
+        if mode == "generate":
+            loss_fn = nn.MSELoss() 
+            optimizer = "adam"
+            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
 
 def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
     
@@ -86,16 +99,16 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
     trainer.test(dataloaders=test_loader)
 
     # below is rough analysis exploring shap values
-    for x,y in train_loader:
-        ti = x
-        dat = neural.forward(x)
-        break
+    # for x,y in train_loader:
+    #     ti = x
+    #     dat = neural.forward(x)
+    #     break
 
-    for x,y in test_loader:
-        tr = x
-        vals = y
-        dat = neural.forward(x)
-        break
+    # for x,y in test_loader:
+    #     tr = x
+    #     vals = y
+    #     dat = neural.forward(x)
+    #     break
 
     ## dual pred -----
 
@@ -199,24 +212,24 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
 
 def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
-    neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_239/checkpoints/epoch=366-step=91750.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
-    # early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
-    # trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
-    # trainer.fit(neural, train_loader, val_loader)
-    # trainer.test(dataloaders=test_loader)
+    neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta = 30)
+    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_66/checkpoints/epoch=35-step=9000.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=30) # TSNE 5-class
+    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_71/checkpoints/epoch=38-step=9750.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=60) # TSNE 6-class
+    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_108/checkpoints/epoch=43-step=11000.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta = 10) # TSNE 5-class XYZ
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
+    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+    trainer.fit(neural, train_loader, val_loader)
+    trainer.test(dataloaders=test_loader)
 
     # for x,y in test_loader:
     #     dat, mean, log_var = neural.forward(x)
     #     break
 
 
-    # size = np.arange(0, 5)
+    x_list = np.arange(0, 100)
 
-    # true = x[0].detach().numpy()
-    # prediction = dat[0].detach().numpy()
-    # mean_pred = mean[0].detach().numpy()
-    # std_pred = log_var[0].detach().numpy()
+    # true = x[1].detach().numpy()
+    # prediction = dat[1].detach().numpy()
 
     # print(true)
     # print(prediction)
@@ -225,13 +238,13 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # z = [item for sublist in z.tolist() for item in sublist]
     # p = np.poly1d(z)
 
-    # plt.subplot(3, 1, 1)
+    # plt.subplot(2, 1, 1)
     # plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
     # plt.xlabel('Bead index')
     # plt.ylabel('Generated StA Writhe')
     # plt.grid()
 
-    # plt.subplot(3, 1, 2)
+    # plt.subplot(2, 1, 2)
     # plt.plot(x_list, true)
     # # ax = plt.gca()
     # # yabs_max = abs(max(ax.get_ylim(), key=abs))
@@ -240,16 +253,11 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # plt.ylabel('True StA Writhe')
     # plt.grid()
 
-    # plt.subplot(3, 1, 3)
-    # plt.errorbar(size, mean_pred, std_pred)
-    # plt.xlabel('Latent dimension index')
-    # plt.ylabel('Mean value')
-    # plt.grid
-
-    # label = int(y[0])
+    # label = int(y[1])
     # names = {0: "unknot", 1: "trefoil (3_1)", 2: "figure-8 (4_1)", 3: "pentafoil (5_1)", 4: "three twist (5_2)"}
 
     # plt.suptitle(f"VAE StA writhe: {names[label]}")
+    # plt.show()
 
     # rand, gen = generation(neural)
     # gen = gen.detach().numpy()
@@ -260,40 +268,55 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # plt.ylim([-2, 2])
     # plt.xlabel('Bead index')
     # plt.ylabel('Newly Generated StA writhe')
-    eval_dat = [[2.5, 0.0]] #, [1.5, 0.5], [2, 0.5], [1.5, -1.5]]
-    rand = torch.tensor(eval_dat)
 
-    plt.subplot(2, 1, 2)
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    plot_latent(ax, neural, train_loader, rand)
-    plt.suptitle("StA latent space VAE")
+    label_names=['0_1', '3_1', '4_1', '5_1', '5_2', '6_1', '6_2', '6_3']
+
+    plt.subplot(1, 1, 1)
+    plt.tight_layout()
+
+    e_s, e_l, l_s, new_sta = gen_latent(neural, test_loader)
+    pca = PCA(n_components=2)
+    encoded_samples_reduced_PCA = pca.fit_transform(e_s)
+
+    # tsne = TSNE(n_components=2)
+    # encoded_samples_reduced_TSNE = tsne.fit_transform(e_s)
+
+    sns.scatterplot( x=encoded_samples_reduced_PCA[:,0], y=encoded_samples_reduced_PCA[:,1], hue=[label_names[l] for l in e_l])
+    plt.suptitle("XYZ PCA of VAE latent space (5-class)")
+
+    plt.show()
+
+    print(l_s)
+    print(new_sta)
+
+    plt.plot(x_list, np.squeeze(new_sta.detach().numpy(), axis = (0, 2)))
 
     plt.show()
 
 
-def plot_latent(ax, autoencoder, data, rand, num_batches=100):
-    for i, (x, y) in enumerate(data):
-        z, dev = autoencoder.encoder(x.to('cpu'))
-        z = z.to('cpu').detach().numpy()
-        ax.scatter(z[:, 0], z[:, 1], z[:, 2], c=y, alpha=0.7)
-        # plt.scatter(rand[0, 0], rand[0, 1], c = 'red')
-        # plt.scatter(rand[1, 0], rand[1, 1], c = 'blue')
-        # plt.scatter(rand[2, 0], rand[2, 1], c = 'green')
-        if i > num_batches:
-            #ax.colorbar()
-            break
+def gen_latent(autoencoder, data):
 
-def generation(autoencoder):
-    for i in range(1):
-        rand = 2*torch.randn(7, 2).to('cpu')
-        eval_dat = [[2.5, 0.0]] #, [1.5, 0.5], [2, 0.5], [1.5, -1.5]]
-        rand = torch.tensor(eval_dat)
-        print(rand)
+    encoded_samples = []
+    for x, y, k in data:
+        autoencoder.encoder.eval()
         with torch.no_grad():
-            gen = autoencoder.decoder.forward(rand)
+            z, dev = autoencoder.encoder(x)
+        for idy, dims in enumerate(z):
+            encoded_sample = {f"Enc. Variable {j}": enc for j, enc in enumerate(dims)}
+            encoded_sample['label'] = k[idy]
+            encoded_samples.append(encoded_sample)
 
-    return rand, gen
+    encoded_samples = pd.DataFrame(encoded_samples)
+
+    encoded_labels = encoded_samples["label"].copy()
+    encoded_samples = encoded_samples.drop("label",axis=1)
+    latent_space_XYZ = encoded_samples.values[:1].tolist()
+    autoencoder.decoder.eval()
+
+    with torch.no_grad():
+        z = autoencoder.decoder(torch.Tensor(latent_space_XYZ))
+
+    return encoded_samples, encoded_labels, latent_space_XYZ, z
 
 
 if __name__ == "__main__":

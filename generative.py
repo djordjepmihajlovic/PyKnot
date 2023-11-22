@@ -24,16 +24,55 @@ class Encoder(nn.Module):
         self.flatten_layer = nn.Flatten()
 
         self.linear1 = nn.Linear(input_shape[0]*input_shape[1], 320) # here is size of input data x1 (dimension flattened) and following hidden layer x2
-        self.linear2 = nn.Linear(320, latent_dims)
+        self.linear2 = nn.Linear(320, 120)
+        self.linear3 = nn.Linear(120, 64)
+        self.linear4 = nn.Linear(64, latent_dims)
 
     def forward(self, x):
         x = self.flatten_layer(x)
         x = F.leaky_relu(self.linear1(x))
-        return self.linear2(x)
+        x = F.leaky_relu(self.linear2(x))
+        x = F.leaky_relu(self.linear3(x))
+        return self.linear4(x)
     
-class Decoder(nn.Module):
+class Encoder_RNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
-        super(Decoder, self).__init__()
+        super(Encoder_RNN, self).__init__()
+
+        self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
+        self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
+        self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
+        self.fcmu = nn.Linear(100, latent_dims)
+
+    def forward(self, x):
+        x, _ = self.lstm1(x)
+        x = F.tanh(x)
+        x, _ = self.lstm2(x)
+        x = F.tanh(x)
+        x, _ = self.lstm3(x)
+        x = F.tanh(x[:, -1, :])  # taking output from the last time step
+    
+        mu = self.fcmu(x)
+
+        return mu
+    
+class Decoder_StA(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Decoder_StA, self).__init__()
+
+        self.linear1 = nn.Linear(latent_dims, 320)
+        self.linear2 = nn.Linear(320, 100) #input_shape[0]*input_shape[1])
+
+    def forward(self, z):
+        z = F.leaky_relu(self.linear1(z))
+
+        # z = torch.sigmoid(self.linear2(z))
+        z = self.linear2(z) # no sigmoid
+        return z.reshape((-1, 100, 1)) 
+    
+class Decoder_XYZ(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Decoder_XYZ, self).__init__()
 
         self.linear1 = nn.Linear(latent_dims, 320)
         self.linear2 = nn.Linear(320, input_shape[0]*input_shape[1])
@@ -43,8 +82,7 @@ class Decoder(nn.Module):
 
         # z = torch.sigmoid(self.linear2(z))
         z = self.linear2(z) # no sigmoid
-        return z.reshape((-1, 100, 1)) # here x3 is output shape of data, in case of 100 beads XYZ that would be (-1, 1, 100, 3) I think
-                                          # (-1, 100, 1) for SIGWRITHE -> generating SIGWRITHE data
+        return z.reshape((-1, 100, 3)) 
     
 class Autoencoder(pl.LightningModule):
 
@@ -55,7 +93,7 @@ class Autoencoder(pl.LightningModule):
         self.loss_fn = loss
         self.optimiser = opt
         self.encoder = Encoder(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
 
@@ -69,7 +107,7 @@ class Autoencoder(pl.LightningModule):
     def configure_optimizers(self):
 
         if self.optimiser == 'adam':
-            return torch.optim.Adam(self.parameters(), lr=0.001)
+            return torch.optim.Adam(self.parameters(), lr=0.00001)
 
     def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
         x, y = batch
@@ -93,34 +131,60 @@ class Autoencoder(pl.LightningModule):
 
 # VAE
 # how to solve a disjointed and non-continuous latent space?
-class VariationalEncoder(nn.Module):
+class VariationalEncoderFFNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
-        super(VariationalEncoder, self).__init__()
+        super(VariationalEncoderFFNN, self).__init__()
+        self.flatten = nn.Flatten()
 
         self.linear1 = nn.Linear(input_shape[0]*input_shape[1], 320)
-        self.linear2 = nn.Linear(320, 64)
+        self.linear2 = nn.Linear(320, 64) 
         self.linear3 = nn.Linear(64, latent_dims)
         self.linear4 = nn.Linear(64, latent_dims)
 
     def forward(self, x):
-        x = torch.flatten(x, start_dim=1)
+        # x = torch.flatten(x, start_dim=1)
+        x = self.flatten(x)
         x = F.leaky_relu(self.linear1(x))
         x = F.leaky_relu(self.linear2(x))
         mu = self.linear3(x) # mean (mu) layer
         log_sigma = self.linear4(x) # log variance layer
+
+        return mu, F.tanh(log_sigma)
+    
+class VariationalEncoderRNN(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(VariationalEncoderRNN, self).__init__()
+
+        self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
+        self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
+        self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
+        self.fcmu = nn.Linear(100, latent_dims)
+        self.fcsig = nn.Linear(100, latent_dims)
+
+    def forward(self, x):
+
+        x, _ = self.lstm1(x)
+        x = F.tanh(x)
+        x, _ = self.lstm2(x)
+        x = F.tanh(x)
+        x, _ = self.lstm3(x)
+        x = F.tanh(x[:, -1, :])  # taking output from the last time step
+    
+        mu = self.fcmu(x)
+        log_sigma = self.fcsig(x)
 
         return mu, log_sigma
     
 class VariationalAutoencoder(pl.LightningModule):
 
     def __init__(self,  input_shape, latent_dims,  loss, opt, beta):
-        # stats holds args for encoder and decoder
+
         super().__init__()
 
         self.optimiser = opt
         self.beta = beta
-        self.encoder = VariationalEncoder(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder(input_shape = input_shape, latent_dims = latent_dims)
+        self.encoder = VariationalEncoderFFNN(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_StA(input_shape = input_shape, latent_dims = latent_dims)
 
     def reparameterization(self, mu, sigma):
 
@@ -138,7 +202,7 @@ class VariationalAutoencoder(pl.LightningModule):
     def configure_optimizers(self):
 
         if self.optimiser == 'adam':
-            return torch.optim.Adam(self.parameters(), lr=0.0001)
+            return torch.optim.Adam(self.parameters(), lr=0.0001) # 0.001 FFNN 
         
     def loss_function(self, x, x_hat, mean, log_sigma):
 
@@ -148,21 +212,23 @@ class VariationalAutoencoder(pl.LightningModule):
         return MSE + KLD
 
     def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
-        x, y = batch
+        x, y, k = batch
         x_hat, mean, log_sigma = self.forward(x)
 
-        loss = self.loss_function(x, x_hat, mean, log_sigma)
+        loss = self.loss_function(y, x_hat, mean, log_sigma) # x in place of y usually
         self.log(loss_name, loss, on_epoch=True, on_step=True)
+
         return loss
     
     def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
-        x, y = batch
+        x, y, k = batch
         x_hat, mean, log_sigma = self.forward(x)
 
-        loss = self.loss_function(x, x_hat, mean, log_sigma)
+        loss = self.loss_function(y, x_hat, mean, log_sigma) # x in place of y usually
         self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y = batch 
+        x, y, k = batch 
         z = self.forward(x)
+

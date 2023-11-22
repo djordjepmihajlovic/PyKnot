@@ -111,7 +111,6 @@ def get_knots(problem):
         Knotind = ["0_1", "conway", "kt"]
 
     elif problem == "5Class":
-        #Knotind = ["3_1"]
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 
     elif problem == "5Class56":
@@ -162,9 +161,9 @@ def get_params():
     par.add_argument("-nb", "--nbeads", type=str, default="100", help="Number of beads of the input files")
     par.add_argument("-t", "--network", type=str, default="FFNN", help="Type of neural network: FFNN, RNN, LocaliseFFNN, LocaliseRNN, ...")
     par.add_argument("-e", "--epochs", type=int, default=1000, help="Set the number of training epochs")
-    par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train or test")
+    par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train, test, generate")
     par.add_argument("-ldb", "--len_db", type=int, default=200000, help="Database size for each of the classes")
-    par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") # 256 std
+    par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") 
     par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
     par.add_argument("-pred", "--predictor", type=str, default="class", help="Options: class, dual")
@@ -172,3 +171,4 @@ def get_params():
     args = par.parse_args()
 
     return args
+
