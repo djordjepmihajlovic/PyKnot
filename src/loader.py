@@ -4,7 +4,7 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torchvision.transforms import functional as F
 
-from src.helper import datafile_structure
+from helper import datafile_structure
 
 class KnotDataset(Dataset):
 

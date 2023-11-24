@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 import torch
-from src.model import *
+from model import *
 
 def datafile_structure(dtype, knot, Nbeads, pers_len):
     """Returns datafile struct according to data type

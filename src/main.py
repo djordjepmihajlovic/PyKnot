@@ -9,10 +9,10 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 
 # code modules
-from src.helper import *
-from src.loader import *
-from src.model import *
-from src.generative import *
+from helper import *
+from loader import *
+from model import *
+from generative import *
 
 # analysis
 import pandas as pd
