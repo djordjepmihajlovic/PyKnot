@@ -212,10 +212,10 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epoc
 
 def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta = 30)
-    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_66/checkpoints/epoch=35-step=9000.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=30) # TSNE 5-class
-    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_71/checkpoints/epoch=38-step=9750.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=60) # TSNE 6-class
-    # neural = VariationalAutoencoder.load_from_checkpoint("lightning_logs/version_108/checkpoints/epoch=43-step=11000.ckpt", input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta = 10) # TSNE 5-class XYZ
+    neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+    # want to set up callable JSON file with completed training (so dont have to constantly retrain...)
+    # will take in input_shape, latent_dims, loss_fn, optimizer etc, find if trained model exists; if not run neural
+    # check trainedmodels.json for structure...
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
@@ -297,10 +297,10 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 def gen_latent(autoencoder, data):
 
     encoded_samples = []
-    for x, y, k in data:
+    for x, k in data:
         autoencoder.encoder.eval()
         with torch.no_grad():
-            z, dev = autoencoder.encoder(x)
+            z = autoencoder.encoder(x)
         for idy, dims in enumerate(z):
             encoded_sample = {f"Enc. Variable {j}": enc for j, enc in enumerate(dims)}
             encoded_sample['label'] = k[idy]

@@ -1,0 +1,5 @@
+[
+    {"StA_VAE_5_Class": "trained models/StA_30VAE_5_Class/checkpoints/epoch=35-step=9000.ckpt", "FileType": "PyTorch Trained Model", 
+    "LossFunction": "MSE(sum)",  "Optimizer": "Adam", "beta": 30, "LatentDimensions": 10}
+
+  ]
