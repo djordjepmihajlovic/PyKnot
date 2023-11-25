@@ -149,7 +149,7 @@ class VariationalEncoderFFNN(nn.Module):
         mu = self.linear3(x) # mean (mu) layer
         log_sigma = self.linear4(x) # log variance layer
 
-        return mu, F.tanh(log_sigma)
+        return mu, F.tanh(log_sigma)  # not currently log_sigma has a tanh (for XYZ)
     
 class VariationalEncoderRNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
@@ -184,7 +184,7 @@ class VariationalAutoencoder(pl.LightningModule):
         self.optimiser = opt
         self.beta = beta
         self.encoder = VariationalEncoderFFNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_StA(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
 
     def reparameterization(self, mu, sigma):
 
@@ -202,33 +202,33 @@ class VariationalAutoencoder(pl.LightningModule):
     def configure_optimizers(self):
 
         if self.optimiser == 'adam':
-            return torch.optim.Adam(self.parameters(), lr=0.0001) # 0.001 FFNN 
+            return torch.optim.Adam(self.parameters(), lr=0.001) # 0.001 FFNN 
         
     def loss_function(self, x, x_hat, mean, log_sigma):
 
-        MSE = F.mse_loss(x_hat, x, reduction='sum')
+        MSE = F.mse_loss(x_hat, x, reduction='mean') # reduction sum returned best results for StA
         KLD = self.beta*(- 0.5 * torch.sum(1+ log_sigma - mean.pow(2) - log_sigma.exp()))
 
         return MSE + KLD
 
     def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
-        x, y, k = batch
+        x, y = batch
         x_hat, mean, log_sigma = self.forward(x)
 
-        loss = self.loss_function(y, x_hat, mean, log_sigma) # x in place of y usually
+        loss = self.loss_function(x, x_hat, mean, log_sigma) # x in place of y usually
         self.log(loss_name, loss, on_epoch=True, on_step=True)
 
         return loss
     
     def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
-        x, y, k = batch
+        x, y = batch
         x_hat, mean, log_sigma = self.forward(x)
 
-        loss = self.loss_function(y, x_hat, mean, log_sigma) # x in place of y usually
+        loss = self.loss_function(x, x_hat, mean, log_sigma) # x in place of y usually
         self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y, k = batch 
+        x, y = batch 
         z = self.forward(x)
 

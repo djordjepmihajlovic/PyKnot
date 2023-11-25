@@ -111,7 +111,7 @@ def get_knots(problem):
         Knotind = ["0_1", "conway", "kt"]
 
     elif problem == "5Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+        Knotind = ["3_1"]
 
     elif problem == "5Class56":
         Knotind = ["5_1", "5_2", "6_1", "6_2", "6_3"]

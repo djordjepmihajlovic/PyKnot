@@ -30,18 +30,23 @@ class Analysis:
 
         encoded_samples = pd.DataFrame(encoded_samples)
 
+        original_sample = x[:1]
+
         encoded_labels = encoded_samples["label"].copy()
         encoded_samples = encoded_samples.drop("label",axis=1)
-        latent_space_XYZ = encoded_samples.values[:1].tolist()
+
+        latent_space_z = encoded_samples.values[:1].tolist()
+        label_z = encoded_labels[:1].tolist()
+
         self.model.decoder.eval()
 
         with torch.no_grad():
-            z = self.model.decoder(torch.Tensor(latent_space_XYZ))
+            z = self.model.decoder(torch.Tensor(latent_space_z))
 
-        return encoded_samples, encoded_labels, latent_space_XYZ, z
+        return encoded_samples, encoded_labels, latent_space_z , z, label_z
     
 
-    def dimensional_reduction_plot(self, method, encoded_samples, encoded_labels, latent_space, new_data):
+    def dimensional_reduction_plot(self, method, encoded_samples, encoded_labels, latent_space, new_data, new_data_label):
 
         label_names=['0_1', '3_1', '4_1', '5_1', '5_2', '6_1', '6_2', '6_3']
 
@@ -58,8 +63,8 @@ class Analysis:
             encoded_samples_reduced_TSNE = tsne.fit_transform(encoded_samples)
             sns.scatterplot( x=encoded_samples_reduced_TSNE[:,0], y=encoded_samples_reduced_TSNE[:,1], hue=[label_names[l] for l in encoded_labels])
 
-        print(f"The found latent space: {latent_space}")
-        print(f"Correspinding to construction: {new_data}")
+        # print(f"The found latent space: {latent_space}")
+        print(f"Correspinding to construction: {new_data} of a {new_data_label} knot")
 
         plt.suptitle(f"XYZ {method} of VAE latent space")
         plt.show()

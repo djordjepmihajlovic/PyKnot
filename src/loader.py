@@ -40,6 +40,9 @@ class KnotDataset(Dataset):
         if dtype == "SIGWRITHE":
             data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
 
+        if dtype == "2DSIGWRITHE":
+            data_attention = np.loadtxt(os.path.join(dirname, fname))
+
         self.dataset = torch.tensor(data, dtype=torch.float32)
 
         # Reshape data

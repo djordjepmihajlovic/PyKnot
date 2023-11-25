@@ -13,6 +13,7 @@ from helper import *
 from loader import *
 from model import *
 from generative import *
+from analysis import *
 
 # analysis
 import pandas as pd
@@ -60,7 +61,7 @@ def main():
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims = 6, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
     elif predict == "dual": # used for doing a 'dual' problem -> predict data a from b (eg. XYZ -> StA)
         for i, knot in enumerate(knots): 
@@ -87,7 +88,7 @@ def main():
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims = 30, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
 
 def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
@@ -221,10 +222,9 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
 
-    # for x,y in test_loader:
-    #     dat, mean, log_var = neural.forward(x)
-    #     break
-
+    analysis = Analysis(test_loader, neural)
+    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space()
+    plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     x_list = np.arange(0, 100)
 
@@ -269,54 +269,6 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # plt.xlabel('Bead index')
     # plt.ylabel('Newly Generated StA writhe')
 
-    label_names=['0_1', '3_1', '4_1', '5_1', '5_2', '6_1', '6_2', '6_3']
-
-    plt.subplot(1, 1, 1)
-    plt.tight_layout()
-
-    e_s, e_l, l_s, new_sta = gen_latent(neural, test_loader)
-    pca = PCA(n_components=2)
-    encoded_samples_reduced_PCA = pca.fit_transform(e_s)
-
-    # tsne = TSNE(n_components=2)
-    # encoded_samples_reduced_TSNE = tsne.fit_transform(e_s)
-
-    sns.scatterplot( x=encoded_samples_reduced_PCA[:,0], y=encoded_samples_reduced_PCA[:,1], hue=[label_names[l] for l in e_l])
-    plt.suptitle("XYZ PCA of VAE latent space (5-class)")
-
-    plt.show()
-
-    print(l_s)
-    print(new_sta)
-
-    plt.plot(x_list, np.squeeze(new_sta.detach().numpy(), axis = (0, 2)))
-
-    plt.show()
-
-
-def gen_latent(autoencoder, data):
-
-    encoded_samples = []
-    for x, k in data:
-        autoencoder.encoder.eval()
-        with torch.no_grad():
-            z = autoencoder.encoder(x)
-        for idy, dims in enumerate(z):
-            encoded_sample = {f"Enc. Variable {j}": enc for j, enc in enumerate(dims)}
-            encoded_sample['label'] = k[idy]
-            encoded_samples.append(encoded_sample)
-
-    encoded_samples = pd.DataFrame(encoded_samples)
-
-    encoded_labels = encoded_samples["label"].copy()
-    encoded_samples = encoded_samples.drop("label",axis=1)
-    latent_space_XYZ = encoded_samples.values[:1].tolist()
-    autoencoder.decoder.eval()
-
-    with torch.no_grad():
-        z = autoencoder.decoder(torch.Tensor(latent_space_XYZ))
-
-    return encoded_samples, encoded_labels, latent_space_XYZ, z
 
 
 if __name__ == "__main__":
