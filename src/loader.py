@@ -130,6 +130,77 @@ class Wr_2_XYZ(Dataset):
         else:
             return self.dataset[idx]
         
+class WeightedKnotDataset(Dataset):  # right now going to set up so that it takes in StS and creates XYZ
+
+    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
+        """Class wrapper for dataset generation --> classification problem
+
+        Args:
+            dirname (str): knot master directory location
+            knot (str): knot being called
+            net (str): neural network trype
+            dtype (str): problem type
+            Nbeads (int): number of beads
+            pers_len (int): persistence length
+            label (int): corresponding label of data being called
+
+        Returns:
+            three outputs: 
+            torch.Tensor()
+                dataset[idx], weights (StS)[idx], label
+        """
+        super(WeightedKnotDataset, self).__init__()
+
+        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
+        fname_w = os.path.join("SIGWRITHEMATRIX", f"3DSignedWritheMatrix_{knot}.dat.lp{pers_len}.dat")
+
+        n_col = len(select_cols)
+        type_list = [torch.float32] * n_col
+
+        # Loading the dataset file
+
+        if dtype == "XYZ":
+            data_label = np.loadtxt(os.path.join(dirname, fname))
+
+        if dtype == "SIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+
+        print((os.path.join(dirname, fname)))
+
+        data_feature = np.loadtxt(os.path.join(dirname, fname_w))
+        print((os.path.join(dirname, fname_w)))
+
+        self.dataset_label = torch.tensor(data_label, dtype=torch.float32)
+        self.dataset_feature = torch.tensor(data_feature, dtype=torch.float32)
+
+        # Reshape data
+        self.dataset_label = self.dataset_label.view(-1, Nbeads, n_col) #XYZ
+        self.dataset_feature = self.dataset_feature.view(-1, Nbeads, len(np.arange(Nbeads))) #StS
+
+        self.label = label
+
+        if dtype == "XYZ":
+            self.dataset_label = self.dataset_label - torch.mean(self.dataset_label, dim=0)
+
+        # Add Kymoknot labels if loading for a localization problem
+        if "localise" in net:
+            label_data = np.loadtxt(dirname + f"KYMOKNOT/BU__KN_{knot}.dat.cleaned")[:, 2]
+            label_dataset = torch.tensor(label_data, dtype=torch.float32)
+            label_dataset = label_dataset.view(-1, Nbeads, 1)
+            self.dataset = TensorDataset(self.dataset, label_dataset)
+
+
+    def __len__(self):
+        return len(self.dataset_feature)
+
+    def __getitem__(self, idx):
+        if hasattr(self, 'label'):
+            return self.dataset_feature[idx], self.dataset_label[idx], self.label
+        else:
+            return self.dataset[idx]
+        
+
+        
 
 def split_train_test_validation(dataset, train_size, test_size, val_size, batch_size):
     """Generate split dataset

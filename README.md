@@ -14,17 +14,20 @@ The following additions have been implemented into the existing framework in the
 * Prediction (-pred): new code capability to compute other prediction types other than standard class predicition, such as XYZ coordinate to SIGWRITHE predicitions
     * "std" (standard classification prediction) - [x] 
     * "dual" ('dual' classification prediction e.g. StA2XYZ) - [x]
-* Generative models (generative.py): Torch.nn generative modules
+
+* Generative models (nn_generative_models.py): Torch.nn generative modules
     * VariationalAutoencoder(pl.LightningModule) - [x]
     * Autoencoder(pl.LightningModule) - [x]
-* SHAP analysis
 
+* ml_models.py: other machine learning methods
+    * Decision tree - [-]
+    * Logistic Regression - [-]
+    * Linear Regression - [-]
 
 ## - Removals :
 
 Currently, not implemented into the PyTorch version:
 
-* 2DSIGWRITHE (Data) - [-]
 * DENSXSIGWRITHE (Data) - [-]
 * RNN2, 2b (network) - [-]
 * FFNN2 (network) - [-]
@@ -44,7 +47,7 @@ The following methods are implemented differently to the TensorFlow base code an
      Model | XYZ2StA  | StA2XYZ
     ------| ------------- | -------------
     FFNN | - [x] | - [x]
-    RNN  | - [ ] | - [ ]
+    RNN  | - [x] | - [x]
     CNN  | - [ ] | - [ ]
 
       >> Current implementation using FFNN however results are bad - can achieve a general shape but far off from true prediction. 
@@ -52,13 +55,11 @@ The following methods are implemented differently to the TensorFlow base code an
 * Generative models.
     * VAE
     *     >> VAE current implementation works, however the latent space is still somewhat entangled -> main work is to generate a disentangled latent space.
-        * ! WIP --> disentangling the latent space: possible avenues
-            * beta-VAE - [ ]
+        * ! WIP (StA complete, working on XYZ) --> disentangling the latent space: possible avenues
+            * beta-VAE - [x]
             * CNN Encoder - [ ]
-            * LSTM Encoder - [ ]
-            * Attention mechanisms - [ ]
-    * GAN - [ ]
-         
+            * LSTM Encoder - [x]
+            * Attention mechanisms - [ ]  
 
 * Model analysis.
 *     >> These need to be fully understood to make meaningful analysis! 

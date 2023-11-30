@@ -2,8 +2,7 @@ from argparse import ArgumentParser
 import os
 import numpy as np
 
-import torch
-from model import *
+from nn_models import *
 
 def datafile_structure(dtype, knot, Nbeads, pers_len):
     """Returns datafile struct according to data type
@@ -111,7 +110,7 @@ def get_knots(problem):
         Knotind = ["0_1", "conway", "kt"]
 
     elif problem == "5Class":
-        Knotind = ["3_1"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 
     elif problem == "5Class56":
         Knotind = ["5_1", "5_2", "6_1", "6_2", "6_3"]
@@ -123,7 +122,7 @@ def get_knots(problem):
         Knotind = ["9_1", "9_42", "10_1", "10_2", "10_71"]
 
     elif problem == "6Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2"]
 
     elif problem == "7Class":
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
@@ -167,6 +166,7 @@ def get_params():
     par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
     par.add_argument("-pred", "--predictor", type=str, default="class", help="Options: class, dual")
+    par.add_argument("-modtyp", "--model_type", type=str, default="NN", help="Options: NN, DT, LogR, LinR")
 
     args = par.parse_args()
 

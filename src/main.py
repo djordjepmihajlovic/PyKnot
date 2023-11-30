@@ -1,28 +1,19 @@
 # torch modules
 import torch
-from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset, Subset
 import numpy as np
-from torch.autograd import Variable
 
-# PyTorch Lightning for training 
+# lightning modules
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping
 
 # code modules
 from helper import *
 from loader import *
-from model import *
-from generative import *
+from ml_models import *  # KNN and DT models
+from nn_models import *
+from nn_generative_models import *
 from analysis import *
-
-# analysis
-import pandas as pd
-import shap
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
@@ -30,12 +21,18 @@ print("No. GPUs Available: ", available_gpus)
 def main():
 
     datasets = []
+
+################## <--classic classification problem + reconstruction--> ###################
+
     if predict == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 
             datasets.append(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
-        print(len(dataset))
+
+        # indicies = np.arange(0, 100000)
+        # dataset = Subset(dataset, indicies)  # -> can be used to alter database size
+
         ninputs = len(knots) * len_db
         ninputs = len(dataset)
         train_len = int(ninputs * (0.9))
@@ -51,9 +48,9 @@ def main():
         out_layer = len(knots)
 
         if mode == "train":
-            print(net)
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
-            train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            print(model_type)
+            train(model = model, model_type = model_type, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
         
         if mode == "test":
             print("error -> test attr. in train fn at the moment.")
@@ -61,9 +58,11 @@ def main():
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 6, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
-    elif predict == "dual": # used for doing a 'dual' problem -> predict data a from b (eg. XYZ -> StA)
+################## <--'dual' problem -> predict data a from b (eg. XYZ -> StA)--> ###################
+
+    elif predict == "dual": 
         for i, knot in enumerate(knots): 
             datasets.append(Wr_2_XYZ(master_knots_dir, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
 
@@ -91,13 +90,52 @@ def main():
             generate(input_shape=in_layer, latent_dims = 30, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
 
-def train(model, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
-    
-    neural = NN(model=model, loss=loss_fn, opt=optimizer)
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
-    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
-    trainer.fit(neural, train_loader, val_loader)
-    trainer.test(dataloaders=test_loader)
+################## <--generative weighted reconstruction--> ###################
+
+# nb. takes in XYZ data + StS data as weights and passes through specified encoder -> decoder architecture
+
+    elif predict == "weighted": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
+        for i, knot in enumerate(knots): 
+            datasets.append(WeightedKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
+
+        dataset = ConcatDataset(datasets) # concatenate datasets together
+        indicies = np.arange(0, 100000)
+        dataset = Subset(dataset, indicies)
+
+        ninputs = len(dataset)
+        print(ninputs)
+
+        train_len = int(ninputs * (0.9))
+        test_len = int(ninputs * (0.075))
+        val_len = ninputs - (train_len + test_len)
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
+
+        in_layer = (Nbeads, Nbeads)
+        out_layer = (Nbeads, 3)
+
+        if mode == "generate":
+            loss_fn = nn.MSELoss() 
+            optimizer = "adam"
+            generate_with_attention(input_shape=in_layer, output_shape=out_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
+
+def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
+
+    # will need to add a `type'
+    # i.e. if model "type" == neural net:
+    # nn training...
+    # elif model "type" == linear:
+    # std training...
+    if model_type == "NN":
+        neural = NN(model=model, loss=loss_fn, opt=optimizer)
+        early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
+        trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+        trainer.fit(neural, train_loader, val_loader)
+        trainer.test(dataloaders=test_loader)
+
+    elif model_type == "DT":
+        algorithm = DecisionTree(prob, train_loader, test_loader)
+        algorithm.classification()
 
     # below is rough analysis exploring shap values
     # for x,y in train_loader:
@@ -227,7 +265,6 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     x_list = np.arange(0, 100)
-
     # true = x[1].detach().numpy()
     # prediction = dat[1].detach().numpy()
 
@@ -269,6 +306,19 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # plt.xlabel('Bead index')
     # plt.ylabel('Newly Generated StA writhe')
 
+def generate_with_attention(input_shape, output_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
+
+    neural = AttentionAutoencoder(input_shape = input_shape, output_shape= output_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
+    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+    trainer.fit(neural, train_loader, val_loader)
+    trainer.test(dataloaders=test_loader)
+
+    analysis = Analysis(test_loader, neural)
+    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space()
+    plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
+
 
 
 if __name__ == "__main__":
@@ -287,6 +337,7 @@ if __name__ == "__main__":
     master_knots_dir = args.master_knots_dir
     pers_len = args.pers_len
     predict = args.predictor
+    model_type = args.model_type
     if predict == "dual":
         dtype_f = "XYZ"
         dtype_l = "SIGWRITHE"

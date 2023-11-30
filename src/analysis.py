@@ -10,13 +10,12 @@ from sklearn.decomposition import PCA
 
 
 class Analysis:
-
     def __init__(self, data, model):
 
         self.data = data
         self.model = model
 
-    def generative_latent_space(self):
+    def generative_latent_space(self): # change in this for StS to XYZ
 
         encoded_samples = []
         for x, k in self.data:
