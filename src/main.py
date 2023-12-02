@@ -14,6 +14,7 @@ from ml_models import *  # KNN and DT models
 from nn_models import *
 from nn_generative_models import *
 from analysis import *
+from data_generation import *
 
 available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
 print("No. GPUs Available: ", available_gpus)
@@ -121,11 +122,6 @@ def main():
 
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    # will need to add a `type'
-    # i.e. if model "type" == neural net:
-    # nn training...
-    # elif model "type" == linear:
-    # std training...
     if model_type == "NN":
         neural = NN(model=model, loss=loss_fn, opt=optimizer)
         early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
@@ -135,7 +131,13 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
     elif model_type == "DT":
         algorithm = DecisionTree(prob, train_loader, test_loader)
-        algorithm.classification()
+        tree_structure, importance, test_point, decision_path = algorithm.classification()
+        analysis = Analysis(test_loader, algorithm, prob)
+        analysis.DT_interpreter(tree_structure, importance, test_point, decision_path)
+
+    elif model_type == "testing":
+        data_gen = StA(prob, train_loader, test_loader)
+        data_gen.calc_area()
 
     # below is rough analysis exploring shap values
     # for x,y in train_loader:
@@ -315,7 +317,7 @@ def generate_with_attention(input_shape, output_shape, latent_dims, loss_fn, opt
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
 
-    analysis = Analysis(test_loader, neural)
+    analysis = Analysis(test_loader, neural, prob)
     e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space()
     plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
@@ -343,4 +345,3 @@ if __name__ == "__main__":
         dtype_l = "SIGWRITHE"
 
     main()
-

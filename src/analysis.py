@@ -10,10 +10,11 @@ from sklearn.decomposition import PCA
 
 
 class Analysis:
-    def __init__(self, data, model):
+    def __init__(self, data, model, prob):
 
         self.data = data
         self.model = model
+        self.prob = prob
 
     def generative_latent_space(self): # change in this for StS to XYZ
 
@@ -215,6 +216,75 @@ class Analysis:
 
     # plt.suptitle(f"Predicition: (5_2) {dat[v2]}")
     # plt.show()
+
+    def DT_interpreter(self, tree_structure, importance, test_point, decision_path):
+
+        x = np.arange(0, 100)  
+        node_index = 0
+        features = []
+        thresholds = []
+
+        for i in range(tree_structure.node_count):
+            # Check if the node is part of the decision path
+            if decision_path[i] == 1:
+                # Get feature index and threshold for the decision at this node
+                feature_index = tree_structure.feature[node_index]
+                threshold = tree_structure.threshold[node_index]
+                
+                # print(f"Node {node_index}: Feature {feature_index} <= {threshold}")
+                features.append(feature_index)
+                thresholds.append(threshold)
+                
+                # Determine the direction of the decision (left or right)
+                decision = "left" if test_point[feature_index] <= threshold else "right"
+                
+                # Move to the next node based on the decision
+                if decision == "left":
+                    node_index = tree_structure.children_left[node_index]
+                else:
+                    node_index = tree_structure.children_right[node_index]
+
+        # features = np.unique(np.abs(features))
+        features, ind = np.unique(np.abs(features), return_index=True)
+
+        test_point_DT = [i for idx,i in enumerate(test_point) if idx in features]
+
+        sns.set_theme()
+        ax = sns.barplot(x=x, y=importance, color='blue')
+        ax.set_xticklabels([])
+
+        plt.xlabel("Bead index")
+        plt.ylabel("Relative importance")
+        plt.title(f"Decision Tree Feature Importance {self.prob}")
+        plt.show()
+
+        plt.scatter(x, test_point, marker='.', label = "Base")
+        plt.scatter(features, test_point_DT, marker='x', label = "DT nodes")
+
+
+        for i, txt in enumerate(ind):
+            plt.annotate(f"{txt}:{(thresholds[txt]):.1f}", (features[i], test_point_DT[i]))
+
+        plt.legend()
+        plt.xlabel("Bead index")
+        plt.ylabel("StA Writhe")
+        plt.title("DT model +ve prediction")
+
+        plt.show()
+
+
+
+
+
+
+
+        
+        
+
+
+
+
+
 
 
     
