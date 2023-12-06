@@ -76,18 +76,17 @@ class KnotDataset(Dataset):
         else:
             return self.dataset[idx]
         
-class Wr_2_XYZ(Dataset):
+class StA_2_DT(Dataset):
 
-    def __init__(self, dirname, knot, net, dtype_f, dtype_l, Nbeads, pers_len, label):
+    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
         """Class wrapper for dataset generation --> prediction problem
 
         Args:
-            (example: SIGWRITHE --> XYZ prediction)
+            (example: SIGWRITHE --> DT code prediction)
             dirname (str): knot master directory location
             knot (str): knot being called
             net (str): neural network trype
-            dtype_f (str): data type used for features (eg. SIGWRITHE)
-            dtype_l (str): data type used for labels (eg. XYZ)
+            dtype (str): data type used for features (eg. SIGWRITHE)
             Nbeads (int): number of beads
             pers_len (int): persistence length
             label: corresponding label of data being called
@@ -95,30 +94,26 @@ class Wr_2_XYZ(Dataset):
         Returns:
             torch.Dataset
         """
-        super(Wr_2_XYZ, self).__init__()
+        super(StA_2_DT, self).__init__()
 
-        header, fname_f, select_cols_f = datafile_structure(dtype_f, knot, Nbeads, pers_len)
-        header, fname_l, select_cols_l = datafile_structure(dtype_l, knot, Nbeads, pers_len)
-        # select_cols = [0, 1, 2] for XYZ [2] for SIGWRITHE
+        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
 
-        n_col_feature = len(select_cols_f)
-        n_col_label = len(select_cols_l)
+        self.DT_codes = {0:[0.0, 0.0, 0.0, 0.0, 0.0], 1:[4.0, 6.0, 2.0, 0.0, 0.0], 2:[4.0, 6.0, 8.0, 2.0, 0.0], 3:[6.0, 8.0, 10.0, 2.0, 4.0], 4:[4.0, 8.0, 10.0, 2.0, 6.0]} #calculate dowker-code signage
+        n_col_feature = len(select_cols)
         
-        print((os.path.join(dirname, fname_f)))
-        print((os.path.join(dirname, fname_l)))
+        print((os.path.join(dirname, fname)))
         # Loading the dataset file
-        data = np.loadtxt(os.path.join(dirname,fname_f), usecols=(0, 1, 2))
-        corr_label = np.loadtxt(os.path.join(dirname,fname_l), usecols=(2,))
+        data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+        self.knot = label
+        self.label = torch.tensor(self.DT_codes[self.knot])
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
-        self.label = torch.tensor(corr_label, dtype=torch.float32)
-        self.knot = label
 
         # Reshape data
         self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
-        self.label = self.label.view(-1, Nbeads, n_col_label)
+        self.label = self.label.view(5, 1)
 
-        if dtype_f == "XYZ":
+        if dtype == "XYZ":
             self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
 
     def __len__(self):
@@ -126,7 +121,7 @@ class Wr_2_XYZ(Dataset):
 
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
-            return self.dataset[idx], self.label[idx], self.knot
+            return self.dataset[idx], self.label
         else:
             return self.dataset[idx]
         

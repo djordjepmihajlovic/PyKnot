@@ -63,27 +63,25 @@ def main():
 
 ################## <--'dual' problem -> predict data a from b (eg. XYZ -> StA)--> ###################
 
-    elif predict == "dual": 
+    elif predict == "dowker": 
         for i, knot in enumerate(knots): 
-            datasets.append(Wr_2_XYZ(master_knots_dir, knot, net, dtype_f, dtype_l, Nbeads, pers_len, i))
+            datasets.append(StA_2_DT(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
         ninputs = len(knots) * len_db
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
 
-        if dtype_f  == "XYZ":
+        if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
-            out_layer = 100
+            out_layer = 5
         else:
             in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
-            out_layer = 300
+            out_layer = 5
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
-            train(model, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
-        
-        if mode == "test":
-            print("error -> test attr. in train fn at the moment.")
+            loss_fn = nn.MSELoss()
+            train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
         if mode == "generate":
             loss_fn = nn.MSELoss() 
@@ -340,8 +338,7 @@ if __name__ == "__main__":
     pers_len = args.pers_len
     predict = args.predictor
     model_type = args.model_type
-    if predict == "dual":
-        dtype_f = "XYZ"
-        dtype_l = "SIGWRITHE"
+    if predict == "dowker":
+        dtype = "SIGWRITHE"
 
     main()

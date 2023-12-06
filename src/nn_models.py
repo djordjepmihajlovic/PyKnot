@@ -53,8 +53,8 @@ class FFNNModel(nn.Module):
 
         x = self.output_layer(x)
 
-        return F.softmax(x, dim=1) 
-        # return x.view(-1, 100, 1) # <- have: Sig2XYZ (-1, 100, 3) & XYZ2Sig (-1, 100, 1)
+        #return F.softmax(x, dim=1) 
+        return x.view(-1, 5, 1) # <- have: StA_2_DT (-1, 5, 1) 
 
 
 ################## <--RNN--> ###################
@@ -157,7 +157,9 @@ class NN(pl.LightningModule):
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
         x, y = batch
+        # print(f"true: {y[0]}")
         z = self.forward(x)
+        # print(f"prediction: {z[0]}")
         loss = self.loss(z, y)
         self.log(loss_name, loss, on_epoch=True, on_step=True)
         return loss
@@ -176,16 +178,31 @@ class NN(pl.LightningModule):
         z = self.forward(x)
         loss = self.loss(z, y) 
 
+        print(f"true: {y[0]}")
+        print(f"prediction: {z[0]}")
+
         # calculate acc
 
-        # std
-        _, predicted = torch.max(z.data, 1) 
-        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        # # std. label
+        # _, predicted = torch.max(z.data, 1) 
+        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        # dual
-        # predicted = z
-        # el = (y-predicted)**2
-        # test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
+        # dowker
+        true = 0
+        false = 0
+        predicted = torch.round(z)
+        el = (y-predicted)
+
+        for i in el:
+            if torch.sum(i) == 0.0:
+                true += 1
+            else:
+                false += 1
+
+        test_acc = true/(true+false)
+
+
+        #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
@@ -319,4 +336,5 @@ def setup_CNN(input_shape, output_shape, opt, norm, loss):
         raise ValueError("Invalid optimizer choice; 'adam' or 'sgd'.")
 
     return model, loss_fn, optimizer
+
 

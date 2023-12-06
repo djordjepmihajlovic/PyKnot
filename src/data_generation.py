@@ -1,6 +1,8 @@
 import itertools
 import numpy as np
 import seaborn as sns
+from scipy.signal import find_peaks
+import pandas as pd
 import matplotlib.pyplot as plt
 from helper import *
 
@@ -48,6 +50,7 @@ class StA():
 
         for idx, X in enumerate(self.X_train):
             if self.y_train[idx] == 0:
+                maxima, _ = find_peaks(X, prominence=1, width=5)
                 area_0_1.append(np.trapz(y=X, x=indicies))
 
             if self.y_train[idx] == 1: 
@@ -64,22 +67,27 @@ class StA():
                 area_5_2.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 5:
+                L = X
                 area_6_1.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 6:
+                L = X
                 area_6_2.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 7:
+                L = X
                 area_6_3.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 8:
+                L = X
                 area_7_1.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 9:
                 L = X
                 area_7_2.append(np.trapz(y=X, x=indicies))
-            
+
             elif self.y_train[idx] == 10:
+                L = X
                 area_7_3.append(np.trapz(y=X, x=indicies))
 
         area_0_1 = np.array(area_0_1)
@@ -115,21 +123,14 @@ class StA():
         area_7_3 = np.array(area_7_3)
         print(f"area mean of 7_3: {np.average(area_7_3)} with std: {np.std(area_7_3)}")
 
-        sns.histplot(area_0_1, color="purple")
-        sns.histplot(area_3_1, color="orange")
-        sns.histplot(area_4_1, color="blue")
-        sns.histplot(area_5_1, color="red")
-        sns.histplot(area_5_2, color="green")
-        sns.histplot(area_6_1, color="purple")
-        # sns.histplot(area_6_2, color="blue")
-        sns.histplot(area_6_3, color="orange")
-        sns.histplot(area_7_1, color="blue")
-        sns.histplot(area_7_2, color="red")
-        sns.histplot(area_7_3, color="green")
-        plt.show()
-
-        plt.plot(indicies, L, '.')
-        plt.plot(indicies, V, 'x')
+        # sns.histplot(area_0_1, color="purple", label= "0_1", linewidth=0.1, edgecolor = "black")
+        # sns.histplot(area_3_1, color="orange", label="3_1", linewidth=0.1, edgecolor = "black")
+        # sns.histplot(area_4_1, color="blue", label="4_1", linewidth=0.1, edgecolor = "black")
+        # sns.histplot(area_5_1, color="red", label="5_1", linewidth=0.1, edgecolor = "black")
+        # sns.histplot(area_5_2, color="green", label="5_2", linewidth=0.1, edgecolor = "black")
+        sns.histplot(area_6_2, color="yellow", label="6_2", linewidth=0.1, edgecolor = "black")
+        plt.xlabel("AUC")
+        plt.legend()
         plt.show()
 
 
