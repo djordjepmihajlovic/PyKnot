@@ -61,7 +61,7 @@ def main():
             optimizer = "adam"
             generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
-################## <--'dual' problem -> predict data a from b (eg. XYZ -> StA)--> ###################
+################## <--'dowker' problem : predict data StA -> dowker code--> ###################
 
     elif predict == "dowker": 
         for i, knot in enumerate(knots): 
@@ -73,10 +73,10 @@ def main():
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
-            out_layer = 5
+            out_layer = 7
         else:
             in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
-            out_layer = 5
+            out_layer = 7
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)

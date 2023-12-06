@@ -54,7 +54,7 @@ class FFNNModel(nn.Module):
         x = self.output_layer(x)
 
         #return F.softmax(x, dim=1) 
-        return x.view(-1, 5, 1) # <- have: StA_2_DT (-1, 5, 1) 
+        return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
 
 
 ################## <--RNN--> ###################

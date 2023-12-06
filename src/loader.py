@@ -98,20 +98,30 @@ class StA_2_DT(Dataset):
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
 
-        self.DT_codes = {0:[0.0, 0.0, 0.0, 0.0, 0.0], 1:[4.0, 6.0, 2.0, 0.0, 0.0], 2:[4.0, 6.0, 8.0, 2.0, 0.0], 3:[6.0, 8.0, 10.0, 2.0, 4.0], 4:[4.0, 8.0, 10.0, 2.0, 6.0]} #calculate dowker-code signage
+        self.dowker_codes = {0:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
+                         1:[4.0, 6.0, 2.0, 0.0, 0.0, 0.0, 0.0], 
+                         2:[4.0, 6.0, 8.0, 2.0, 0.0, 0.0, 0.0], 
+                         3:[6.0, 8.0, 10.0, 2.0, 4.0, 0.0, 0.0], 
+                         4:[4.0, 8.0, 10.0, 2.0, 6.0, 0.0, 0.0], 
+                         5:[4.0, 8.0, 12.0, 10.0, 2.0, 6.0, 0.0], 
+                         6:[4.0, 8.0, 10.0, 12.0, 2.0, 6.0, 0.0], 
+                         7:[4.0, 8.0, 10.0, 2.0, 12.0, 6.0, 0.0], 
+                         8:[8.0, 10.0, 12.0, 14.0, 2.0, 4.0, 6.0], 
+                         9:[4.0, 10.0, 14.0, 12.0, 2.0, 8.0, 6.0], 
+                         10:[6.0, 10.0, 12.0, 14.0, 2.0, 4.0, 8.0]} # dowker-code 
         n_col_feature = len(select_cols)
         
         print((os.path.join(dirname, fname)))
         # Loading the dataset file
         data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
         self.knot = label
-        self.label = torch.tensor(self.DT_codes[self.knot])
+        self.label = torch.tensor(self.dowker_codes[self.knot])
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
 
         # Reshape data
         self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
-        self.label = self.label.view(5, 1)
+        self.label = self.label.view(7, 1)
 
         if dtype == "XYZ":
             self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
