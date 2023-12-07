@@ -11,7 +11,7 @@ import pytorch_lightning as pl
 
 class FFNNModel(nn.Module):
     # define model structure i.e. layers
-    def __init__(self, input_shape, output_shape, norm):
+    def __init__(self, input_shape, output_shape, norm, predict):
         """nn.Module initialization --> builds neural network
 
         Args:
@@ -24,6 +24,7 @@ class FFNNModel(nn.Module):
         """
         super(FFNNModel, self).__init__()
         self.flatten_layer = nn.Flatten()
+        self.pred = predict
         
         # init layers
         if norm:
@@ -53,8 +54,18 @@ class FFNNModel(nn.Module):
 
         x = self.output_layer(x)
 
-        #return F.softmax(x, dim=1) 
-        return x.view(-1, 8, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
+        if self.pred == "class":
+            return F.softmax(x, dim=1) 
+        
+        elif self.pred == "dowker":
+            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
+        
+        elif self.pred == "jones":
+            return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
+        
+        elif self.pred == "quantumA2":
+            return x.view(-1, 31, 2)
+        
 
 
 ################## <--RNN--> ###################
@@ -221,7 +232,7 @@ class NN(pl.LightningModule):
     
 ################## <--FFNN config--> ###################
 
-def setup_FFNN(input_shape, output_shape, opt, norm, loss):
+def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
     """setup function --> defines required network using helper
 
     Args:
@@ -238,7 +249,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss):
     """
 
     # model
-    model = FFNNModel(input_shape, output_shape, norm)
+    model = FFNNModel(input_shape, output_shape, norm, predict)
 
     # loss function 
     if loss == "CEL":

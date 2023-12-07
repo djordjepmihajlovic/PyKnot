@@ -59,7 +59,7 @@ def datafile_structure(dtype, knot, Nbeads, pers_len):
     return header, fname, select_cols
 
 
-def generate_model(net, in_layer, out_layer, norm):
+def generate_model(net, in_layer, out_layer, norm, predict):
     """Generate the model depeding on the net name
 
     Args:
@@ -77,7 +77,7 @@ def generate_model(net, in_layer, out_layer, norm):
 
     # Loading different networks according to the chosen setup
     if net == "FFNN":
-        model = setup_FFNN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL")
+        model = setup_FFNN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL", predict=predict)
     
     elif net == "RNN":
         model = setup_RNN(in_layer, out_layer, opt="adam", norm=norm, loss="MSE")
@@ -125,7 +125,7 @@ def get_knots(problem):
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
 
     elif problem == "7Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3"] #, "7_4", "7_5", "7_6", "7_7"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_3"] # "7_3"] #, "7_4", "7_5", "7_6", "7_7"]
 
     elif problem == "8Class":
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7", "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21"]
@@ -161,7 +161,7 @@ def get_params():
     par.add_argument("-t", "--network", type=str, default="FFNN", help="Type of neural network: FFNN, RNN, LocaliseFFNN, LocaliseRNN, ...")
     par.add_argument("-e", "--epochs", type=int, default=1000, help="Set the number of training epochs")
     par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train, test, generate")
-    par.add_argument("-ldb", "--len_db", type=int, default=200000, help="Database size for each of the classes")
+    par.add_argument("-ldb", "--len_db", type=int, default=100000, help="Database size for each of the classes")
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") 
     par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")

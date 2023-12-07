@@ -21,18 +21,17 @@ print("No. GPUs Available: ", available_gpus)
 
 def main():
 
+    properties = {"dowker", "jones", "quantumA2", "HOMFLY"}
     datasets = []
 
 ################## <--classic classification problem + reconstruction--> ###################
 
     if predict == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 
-            datasets.append(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
+            indicies = np.arange(0, len_db) # first len_db
+            datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
-
-        # indicies = np.arange(0, 100000)
-        # dataset = Subset(dataset, indicies)  # -> can be used to alter database size
 
         ninputs = len(knots) * len_db
         ninputs = len(dataset)
@@ -49,24 +48,25 @@ def main():
         out_layer = len(knots)
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, predict)
             print(model_type)
             train(model = model, model_type = model_type, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
         
         if mode == "test":
-            print("error -> test attr. in train fn at the moment.")
+            print("testing functionality moved to train mode, occurs after training instance")
 
         if mode == "generate":
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
             generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
-################## <--'dowker' problem : predict data StA -> dowker code--> ###################
+################## <--'invariant' problem : predict data from StA -> some invariant--> ###################
 
-    elif predict == "dowker": 
-        indicies = np.arange(0, 100000) # first 100000
+    elif predict in properties: 
+
+        indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(Subset(StA_2_DT(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+            datasets.append(Subset(StA_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, predict), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -79,25 +79,31 @@ def main():
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
-            out_layer = 8
         else:
-            in_layer = (Nbeads, 1) # specify input layer
-            out_layer = 8 
+            in_layer = (Nbeads, 1) # input layer
+            
+        if predict == "dowker":
+            out_layer = 7 
+        elif predict == "jones":
+            out_layer = 20 #[10*2]
+
+        elif predict == "quantumA2":
+            out_layer = 62 #[31*2]
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, predict)
             loss_fn = nn.MSELoss()
             train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
         if mode == "generate":
-            loss_fn = nn.MSELoss() 
-            optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 30, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            print("generate not available for invariant prediction; try: python main.py -m generate -pred class")
 
 
 ################## <--generative weighted reconstruction--> ###################
 
 # nb. takes in XYZ data + StS data as weights and passes through specified encoder -> decoder architecture
+
+# maybe deprecated we will see........
 
     elif predict == "weighted": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 

@@ -9,6 +9,11 @@ Create some nice graphs!^^
 
 Start looking at how polynomials are calculated...
 
+Model capability at predicting knot polynomials 
+JONES []
+ALEXANDER []
+
+
 Bottle neck (2 layer)
 
 Report:
