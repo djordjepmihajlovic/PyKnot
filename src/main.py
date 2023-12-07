@@ -64,19 +64,25 @@ def main():
 ################## <--'dowker' problem : predict data StA -> dowker code--> ###################
 
     elif predict == "dowker": 
+        indicies = np.arange(0, 100000) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(StA_2_DT(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
+            datasets.append(Subset(StA_2_DT(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
-        ninputs = len(knots) * len_db
-        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, int(ninputs * (0.9)), int(ninputs * (0.075)), int(ninputs * (0.025)), bs)
+
+        ninputs = len(dataset) # total dataset length
+        print(ninputs)
+        train_len = int(ninputs * (0.9))
+        test_len = int(ninputs * (0.075))
+        val_len = ninputs - (train_len + test_len)
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
-            out_layer = 7
+            out_layer = 8
         else:
-            in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
-            out_layer = 7
+            in_layer = (Nbeads, 1) # specify input layer
+            out_layer = 8 
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm)

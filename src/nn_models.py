@@ -54,7 +54,7 @@ class FFNNModel(nn.Module):
         x = self.output_layer(x)
 
         #return F.softmax(x, dim=1) 
-        return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
+        return x.view(-1, 8, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
 
 
 ################## <--RNN--> ###################
@@ -178,9 +178,6 @@ class NN(pl.LightningModule):
         z = self.forward(x)
         loss = self.loss(z, y) 
 
-        print(f"true: {y[0]}")
-        print(f"prediction: {z[0]}")
-
         # calculate acc
 
         # # std. label
@@ -193,11 +190,13 @@ class NN(pl.LightningModule):
         predicted = torch.round(z)
         el = (y-predicted)
 
-        for i in el:
+        for idx, i in enumerate(el):
             if torch.sum(i) == 0.0:
                 true += 1
             else:
                 false += 1
+                print(f"true: {y[idx]}")
+                print(f"predicted: {predicted[idx]}")
 
         test_acc = true/(true+false)
 

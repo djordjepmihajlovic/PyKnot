@@ -1,0 +1,17 @@
+To do:
+
+Code:
+
+Test GRNY SQR 8_20 (downloaded) (dowker coded/unsigned/tested, 0.9993777871131%) (dowker coded/signed/tested, 0.9995111227036%) 
+Test unsupervised prediction -> train (0_1, 3_1, 4_1, 5_1) -> predict 5_2
+Test just 7's?
+Create some nice graphs!^^
+
+Start looking at how polynomials are calculated...
+
+Bottle neck (2 layer)
+
+Report:
+
+Figure out structuring --> physics link --> generative methods and dowker code? 
+
