@@ -26,7 +26,7 @@ def main():
 
 ################## <--classic classification problem + reconstruction--> ###################
 
-    if predict == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
+    if pdct == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 
             indicies = np.arange(0, len_db) # first len_db
             datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
@@ -48,7 +48,7 @@ def main():
         out_layer = len(knots)
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, predict)
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             print(model_type)
             train(model = model, model_type = model_type, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
         
@@ -62,11 +62,11 @@ def main():
 
 ################## <--'invariant' problem : predict data from StA -> some invariant--> ###################
 
-    elif predict in properties: 
+    elif pdct in properties: 
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(Subset(StA_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, predict), indicies))
+            datasets.append(Subset(StA_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -77,21 +77,26 @@ def main():
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
+        ## unsupervised predictions
+
+        # dataset_unsupervised= Subset(StA_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)
+        # dont_train, test_dataset_singular, val_dataset_singular = split_train_test_validation(dataset_unsupervised, (int(len(dataset_unsupervised)*0.1)), (int(len(dataset_unsupervised)*0.7)), (int(len(dataset_unsupervised)*0.2)), bs)
+
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
         else:
             in_layer = (Nbeads, 1) # input layer
-            
-        if predict == "dowker":
+
+        if pdct == "dowker":
             out_layer = 7 
-        elif predict == "jones":
+        elif pdct == "jones":
             out_layer = 20 #[10*2]
 
-        elif predict == "quantumA2":
+        elif pdct == "quantumA2":
             out_layer = 62 #[31*2]
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, predict)
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss()
             train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
@@ -105,7 +110,7 @@ def main():
 
 # maybe deprecated we will see........
 
-    elif predict == "weighted": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
+    elif pdct == "weighted": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 
             datasets.append(WeightedKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
 
@@ -133,11 +138,22 @@ def main():
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
     if model_type == "NN":
+        A = []
         neural = NN(model=model, loss=loss_fn, opt=optimizer)
         early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
         trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
         trainer.fit(neural, train_loader, val_loader)
         trainer.test(dataloaders=test_loader)
+        ## will need to add back to function argument
+        # with torch.no_grad():
+        #     for x, y in test_dataset_singular:
+        #         z = neural.forward(x)
+        #         A.append(z.detach().numpy().flatten())
+        # X = [item for sublist in A for item in sublist]
+        # sns.histplot(X)
+        # plt.gca()
+        # plt.xlim(0, 14)
+        # plt.savefig("hist.png")
 
     elif model_type == "DT":
         algorithm = DecisionTree(prob, train_loader, test_loader)
@@ -348,9 +364,9 @@ if __name__ == "__main__":
     len_db = int(args.len_db)
     master_knots_dir = args.master_knots_dir
     pers_len = args.pers_len
-    predict = args.predictor
+    pdct = args.predictor
     model_type = args.model_type
-    if predict == "dowker":
+    if pdct == "dowker":
         dtype = "SIGWRITHE"
 
     main()

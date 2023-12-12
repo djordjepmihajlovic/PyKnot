@@ -110,7 +110,7 @@ def get_knots(problem):
         Knotind = ["0_1", "conway", "kt"]
 
     elif problem == "5Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"] # testing 5_2 unsupervised
 
     elif problem == "5Class5v6":
         Knotind = ["5_1", "5_2", "6_1", "6_2", "6_3"]
@@ -122,10 +122,10 @@ def get_knots(problem):
         Knotind = ["9_1", "9_42", "10_1", "10_2", "10_71"]
 
     elif problem == "6Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2"] # "6_3"]
 
     elif problem == "7Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_3"] # "7_3"] #, "7_4", "7_5", "7_6", "7_7"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3"] # "7_3"] #, "7_4", "7_5", "7_6", "7_7"]
 
     elif problem == "8Class":
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7", "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21"]
@@ -165,7 +165,7 @@ def get_params():
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") 
     par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
-    par.add_argument("-pred", "--predictor", type=str, default="class", help="Options: class, dual")
+    par.add_argument("-pdct", "--predictor", type=str, default="class", help="Options: class, dual")
     par.add_argument("-modtyp", "--model_type", type=str, default="NN", help="Options: NN, DT, LogR, LinR")
 
     args = par.parse_args()

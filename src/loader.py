@@ -107,7 +107,7 @@ class StA_2_inv(Dataset):
                             "6_2":[4.0, 8.0, 10.0, 12.0, 2.0, 6.0, 0.0], 
                             "6_3":[4.0, 8.0, 10.0, 2.0, 12.0, 6.0, 0.0], 
                             "7_1":[8.0, 10.0, 12.0, 14.0, 2.0, 4.0, 6.0], 
-                            "7_3":[4.0, 10.0, 14.0, 12.0, 2.0, 8.0, 6.0], 
+                            "7_2":[4.0, 10.0, 14.0, 12.0, 2.0, 8.0, 6.0], 
                             "7_3":[6.0, 10.0, 12.0, 14.0, 2.0, 4.0, 8.0], 
                             "3_1_3_1":[10.0, -6.0, -8.0, -4.0, 12.0, 2.0, 0.0, 0.0], # square
                             "3_1-3_1":[10.0, 6.0, 8.0, 4.0, 12.0, 2.0, 0.0, 0.0], # granny
@@ -122,7 +122,15 @@ class StA_2_inv(Dataset):
                       "5_1":[[0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0], 
                              [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, -1.0, 1.0, -1.0]],
                       "5_2":[[0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], 
+                             [0.0, 0.0, 0.0, 1.0, -1.0, 2.0, -1.0, 1.0, -1.0, 0.0]],
+                      "6_1":[[0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], 
                              [0.0, 0.0, 0.0, 1.0, -1.0, 2.0, -1.0, 1.0, -1.0, 0.0]],}
+        
+        # self.jones = {"0_1":-self.nominal_val**-4 + self.nominal_val**-3 + self.nominal_val**-1,
+        #               "3_1":-self.nominal_val**-4 + self.nominal_val**-3 + self.nominal_val**-1,
+        #               "4_1":self.nominal_val**2 + self.nominal_val**-2 - self.nominal_val -self.nominal_val**-1 + 1,
+        #               "5_1":-self.nominal_val**-7 +self.nominal_val**-6 - self.nominal_val**-5 + self.nominal_val**-4 + self.nominal_val**-2,
+        #               "5_2":-self.nominal_val**-6 + self.nominal_val**-5 - self.nominal_val**-4 + 2*self.nominal_val**-3 - self.nominal_val**-2 +self.nominal_val**-1,}
         
                     # self.jones = {knot:[[index hot encoded], [factor]]}
 

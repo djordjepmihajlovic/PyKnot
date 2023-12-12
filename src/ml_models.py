@@ -4,14 +4,14 @@ from sklearn import tree
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 import pickle
 from pathlib import Path
 import seaborn as sns
 from helper import *
 
-# going to set up decision tree, linear regression and logistic regression predictors. Here; check results and interpretability...
+# want to set up decision tree, linear regression predictor of sta from jones
+# check results and interpretability...
 # idea, assign color to point if it is indicating positive prediction for class
 
 class DecisionTree:

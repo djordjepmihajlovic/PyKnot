@@ -7,6 +7,9 @@ import torch.nn.functional as F
 # lightning modules
 import pytorch_lightning as pl
 
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 ################## <--FFNN--> ###################
 
 class FFNNModel(nn.Module):
@@ -54,6 +57,7 @@ class FFNNModel(nn.Module):
 
         x = self.output_layer(x)
 
+
         if self.pred == "class":
             return F.softmax(x, dim=1) 
         
@@ -63,8 +67,11 @@ class FFNNModel(nn.Module):
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
         
+        # also technically this makes little sense, i think the neural network is just 'learning' the different knot types
+        # and then choosing the correct label
+        
         elif self.pred == "quantumA2":
-            return x.view(-1, 31, 2)
+            return x.view(-1, 31, 2) # <- same as Jones
         
 
 
@@ -168,9 +175,7 @@ class NN(pl.LightningModule):
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
         x, y = batch
-        # print(f"true: {y[0]}")
         z = self.forward(x)
-        # print(f"prediction: {z[0]}")
         loss = self.loss(z, y)
         self.log(loss_name, loss, on_epoch=True, on_step=True)
         return loss
@@ -206,12 +211,10 @@ class NN(pl.LightningModule):
                 true += 1
             else:
                 false += 1
-                print(f"true: {y[idx]}")
-                print(f"predicted: {predicted[idx]}")
+                # print(f"true: {y[idx]}")
+                # print(f"predicted: {predicted[idx]}")
 
         test_acc = true/(true+false)
-
-
         #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs

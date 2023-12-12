@@ -1,4 +1,4 @@
-# PyKnot for Machine Learned, Generative Knots.
+# PyKnot for Machine Learned, Generative Knots & Knot Polynomials.
 
 ### PyTorch MLKnotsProject code for TAPLAB 
 
@@ -6,6 +6,27 @@ PyKnot is a machine learning (ML) package with PyTorch and PyTorch.Lightning dep
 It's in studying this generation that we hope to investigate the methods by which the ML method is learning to classify knots, hopefully teaching us about hidden invariants beyond those already known.
 
 The PyTorch version here is based off of an original Tensorflow code developed by TAPLAB.
+
+## Running the code
+
+To run a simple, class based knot prediction based on some input data (eg. SIGWRITHE (StA)) run main.py with the required arguments, for example:
+
+```
+    python main.py -modtyp NN -pred class -p 5Class -m train -d SIGWRITHE -t FFNN 
+```
+outputs the result of a neural network classification problem on the 5 class set (knots: 0_1, 3_1, 4_1, 5_1, 5_2) trained on segment to all (StA) data using a feedforward neural network
+
+The argument parameters are as follows:
+
+-modtyp: takes in the required machine learning model.
+Options: NN, DT, LR
+-pdct: takes in the prediction being made. "class" arguments correspond to classification of knots, whereas other invariants/codes can be specified. For example, -pred dowker will return a training on dowker code prediction capability.
+Options: class, dowker, jones, quantumA2
+-p: 
+-m: 
+-d:
+-t: 
+
 
 ## +  Additions :
 
