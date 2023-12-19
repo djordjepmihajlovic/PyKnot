@@ -1,5 +1,6 @@
 import os
 import torch
+import math
 import numpy as np
 from torch.utils.data import Dataset, DataLoader, TensorDataset
 from torchvision.transforms import functional as F
@@ -82,7 +83,7 @@ class StA_2_inv(Dataset):
         """Class wrapper for dataset generation --> prediction problem
 
         Args:
-            (example: SIGWRITHE --> DT code prediction)
+            (example: SIGWRITHE --> DT code)
             dirname (str): knot master directory location
             knot (str): knot being called
             net (str): neural network trype
@@ -126,37 +127,27 @@ class StA_2_inv(Dataset):
                       "6_1":[[0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], 
                              [0.0, 0.0, 0.0, 1.0, -1.0, 2.0, -1.0, 1.0, -1.0, 0.0]],}
         
-        # self.jones = {"0_1":-self.nominal_val**-4 + self.nominal_val**-3 + self.nominal_val**-1,
-        #               "3_1":-self.nominal_val**-4 + self.nominal_val**-3 + self.nominal_val**-1,
-        #               "4_1":self.nominal_val**2 + self.nominal_val**-2 - self.nominal_val -self.nominal_val**-1 + 1,
-        #               "5_1":-self.nominal_val**-7 +self.nominal_val**-6 - self.nominal_val**-5 + self.nominal_val**-4 + self.nominal_val**-2,
-        #               "5_2":-self.nominal_val**-6 + self.nominal_val**-5 - self.nominal_val**-4 + 2*self.nominal_val**-3 - self.nominal_val**-2 +self.nominal_val**-1,}
-        
-                    # self.jones = {knot:[[index hot encoded], [factor]]}
-
-        self.quantumA2 = {"0_1":[[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-                          "3_1":[[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-                          "4_1":[[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0], 
-                                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0]],
-                          "5_1":[[1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                                 [-1.0, 0.0, -1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-                          "5_2":[[0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                                 [0.0, 0.0, -1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],}
-                    # self.jones = {knot:[[index hot encoded], [factor]]}
-        
 
         n_col_feature = len(select_cols)
         
         print((os.path.join(dirname, fname)))
+
         # Loading the dataset file
         data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
         self.knot = knot
+
+        # Loading the dataset labels
+        labels = np.loadtxt(f'../knot data/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
         
         if invariant == "dowker":
-            self.label = torch.tensor(self.dowker_codes[self.knot])
-            self.label = self.label.view(7, 1)
+
+            ## used for pure dowker code
+            # self.label = torch.tensor(self.dowker_codes[self.knot])
+            # self.label = self.label.view(7, 1)
+
+            ## used for generated dowker code
+            self.label = torch.tensor(labels, dtype=torch.float32)
+            self.label = self.label.view(-1, 32, 1)
 
         elif invariant == "jones":
             self.label = torch.tensor(self.jones[self.knot])
@@ -177,7 +168,8 @@ class StA_2_inv(Dataset):
 
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
-            return self.dataset[idx], self.label
+            dowker_lb = math.floor(idx/100) # get label attributed to 100 bead section
+            return self.dataset[idx], self.label[dowker_lb]
         else:
             return self.dataset[idx]
         

@@ -20,3 +20,7 @@ Report:
 
 Figure out structuring --> physics link --> generative methods and dowker code? 
 
+18th Dec 2023
+
+- code can get dowker code, so need to create data files with dowker code per knot, 5 class (200 knot configurations)
+

@@ -62,7 +62,7 @@ class FFNNModel(nn.Module):
             return F.softmax(x, dim=1) 
         
         elif self.pred == "dowker":
-            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
+            return x.view(-1, 32, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
         
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]

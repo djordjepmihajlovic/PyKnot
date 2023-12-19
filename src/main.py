@@ -88,7 +88,7 @@ def main():
             in_layer = (Nbeads, 1) # input layer
 
         if pdct == "dowker":
-            out_layer = 7 
+            out_layer = 32 # max length of longest row in dowker_{knot_choice}
         elif pdct == "jones":
             out_layer = 20 #[10*2]
 
@@ -145,9 +145,12 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         trainer.fit(neural, train_loader, val_loader)
         trainer.test(dataloaders=test_loader)
         ## will need to add back to function argument
-        # with torch.no_grad():
-        #     for x, y in test_dataset_singular:
-        #         z = neural.forward(x)
+        with torch.no_grad():
+            for x, y in test_loader:
+                z = neural.forward(x)
+
+        print(z[0])
+        print(y[0])
         #         A.append(z.detach().numpy().flatten())
         # X = [item for sublist in A for item in sublist]
         # sns.histplot(X)
