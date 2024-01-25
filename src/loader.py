@@ -48,6 +48,8 @@ class KnotDataset(Dataset):
 
         # Reshape data
         self.dataset = self.dataset.view(-1, Nbeads, n_col)
+        # reshape below is for the convolutional neural network, remember to change it back 
+        # self.dataset = self.dataset.reshape(-1, 1, Nbeads, 3, 1)
         self.label = label
 
         if dtype == "XYZ":

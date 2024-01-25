@@ -22,7 +22,7 @@ class Analysis:
         for x, k in self.data:
             self.model.encoder.eval()
             with torch.no_grad():
-                z = self.model.encoder(x)
+                z, dev = self.model.encoder(x) # remember if using variational autoencoder need to add "dev"
             for idy, dims in enumerate(z):
                 encoded_sample = {f"Enc. Variable {j}": enc for j, enc in enumerate(dims)}
                 encoded_sample['label'] = k[idy]
@@ -45,10 +45,72 @@ class Analysis:
 
         return encoded_samples, encoded_labels, latent_space_z , z, label_z
     
+    def latent_space_params(self, latent_space_df, col): # used for returning the min and max vals of the latent space per dimension
+
+        min = latent_space_df[f'Enc. Variable {col}'].min()    
+        max = latent_space_df[f'Enc. Variable {col}'].max()
+
+        return min, max  
+
+    def latent_space_generation(self, latent_space, dim, model, val):
+
+        self.model.decoder.eval()
+
+        with torch.no_grad():
+            z = self.model.decoder(torch.Tensor(latent_space))
+
+        x_list = np.arange(0, 100)
+
+        prediction = z.detach().numpy()[0]
+        print(f'{z} : predicted StA Writhe')
+        with torch.no_grad():
+            z_new = model.forward(z)
+            _, knot_type = torch.max(z_new.data, 1) 
+            total = torch.sum(z_new.data)
+            certainty = torch.max(z_new.data) / total
+            print(knot_type)
+
+        knot_names= {0: "unknot", 1: "trefoil (3_1)", 2: "figure-8 (4_1)", 3: "pentafoil (5_1)", 4: "three twist (5_2)"}
+
+        z = np.polyfit(x_list, prediction, 20)
+        z = [item for sublist in z.tolist() for item in sublist]
+        p = np.poly1d(z)
+
+        sns.set_theme()
+        plt.subplot(1, 1, 1)
+        plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
+        plt.ylim([-2.5, 2.5])
+        plt.grid()
+        plt.xlabel('Bead index')
+        plt.ylabel(f'Generated StA Writhe {knot_type}.')
+        plt.title(f"Certainty: {certainty:.2f}")
+        ax = plt.gca()
+        if knot_type == 0:
+            ax.set_facecolor('xkcd:lightblue')
+        elif knot_type == 1:
+            ax.set_facecolor('xkcd:coral')
+        elif knot_type == 2:
+            ax.set_facecolor('xkcd:goldenrod')
+        elif knot_type == 3:
+            ax.set_facecolor('xkcd:lightgreen')
+        elif knot_type == 4:
+            ax.set_facecolor('xkcd:lavender')
+
+
+        # include 'certainty'
+            
+
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        plt.tight_layout()
+        plt.savefig(f"latent_plots/latent_space_generation{dim}_{val}.png")
+        plt.close()
+        return prediction
+    
 
     def dimensional_reduction_plot(self, method, encoded_samples, encoded_labels, latent_space, new_data, new_data_label):
 
-        label_names=['0_1', '3_1', '4_1', '5_1', '5_2', '6_1', '6_2', '6_3']
+        label_names=['0_1', '3_1', '4_1', '5_1', '5_2']
 
         plt.subplot(1, 1, 1)
         plt.tight_layout()
@@ -63,10 +125,10 @@ class Analysis:
             encoded_samples_reduced_TSNE = tsne.fit_transform(encoded_samples)
             sns.scatterplot( x=encoded_samples_reduced_TSNE[:,0], y=encoded_samples_reduced_TSNE[:,1], hue=[label_names[l] for l in encoded_labels])
 
-        # print(f"The found latent space: {latent_space}")
-        print(f"Correspinding to construction: {new_data} of a {new_data_label} knot")
+        print(f"The found latent space: {latent_space}")
+        print(f"Corresponding to construction: {new_data} of a {new_data_label} knot")
 
-        plt.suptitle(f"XYZ {method} of VAE latent space")
+        plt.title(f"StA {method} of β-VAE latent space")
         plt.show()
 
 

@@ -2,3 +2,4 @@
 src/lightning_logs
 src/transformer.py
 src/testing.py
+src/latent_plots

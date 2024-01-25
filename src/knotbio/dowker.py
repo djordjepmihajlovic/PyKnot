@@ -3,10 +3,12 @@ import csv
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.cluster import AgglomerativeClustering
 
 # code for finding the dowker code of a 3d knot projected onto a 2d space
 
-knot_type = "0_1"
+knot_type = "3_1"
 
 dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/"
 fname = f"XYZ/XYZ_{knot_type}.dat.nos"
@@ -27,7 +29,7 @@ knots_multi_seg = []
 n = 0
 dowker_dat = []
 
-for knot_choice in range(n, n+1000):
+for knot_choice in range(n, n+100):
     knot_x = np.zeros((knot_count, 100))
     knot_y = np.zeros((knot_count, 100))
     knot_z = np.zeros((knot_count, 100))
@@ -82,17 +84,7 @@ for knot_choice in range(n, n+1000):
 
         x_seg.append(crossing_per_segment)
 
-    ## want to write an algo that swaps the double crossing segments on the further double, i.e. have:
-    ## [[4, 89], [6, 16], [6, 33], [16, 6], [16, 33], [20, 66], [21, 68], [28, 72], [31, 62], [33, 6], 
-    ## [33, 16], [37, 85], [57, 77], [62, 31], [66, 20], [68, 21], [72, 28], [77, 57], [85, 37], [89, 4]]
-
-    ## this results in, for example, 4 and 2 pairing (not allowed)
-    ## I think, this is because the current algo doesn't order [i,j] correctly if i intersects with
-    ## more than one area i.e. [i,j], [i,k] should be [i,k], [i,j]?, similarly:
-    ## [j,i],[k,i] later should be [k,i],[j,i]? -> do both sides need to change or begining? or end?
-    ## maybe answer is in intersection points.  
-        
-    # doesnt work for 4? 
+    # works now
 
     for indx, i in enumerate(crossings):
         for indy, j in enumerate(crossings):
@@ -117,11 +109,11 @@ for knot_choice in range(n, n+1000):
 
     dowker_dat.append(dowker)
 
-with open(f'../../knot data/dowker_{knot_type}.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerows(dowker_dat) 
-
-
+## code for writing dowker code to csv file
+    
+# with open(f'../../knot data/dowker_{knot_type}.csv', 'w', newline='') as f:
+#     writer = csv.writer(f)
+#     writer.writerows(dowker_dat) 
     
 broken_knots = set(broken_knots)
 
@@ -151,21 +143,30 @@ fig = plt.figure()
 ax = plt.axes(projection='3d') 
 
 ## plot in 3D 
-ax.plot3D(knot_x[knot_choice], knot_y[knot_choice], knot_z[knot_choice], 'b-')
-ax.plot3D([knot_x[knot_choice][0], knot_x[knot_choice][-1]], 
-        [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 
-        [knot_z[knot_choice][0], knot_z[knot_choice][-1]], 'b-')
+# ax.plot3D(knot_x[knot_choice], knot_y[knot_choice], knot_z[knot_choice], 'b-')
+# ax.plot3D([knot_x[knot_choice][0], knot_x[knot_choice][-1]], 
+#         [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 
+#         [knot_z[knot_choice][0], knot_z[knot_choice][-1]], 'b-')
+
+
+## k-means clustering algorithm to try produce knot graph
+
+# data_kmeans = np.column_stack((knot_x[knot_choice], knot_y[knot_choice]))
+# kmeans = KMeans(n_clusters=8)
+# kmeans.fit(data_kmeans)
+# center_points = kmeans.cluster_centers_
+
+# ax.scatter(center_points[:, 0], center_points[:, 1], c='red', marker='X', s=25, label='Center Points')
+
 
 ## projection in 2D
-ax.plot(knot_x[knot_choice], knot_y[knot_choice], 'r-', zdir='z', zs=1.5)
-ax.plot(knot_x_overcrossing, knot_y_overcrossing, 'gx', zdir = 'z', zs = 1.5)
-ax.plot([knot_x[knot_choice][0], knot_x[knot_choice][-1]], [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 'r-', zdir='z', zs=1.5)
+ax.plot(knot_x[knot_choice], knot_y[knot_choice], 'r-', zdir='z')
+ax.plot(knot_x_overcrossing, knot_y_overcrossing, 'gx', zdir = 'z')
+ax.plot([knot_x[knot_choice][0], knot_x[knot_choice][-1]], [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 'r-', zdir='z')
 for x, y, value in zip(knot_x_overcrossing, knot_y_overcrossing, dowker):
-    ax.text(x, y, 1.5, str(value), color='black')
+    ax.text(x, y, 0, str(value), color='black')
 
 plt.tight_layout()
 plt.show()
 
 
-# other ideas for extraction of properties of knot, seifert surface number? 
-# graph representations of knots

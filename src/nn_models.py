@@ -3,6 +3,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import torch_geometric.nn as pyg_nn
+import torch_geometric.utils as pyg_utils
+
 
 # lightning modules
 import pytorch_lightning as pl
@@ -147,6 +150,12 @@ class CNNModel(nn.Module):
         x = F.softmax(self.output_layer(x), dim=1)
 
         return x
+    
+
+################## <--Graph Neural Network--> ###################   
+    
+    
+
 
 ################## <--General Neural Network, Pytorch LightningModule for train/val/test config--> ###################
     
@@ -197,24 +206,24 @@ class NN(pl.LightningModule):
         # calculate acc
 
         # # std. label
-        # _, predicted = torch.max(z.data, 1) 
-        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        _, predicted = torch.max(z.data, 1) 
+        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        # dowker
-        true = 0
-        false = 0
-        predicted = torch.round(z)
-        el = (y-predicted)
+        ## dowker
+        # true = 0
+        # false = 0
+        # predicted = torch.round(z)
+        # el = (y-predicted)
 
-        for idx, i in enumerate(el):
-            if torch.sum(i) == 0.0:
-                true += 1
-            else:
-                false += 1
-                # print(f"true: {y[idx]}")
-                # print(f"predicted: {predicted[idx]}")
+        # for idx, i in enumerate(el):
+        #     if torch.sum(i) == 0.0:
+        #         true += 1
+        #     else:
+        #         false += 1
+        #         # print(f"true: {y[idx]}")
+        #         # print(f"predicted: {predicted[idx]}")
 
-        test_acc = true/(true+false)
+        # test_acc = true/(true+false)
         #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs
@@ -264,7 +273,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = optim.Adam(model.parameters(), lr=0.00001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:

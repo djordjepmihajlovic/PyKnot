@@ -56,9 +56,10 @@ def main():
             print("testing functionality moved to train mode, occurs after training instance")
 
         if mode == "generate":
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            generate(input_shape=in_layer, latent_dims = 100, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs, model = model) # note model here is standard FFNN used for predicting generated knot type
 
 ################## <--'invariant' problem : predict data from StA -> some invariant--> ###################
 
@@ -151,12 +152,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
         print(z[0])
         print(y[0])
-        #         A.append(z.detach().numpy().flatten())
-        # X = [item for sublist in A for item in sublist]
-        # sns.histplot(X)
-        # plt.gca()
-        # plt.xlim(0, 14)
-        # plt.savefig("hist.png")
+
 
     elif model_type == "DT":
         algorithm = DecisionTree(prob, train_loader, test_loader)
@@ -279,63 +275,110 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
     # plt.suptitle(f"Predicition: (5_2) {dat[v2]}")
     # plt.show()
+        
+# def check_knot(knot_construct, model, loss_fn, optimizer):
 
-def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
+
+def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs, model):
+
+    # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
     neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
-    # want to set up callable JSON file with completed training (so dont have to constantly retrain...)
-    # will take in input_shape, latent_dims, loss_fn, optimizer etc, find if trained model exists; if not run neural
-    # check trainedmodels.json for structure...
+
+    ## pre-trained model StA VAE
+    # neural = VariationalAutoencoder.load_from_checkpoint("../trained models/StA_VAE_5_Class/checkpoints/epoch=79-step=20000.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
+    ## want to set up callable JSON file with completed training (so dont have to constantly retrain...)
+    ## will take in input_shape, latent_dims, loss_fn, optimizer etc, find if trained model exists; if not run neural
+    ## check trainedmodels.json for structure...
+
+    ## comment below out if pre-trained model
+
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
 
-    analysis = Analysis(test_loader, neural)
-    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space()
+    # data_ideal_3_1 = torch.Tensor(np.loadtxt("../knot data/3_1_ideal_StA.csv", usecols=(2,)))
+    # data_ideal_3_1 = data_ideal_3_1.view(-1, Nbeads, 1)
+    # print(data_ideal_3_1)
+    # neural.encoder.eval()
+    # with torch.no_grad():
+    #     z, dev = neural.encoder(data_ideal_3_1)
+    #     print(z)
+
+    analysis = Analysis(test_loader, neural, prob)
+    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
     plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
-    x_list = np.arange(0, 100)
-    # true = x[1].detach().numpy()
-    # prediction = dat[1].detach().numpy()
+    # mini_ls = []
+    # maxi_ls = []
+    # for i in range(0, 10):
+    #     min, max = analysis.latent_space_params(e_s, i)
+    #     mini_ls.append(min)
+    #     maxi_ls.append(max)
 
-    # print(true)
-    # print(prediction)
+    # latent_dim_values = []
 
-    # z = np.polyfit(x_list, prediction, 20)
-    # z = [item for sublist in z.tolist() for item in sublist]
-    # p = np.poly1d(z)
+    # for idx, i in enumerate(mini_ls):
+    #     latent_dim_range = np.linspace(mini_ls[idx], maxi_ls[idx], 5)
+    #     latent_dim_values.append(latent_dim_range)
 
-    # plt.subplot(2, 1, 1)
-    # plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
-    # plt.xlabel('Bead index')
-    # plt.ylabel('Generated StA Writhe')
-    # plt.grid()
 
-    # plt.subplot(2, 1, 2)
-    # plt.plot(x_list, true)
-    # # ax = plt.gca()
-    # # yabs_max = abs(max(ax.get_ylim(), key=abs))
-    # # ax.set_ylim([-yabs_max, yabs_max])
-    # plt.xlabel('Bead index')
-    # plt.ylabel('True StA Writhe')
-    # plt.grid()
+    # want to have s.t. each graph has its predicted knot type
+        # predicts type of generated knot from VAE using pre-trained model (99.2% accuracy)
+    # knot_predictor = NN.load_from_checkpoint("../trained models/StA_standard_predicition/checkpoints/epoch=86-step=21750.ckpt", model=model, loss=nn.CrossEntropyLoss, opt=optimizer)
 
-    # label = int(y[1])
-    # names = {0: "unknot", 1: "trefoil (3_1)", 2: "figure-8 (4_1)", 3: "pentafoil (5_1)", 4: "three twist (5_2)"}
+    # val = 0
+    # for i in latent_dim_values[0]:
+    #     l_s = [i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 1, knot_predictor, val)
+    #     val += 1
 
-    # plt.suptitle(f"VAE StA writhe: {names[label]}")
-    # plt.show()
+    # for i in latent_dim_values[1]:
+    #     l_s = [0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 2, knot_predictor, val)
+    #     val += 1
 
-    # rand, gen = generation(neural)
-    # gen = gen.detach().numpy()
-    # x_list = np.arange(0, 100)
+    # for i in latent_dim_values[2]:
+    #     l_s = [0.0, 0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 3, knot_predictor, val)
+    #     val += 1
 
-    # plt.subplot(2, 1, 1)
-    # plt.plot(x_list, gen[0], '-b') #, x_list, gen[1], '-b', x_list, gen[2], '-g')
-    # plt.ylim([-2, 2])
-    # plt.xlabel('Bead index')
-    # plt.ylabel('Newly Generated StA writhe')
+    # for i in latent_dim_values[3]:
+    #     l_s = [0.0, 0.0, 0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 4, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[4]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 5, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[5]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, 0.0, i, 0.0, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 6, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[6]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, i, 0.0, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 7, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[7]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, i, 0.0, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 8, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[8]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, i, 0.0]
+    #     z = analysis.latent_space_generation(l_s, 9, knot_predictor, val)
+    #     val += 1
+
+    # for i in latent_dim_values[9]:
+    #     l_s = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, i]
+    #     z = analysis.latent_space_generation(l_s, 10, knot_predictor, val)
+    #     val += 1
+
 
 def generate_with_attention(input_shape, output_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 

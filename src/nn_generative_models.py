@@ -67,6 +67,31 @@ class Encoder_RNN(nn.Module):
 
         return mu
     
+################## <--CNN Encoder--> ###################
+    
+class Encoder_CNN(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Encoder_CNN, self).__init__()
+        self.conv1 = nn.Conv3d(1, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.pool = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.conv2 = nn.Conv3d(256, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.conv3 = nn.Conv3d(512, 1024, kernel_size=(3, 3, 3), padding=(1, 1, 1))
+        self.pool2 = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
+        self.fc1 = nn.Linear(1024 * 3 * 3 * 3, 256)
+        self.dropout = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(256, 1)
+
+    def forward(self, x):
+        x = self.pool(F.leaky_relu(self.conv1(x)))
+        x = self.pool(F.leaky_relu(self.conv2(x)))
+        x = self.pool2(F.leaky_relu(self.conv3(x)))
+        x = x.view(-1, 1024 * 3 * 3 * 3)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x
+
+
 ################## <--Attention using StS data--> ###################
 
 class Attention(nn.Module):
@@ -117,11 +142,11 @@ class Decoder_StA(nn.Module):
 ################## <--XYZ Decoder-> ###################
     
 class Decoder_XYZ(nn.Module):
-    def __init__(self, output_shape, latent_dims):
+    def __init__(self, input_shape, latent_dims):
         super(Decoder_XYZ, self).__init__()
 
         self.linear1 = nn.Linear(latent_dims, 320)
-        self.linear2 = nn.Linear(320, output_shape[0]*output_shape[1])
+        self.linear2 = nn.Linear(320, input_shape[0]*input_shape[1])
 
     def forward(self, z):
         z = F.leaky_relu(self.linear1(z))
@@ -139,7 +164,7 @@ class Autoencoder(pl.LightningModule):
         self.loss_fn = loss
         self.optimiser = opt
         self.encoder = Encoder_RNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_XYZ(output_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
 
@@ -300,7 +325,7 @@ class VariationalAutoencoder(pl.LightningModule):
         
     def loss_function(self, x, x_hat, mean, log_sigma):
 
-        MSE = F.mse_loss(x_hat, x, reduction='mean') # reduction sum returned best results for StA
+        MSE = F.mse_loss(x_hat, x, reduction='sum') # reduction sum returned best results for StA
         KLD = self.beta*(- 0.5 * torch.sum(1+ log_sigma - mean.pow(2) - log_sigma.exp()))
 
         return MSE + KLD
