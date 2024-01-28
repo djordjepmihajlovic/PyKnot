@@ -264,7 +264,7 @@ class VariationalEncoderFFNN(nn.Module):
         mu = self.linear3(x) # mean (mu) layer
         log_sigma = self.linear4(x) # log variance layer
 
-        return mu, F.tanh(log_sigma)  # not currently log_sigma has a tanh (for XYZ)
+        return mu, log_sigma  # not currently log_sigma has a tanh (for XYZ)
     
 ################## <--VAE RNN Encoder (two encodings= mean encoding and deviation encoding)--> ###################
     
