@@ -22,7 +22,7 @@ class Analysis:
         for x, k in self.data:
             self.model.encoder.eval()
             with torch.no_grad():
-                z, dev = self.model.encoder(x) # remember if using variational autoencoder need to add "dev"
+                z = self.model.encoder(x) # remember if using variational autoencoder need to add "dev"
             for idy, dims in enumerate(z):
                 encoded_sample = {f"Enc. Variable {j}": enc for j, enc in enumerate(dims)}
                 encoded_sample['label'] = k[idy]
