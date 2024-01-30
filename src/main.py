@@ -16,8 +16,9 @@ from nn_generative_models import *
 from analysis import *
 from data_generation import *
 
-available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
-print("No. GPUs Available: ", available_gpus)
+# available_gpus = [torch.cuda.device(i) for i in range(torch.cuda.device_count())]
+device = torch.device("cpu")
+# print("No. GPUs Available: ", available_gpus)
 
 def main():
 
@@ -288,7 +289,7 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 
     # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
     neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
-    
+
     device = torch.device('cpu')
     neural.to(device) # ensure that RNN works on CPU
 
