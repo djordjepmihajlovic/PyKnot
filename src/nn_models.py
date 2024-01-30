@@ -3,9 +3,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import torch_geometric.nn as pyg_nn
-import torch_geometric.utils as pyg_utils
-
 
 # lightning modules
 import pytorch_lightning as pl
