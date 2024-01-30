@@ -54,17 +54,22 @@ class Encoder_RNN(nn.Module):
         self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
         self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
         self.fcmu = nn.Linear(100, latent_dims)
-
+    
     def forward(self, x):
-        self.lstm1.flatten_parameters()
+        # Flatten parameters for LSTM layers
+        if x.is_cuda:
+            self.lstm1.flatten_parameters()
+            self.lstm2.flatten_parameters()
+            self.lstm3.flatten_parameters()
+
         x, _ = self.lstm1(x)
-        x = F.tanh(x)
-        self.lstm2.flatten_parameters()
+        x = torch.tanh(x)
+
         x, _ = self.lstm2(x)
-        x = F.tanh(x)
-        self.lstm3.flatten_parameters()
+        x = torch.tanh(x)
+
         x, _ = self.lstm3(x)
-        x = F.tanh(x[:, -1, :])  # taking output from the last time step
+        x = torch.tanh(x[:, -1, :])  # taking output from the last time step
     
         mu = self.fcmu(x)
 
