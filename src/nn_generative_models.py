@@ -56,10 +56,13 @@ class Encoder_RNN(nn.Module):
         self.fcmu = nn.Linear(100, latent_dims)
 
     def forward(self, x):
+        self.lstm1.flatten_parameters()
         x, _ = self.lstm1(x)
         x = F.tanh(x)
+        self.lstm1.flatten_parameters()
         x, _ = self.lstm2(x)
         x = F.tanh(x)
+        self.lstm1.flatten_parameters()
         x, _ = self.lstm3(x)
         x = F.tanh(x[:, -1, :])  # taking output from the last time step
     
