@@ -30,7 +30,7 @@ def main():
         for i, knot in enumerate(knots): 
             indicies = np.arange(0, len_db) # first len_db
             #datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
-            # on cluster use below:
+            ##on cluster use below:
             datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
@@ -41,9 +41,11 @@ def main():
         test_len = int(ninputs * (0.075))
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
+        print(len(train_dataset))
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
+            print(in_layer)
         else:
             in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
 
