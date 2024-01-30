@@ -50,24 +50,24 @@ class Encoder_RNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
         super(Encoder_RNN, self).__init__()
 
-        self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
-        self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
-        self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
-        self.fcmu = nn.Linear(100, latent_dims)
+        self.lstm1 = nn.LSTM(input_shape[1], 64, batch_first=False, bidirectional=False)
+        # self.lstm2 = nn.LSTM(100, 100, batch_first=False, bidirectional=True)
+        # self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=False, bidirectional=False)
+        self.fcmu = nn.Linear(64, latent_dims)
     
     def forward(self, x):
         # Flatten parameters for LSTM layers
         self.lstm1.flatten_parameters()
-        self.lstm2.flatten_parameters()
-        self.lstm3.flatten_parameters()
+        # self.lstm2.flatten_parameters()
+        # self.lstm3.flatten_parameters()
 
         x, _ = self.lstm1(x)
-        x = torch.tanh(x)
+        # x = torch.tanh(x)
 
-        x, _ = self.lstm2(x)
-        x = torch.tanh(x)
+        # x, _ = self.lstm2(x)
+        # x = torch.tanh(x)
 
-        x, _ = self.lstm3(x)
+        # x, _ = self.lstm3(x)
         x = torch.tanh(x[:, -1, :])  # taking output from the last time step
     
         mu = self.fcmu(x)
