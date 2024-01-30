@@ -288,6 +288,9 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 
     # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
     neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+    
+    device = torch.device('cpu')
+    neural.to(device) # ensure that RNN works on CPU
 
     ## pre-trained model StA VAE
     # neural = VariationalAutoencoder.load_from_checkpoint("../trained models/StA_VAE_5_Class/checkpoints/epoch=79-step=20000.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
