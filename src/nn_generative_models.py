@@ -50,7 +50,7 @@ class Encoder_RNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
         super(Encoder_RNN, self).__init__()
 
-        self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 64, batch_first=True, bidirectional=False)
+        self.lstm1 = nn.LSTM(10*input_shape[1], 64, batch_first=True, bidirectional=False)
         self.lstm2 = nn.LSTM(64, 32, batch_first=False, bidirectional=True)
         # self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=False, bidirectional=False)
         self.fcmu = nn.Linear(64, latent_dims)
