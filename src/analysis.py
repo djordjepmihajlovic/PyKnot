@@ -129,7 +129,7 @@ class Analysis:
         print(f"Corresponding to construction: {new_data} of a {new_data_label} knot")
 
         plt.title(f"StA {method} of β-VAE latent space")
-        plt.show()
+        plt.savefig("PCA.png")
 
 
     def StA_reconstruct(self, data, model):

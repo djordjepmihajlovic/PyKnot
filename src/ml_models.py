@@ -44,16 +44,18 @@ class DecisionTree:
 
         DT = Path(f"../trained models/DT_{self.prob}.sav")
 
-        if DT.is_file() == False:
+        if DT.is_file() == True:
             print("training...")
-            clf = tree.DecisionTreeClassifier()
+            clf = tree.DecisionTreeClassifier(max_depth=10)
             clf = clf.fit(self.X_train, self.y_train)
             filename = f'DT_{self.prob}.sav'
             pickle.dump(clf, open(filename, 'wb'))
 
         print("loading trained model...")
 
-        clf = pickle.load(open(f'../trained models/DT_{self.prob}.sav', 'rb'))
+        clf = pickle.load(open(f'DT_{self.prob}.sav', 'rb'))
+
+        #clf = pickle.load(open(f'../trained models/DT_{self.prob}.sav', 'rb'))
 
         y_pred = clf.predict(self.X_test)
         score = accuracy_score(self.y_test, y_pred)
@@ -70,7 +72,7 @@ class DecisionTree:
         plt.show()
 
         TREE = Path(f"../trained models/tree_{self.prob}.log")
-        if TREE.is_file() == False:
+        if TREE.is_file() == True:
             text_rep = tree.export_text(clf)
             with open(f"tree_{self.prob}.log", "w") as fout:
                 fout.write(text_rep)

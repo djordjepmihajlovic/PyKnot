@@ -89,5 +89,15 @@ The following methods are implemented differently to the TensorFlow base code an
     * Partial Dependence Plots - [ ] 
 
 
+NOTE:
+
+for source activation (slurm cluster usage on University of Edinburgh compute nodes) run:
+
+```
+conda activate pyknot
+```
+
+
+
 
 
