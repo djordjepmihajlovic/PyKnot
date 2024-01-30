@@ -57,10 +57,9 @@ class Encoder_RNN(nn.Module):
     
     def forward(self, x):
         # Flatten parameters for LSTM layers
-        if x.is_cuda:
-            self.lstm1.flatten_parameters()
-            self.lstm2.flatten_parameters()
-            self.lstm3.flatten_parameters()
+        self.lstm1.flatten_parameters()
+        self.lstm2.flatten_parameters()
+        self.lstm3.flatten_parameters()
 
         x, _ = self.lstm1(x)
         x = torch.tanh(x)
