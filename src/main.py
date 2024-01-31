@@ -301,7 +301,7 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 
     ## comment below out if pre-trained model
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=30, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
@@ -316,7 +316,7 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 
     analysis = Analysis(test_loader, neural, prob)
     e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
-    plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
+    plotter = analysis.dimensional_reduction_plot("TSNE", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     # mini_ls = []
     # maxi_ls = []

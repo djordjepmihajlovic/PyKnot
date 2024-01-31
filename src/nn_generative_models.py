@@ -85,7 +85,7 @@ class StSEncoder(nn.Module):
         x = F.leaky_relu(self.linear3(x))
         return self.linear4(x)
     
-################## <--RNN Encoder--> ###################
+################## <--RNN, XYZ Encoder--> ###################
     
 class Encoder_RNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
@@ -233,8 +233,8 @@ class Autoencoder(pl.LightningModule):
 
         self.loss_fn = loss
         self.optimiser = opt
-        self.encoder = Encoder_CNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_CNN(input_shape = input_shape, latent_dims = latent_dims)
+        self.encoder = Encoder_RNN(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
 
