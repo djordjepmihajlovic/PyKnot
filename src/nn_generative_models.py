@@ -233,7 +233,7 @@ class Autoencoder(pl.LightningModule):
 
         self.loss_fn = loss
         self.optimiser = opt
-        self.encoder = Encoder_RNN(input_shape = input_shape, latent_dims = latent_dims)
+        self.encoder = Encoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
         self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
