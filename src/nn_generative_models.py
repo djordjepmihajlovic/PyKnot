@@ -25,6 +25,47 @@ class Encoder(nn.Module):
         x = F.leaky_relu(self.linear3(x))
         return self.linear4(x)
     
+################## <--3 side by side FFNN Encoders--> ###################
+
+class Encoder_XYZ(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Encoder_XYZ, self).__init__()
+        self.flatten_layer = nn.Flatten()
+
+        self.linear1x = nn.Linear(input_shape[0]*input_shape[1], 320) # here is size of input data x1 (dimension flattened) and following hidden layer x2
+        self.linear2x = nn.Linear(320, 120)
+        self.linear3x = nn.Linear(120, 64)
+        self.linear4x = nn.Linear(64, latent_dims)
+
+        # self.linear1y = nn.Linear(100, 320) 
+        # self.linear2y = nn.Linear(320, 120)
+        # self.linear3y = nn.Linear(120, 64)
+        # self.linear4y = nn.Linear(64, latent_dims)
+
+        # self.linear1z = nn.Linear(100, 320) 
+        # self.linear2z = nn.Linear(320, 120)
+        # self.linear3z = nn.Linear(120, 64)
+        # self.linear4z = nn.Linear(64, latent_dims)
+
+    def forward(self, x):
+
+        x = self.flatten_layer(x)
+        x = F.leaky_relu(self.linear1x(x))
+        x = F.leaky_relu(self.linear2x(x))
+        x = F.leaky_relu(self.linear3x(x))
+
+        # y = self.flatten_layer(y)  
+        # y = F.leaky_relu(self.linear1y(y))
+        # y = F.leaky_relu(self.linear2y(y))
+        # y = F.leaky_relu(self.linear3y(y))
+
+        # z = self.flatten_layer(z)
+        # z = F.leaky_relu(self.linear1z(z))
+        # z = F.leaky_relu(self.linear2z(z))
+        # z = F.leaky_relu(self.linear3z(z))
+
+        return self.linear4x(x)
+    
 ################## <--FFNN Encoder with Attention--> ###################
 
 class StSEncoder(nn.Module):
@@ -63,11 +104,7 @@ class Encoder_RNN(nn.Module):
 
         x, _ = self.lstm1(x)
         x = torch.tanh(x)
-
         x, _ = self.lstm2(x)
-        # x = torch.tanh(x)
-
-        # x, _ = self.lstm3(x)
         x = torch.tanh(x[:, -1, :])  # taking output from the last time step
     
         mu = self.fcmu(x)
@@ -79,24 +116,26 @@ class Encoder_RNN(nn.Module):
 class Encoder_CNN(nn.Module):
     def __init__(self, input_shape, latent_dims):
         super(Encoder_CNN, self).__init__()
-        self.conv1 = nn.Conv3d(1, 256, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.pool = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
-        self.conv2 = nn.Conv3d(256, 512, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.conv3 = nn.Conv3d(512, 1024, kernel_size=(3, 3, 3), padding=(1, 1, 1))
-        self.pool2 = nn.MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2))
-        self.fc1 = nn.Linear(1024 * 3 * 3 * 3, 256)
-        self.dropout = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(256, 1)
+
+        self.flatten_layer = nn.Flatten(start_dim=1)
+
+        self.conv1 = nn.Conv1d(in_channels=input_shape[1], out_channels=32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv1d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
+
+        self.linear_mu = nn.Linear(64 * (input_shape[0]), latent_dims)
 
     def forward(self, x):
-        x = self.pool(F.leaky_relu(self.conv1(x)))
-        x = self.pool(F.leaky_relu(self.conv2(x)))
-        x = self.pool2(F.leaky_relu(self.conv3(x)))
-        x = x.view(-1, 1024 * 3 * 3 * 3)
-        x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = self.fc2(x)
-        return x
+
+        x = x.permute(0, 2, 1)
+
+        x = self.conv1(x)
+        x = F.relu(x)   
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.flatten_layer(x)
+        mu = self.linear_mu(x)
+
+        return mu
 
 
 ################## <--Attention using StS data--> ###################
@@ -161,6 +200,30 @@ class Decoder_XYZ(nn.Module):
 
         return z.reshape((-1, 100, 3)) 
     
+################## <--CNN, XYZ Decoder--> ###################
+    
+class Decoder_CNN(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Decoder_CNN, self).__init__()
+
+        self.input_shape = input_shape
+
+        self.linear1 = nn.Linear(latent_dims, 64 * (input_shape[0]))
+        self.conv1 = nn.ConvTranspose1d(in_channels=64, out_channels=32, kernel_size=3, padding=1)
+        self.conv2 = nn.ConvTranspose1d(in_channels=32, out_channels=input_shape[1], kernel_size=3, padding=1)
+
+    def forward(self, z):
+
+        z = self.linear1(z)
+        z = z.view(-1, 64, (self.input_shape[0]))   
+        z = self.conv1(z)
+        z = F.relu(z)
+        z = self.conv2(z)
+        z = F.relu(z)
+        z = z.permute(0, 2, 1)
+
+        return z
+    
 ################## <--Autoencoder (pl.LightningModule), forward (enc+dec), train, test, val--> ###################
     
 class Autoencoder(pl.LightningModule):
@@ -170,8 +233,8 @@ class Autoencoder(pl.LightningModule):
 
         self.loss_fn = loss
         self.optimiser = opt
-        self.encoder = Encoder_RNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
+        self.encoder = Encoder_CNN(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_CNN(input_shape = input_shape, latent_dims = latent_dims)
         
     def forward(self, x):
 
