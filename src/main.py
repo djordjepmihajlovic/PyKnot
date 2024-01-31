@@ -291,9 +291,10 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
 
     device = torch.device('cpu')
-    neural.to(device) # ensure that RNN works on CPU
+    # neural.to(device) # ensure that RNN works on CPU
 
     ## pre-trained model StA VAE
+    # neural = Autoencoder.load_from_checkpoint("../trained models/AE_01.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
     # neural = VariationalAutoencoder.load_from_checkpoint("../trained models/StA_VAE_5_Class/checkpoints/epoch=79-step=20000.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
     ## want to set up callable JSON file with completed training (so dont have to constantly retrain...)
     ## will take in input_shape, latent_dims, loss_fn, optimizer etc, find if trained model exists; if not run neural
@@ -316,7 +317,8 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
 
     analysis = Analysis(test_loader, neural, prob)
     e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
-    plotter = analysis.dimensional_reduction_plot("TSNE", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
+
+    plotter = analysis.dimensional_reduction_plot("none", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     # mini_ls = []
     # maxi_ls = []
@@ -337,10 +339,27 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # knot_predictor = NN.load_from_checkpoint("../trained models/StA_standard_predicition/checkpoints/epoch=86-step=21750.ckpt", model=model, loss=nn.CrossEntropyLoss, opt=optimizer)
 
     # val = 0
+    # latent_dim_values[0] = np.linspace(800, 850, 10) #true = 833.0503 (1), 841.9703 (5)
+    # x = []
+    # y = []
+    # z = []
     # for i in latent_dim_values[0]:
-    #     l_s = [i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    #     z = analysis.latent_space_generation(l_s, 1, knot_predictor, val)
+    #     l_s = [i, 790.7610, -437.7817, -865.9095, i, 187.5121, -1747.0660, -2124.1187, -787.0219, 805.7379]
+    #     # z = analysis.latent_space_generation(l_s, 1, knot_predictor, val)
+    #     x1, y1, z1 = analysis.latent_space_generation_XYZ(l_s, 1, val)
     #     val += 1
+    #     x.append(x1)
+    #     y.append(y1)    
+    #     z.append(z1)
+
+    # fig = plt.figure()  
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot(x[0], y[0], z[0], color='blue', alpha=0.5)
+    # ax.plot(x[5], y[5], z[5], color='green', alpha=0.5)
+    # ax.plot(x[9], y[9], z[9], color='red', alpha=0.5)
+    # plt.show()
+
+    
 
     # for i in latent_dim_values[1]:
     #     l_s = [0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

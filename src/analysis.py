@@ -19,6 +19,7 @@ class Analysis:
     def generative_latent_space(self): # change in this for StS to XYZ
 
         encoded_samples = []
+        ch = 1
         for x, k in self.data:
             self.model.encoder.eval()
             with torch.no_grad():
@@ -30,13 +31,15 @@ class Analysis:
 
         encoded_samples = pd.DataFrame(encoded_samples)
 
-        original_sample = x[:1]
+        original_sample = x[ch-1:ch]
+
+        print(original_sample)
 
         encoded_labels = encoded_samples["label"].copy()
         encoded_samples = encoded_samples.drop("label",axis=1)
 
-        latent_space_z = encoded_samples.values[:1].tolist()
-        label_z = encoded_labels[:1].tolist()
+        latent_space_z = encoded_samples.values[ch-1:ch].tolist()
+        label_z = encoded_labels[ch-1:ch].tolist()
 
         self.model.decoder.eval()
 
@@ -51,6 +54,25 @@ class Analysis:
         max = latent_space_df[f'Enc. Variable {col}'].max()
 
         return min, max  
+    
+    def latent_space_generation_XYZ(self, latent_space, dim, val):
+        self.model.decoder.eval()
+
+        with torch.no_grad():
+            z = self.model.decoder(torch.Tensor(latent_space))
+
+        prediction = z.detach().numpy()[0]
+        
+
+        x= prediction[:,0]
+        y= prediction[:,1]
+        z= prediction[:,2]
+
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111, projection='3d')
+        # ax.plot(x, y, z, color='blue', alpha=0.5)
+
+        return x, y, z
 
     def latent_space_generation(self, latent_space, dim, model, val):
 
@@ -62,6 +84,7 @@ class Analysis:
         x_list = np.arange(0, 100)
 
         prediction = z.detach().numpy()[0]
+
         print(f'{z} : predicted StA Writhe')
         with torch.no_grad():
             z_new = model.forward(z)
