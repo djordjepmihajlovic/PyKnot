@@ -203,24 +203,24 @@ class NN(pl.LightningModule):
         # calculate acc
 
         # # std. label
-        _, predicted = torch.max(z.data, 1) 
-        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        # _, predicted = torch.max(z.data, 1) 
+        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
         ## dowker
-        # true = 0
-        # false = 0
-        # predicted = torch.round(z)
-        # el = (y-predicted)
+        true = 0
+        false = 0
+        predicted = torch.round(z)
+        el = (y-predicted)
 
-        # for idx, i in enumerate(el):
-        #     if torch.sum(i) == 0.0:
-        #         true += 1
-        #     else:
-        #         false += 1
-        #         # print(f"true: {y[idx]}")
-        #         # print(f"predicted: {predicted[idx]}")
+        for idx, i in enumerate(el):
+            if torch.sum(i) == 0.0:
+                true += 1
+            else:
+                false += 1
+                # print(f"true: {y[idx]}")
+                # print(f"predicted: {predicted[idx]}")
 
-        # test_acc = true/(true+false)
+        test_acc = true/(true+false)
         #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs

@@ -41,7 +41,7 @@ class KnotDataset(Dataset):
             data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
 
         if dtype == "2DSIGWRITHE":
-            data_attention = np.loadtxt(os.path.join(dirname, fname))
+            data = np.loadtxt(os.path.join(dirname, fname))
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
 
@@ -134,7 +134,13 @@ class StA_2_inv(Dataset):
         print((os.path.join(dirname, fname)))
 
         # Loading the dataset file
-        data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+
+        if dtype == "SIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+
+        if dtype == "2DSIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname, fname))
+
         self.knot = knot
 
         # Loading the dataset labels

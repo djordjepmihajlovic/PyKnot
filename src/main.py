@@ -47,8 +47,14 @@ def main():
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
             print(in_layer)
-        else:
+
+        elif dtype == "2DSIGWRITHE":
+            in_layer = (Nbeads, Nbeads)
+            print(in_layer)
+
+        elif dtype == "SIGWRITHE":
             in_layer = (Nbeads, 1) # specify input layer (Different for sigwrithe and xyz)
+            print(in_layer)
 
         out_layer = len(knots)
 
@@ -90,11 +96,16 @@ def main():
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
-        else:
+
+        elif dtype == "2DSIGWRITHE":
+            in_layer = (Nbeads, Nbeads)
+
+        elif dtype == "SIGWRITHE":
             in_layer = (Nbeads, 1) # input layer
 
         if pdct == "dowker":
             out_layer = 32 # max length of longest row in dowker_{knot_choice}
+
         elif pdct == "jones":
             out_layer = 20 #[10*2]
 
@@ -287,25 +298,30 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
 def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs, model):
 
-    # neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
-    neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+    neural = VariationalAutoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=30)
+    #neural = Autoencoder(input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
 
-    device = torch.device('cpu')
     # neural.to(device) # ensure that RNN works on CPU
 
-    ## pre-trained model StA VAE
-    # neural = Autoencoder.load_from_checkpoint("../trained models/AE_01.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
-    # neural = VariationalAutoencoder.load_from_checkpoint("../trained models/StA_VAE_5_Class/checkpoints/epoch=79-step=20000.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
+    # pre-trained model StA VAE
+    #neural = Autoencoder.load_from_checkpoint("../trained models/AE_31.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
+    #neural = VariationalAutoencoder.load_from_checkpoint("../trained models/StA_VAE_5_Class/checkpoints/epoch=79-step=20000.ckpt",input_shape = input_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer, beta=1)
     ## want to set up callable JSON file with completed training (so dont have to constantly retrain...)
     ## will take in input_shape, latent_dims, loss_fn, optimizer etc, find if trained model exists; if not run neural
     ## check trainedmodels.json for structure...
 
     ## comment below out if pre-trained model
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=30, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
+
+    analysis = Analysis(test_loader, neural, prob)
+    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
+
+    plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
+    plotter = analysis.dimensional_reduction_plot("TSNE", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     # data_ideal_3_1 = torch.Tensor(np.loadtxt("../knot data/3_1_ideal_StA.csv", usecols=(2,)))
     # data_ideal_3_1 = data_ideal_3_1.view(-1, Nbeads, 1)
@@ -315,10 +331,6 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     #     z, dev = neural.encoder(data_ideal_3_1)
     #     print(z)
 
-    analysis = Analysis(test_loader, neural, prob)
-    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
-
-    plotter = analysis.dimensional_reduction_plot("none", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
     # mini_ls = []
     # maxi_ls = []
@@ -334,17 +346,18 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     #     latent_dim_values.append(latent_dim_range)
 
 
-    # want to have s.t. each graph has its predicted knot type
-        # predicts type of generated knot from VAE using pre-trained model (99.2% accuracy)
+    # # want to have s.t. each graph has its predicted knot type
+    #     # predicts type of generated knot from VAE using pre-trained model (99.2% accuracy)
     # knot_predictor = NN.load_from_checkpoint("../trained models/StA_standard_predicition/checkpoints/epoch=86-step=21750.ckpt", model=model, loss=nn.CrossEntropyLoss, opt=optimizer)
 
     # val = 0
-    # latent_dim_values[0] = np.linspace(800, 850, 10) #true = 833.0503 (1), 841.9703 (5)
+    # latent_dim_values[0] = np.linspace(365, 415, 10) # 391.2794 (6)
     # x = []
     # y = []
     # z = []
     # for i in latent_dim_values[0]:
-    #     l_s = [i, 790.7610, -437.7817, -865.9095, i, 187.5121, -1747.0660, -2124.1187, -787.0219, 805.7379]
+    #     l_s = [343.6745, -196.2178, -101.6741, -1174.2119, -1111.2736, i, 1814.0918, 93.6785, -139.0003, 1502.3513]
+    #     # [833.0503, 790.7610, -437.7817, -865.9095, 841.9703, 187.5121, -1747.0660, -2124.1187, -787.0219, 805.7379] 0_1 ideal
     #     # z = analysis.latent_space_generation(l_s, 1, knot_predictor, val)
     #     x1, y1, z1 = analysis.latent_space_generation_XYZ(l_s, 1, val)
     #     val += 1
@@ -352,19 +365,92 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     #     y.append(y1)    
     #     z.append(z1)
 
+    # A = np.column_stack((x[0], y[0], np.ones_like(x[0])))
+    # coefficients, _, _, _ = np.linalg.lstsq(A, z[0], rcond=None)   
+
     # fig = plt.figure()  
     # ax = fig.add_subplot(111, projection='3d')
     # ax.plot(x[0], y[0], z[0], color='blue', alpha=0.5)
-    # ax.plot(x[5], y[5], z[5], color='green', alpha=0.5)
+    # # ax.plot(x[5], y[5], z[5], color='green', alpha=0.5)
     # ax.plot(x[9], y[9], z[9], color='red', alpha=0.5)
+
+    # print(torch.min(x[0]))
+
+    # minx = torch.min(x[0])
+    # maxx = torch.max(x[0])  
+    # miny = torch.min(y[0])
+    # maxy = torch.max(y[0])
+
+    # # Define a grid of points in the x-y plane
+    # x_grid, y_grid = np.meshgrid(np.linspace(min(x[0]), max(x[0]), 10), np.linspace(min(y[0]), max(y[0]), 10))
+
+    # # Calculate corresponding z values using the plane equation
+    # z_grid = coefficients[0] * x_grid + coefficients[1] * y_grid + coefficients[2]
+
+    # # Plot the plane
+    # ax.plot_surface(x_grid, y_grid, z_grid, color='red', alpha=0.2)
+
     # plt.show()
 
-    
 
-    # for i in latent_dim_values[1]:
-    #     l_s = [0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    #     z = analysis.latent_space_generation(l_s, 2, knot_predictor, val)
-    #     val += 1
+
+    # for i in perturb:
+
+    ################## <---- Below are preturbations of 3_1 latent space of StA data ----> ###################
+
+    # l_s_max = [1.5, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-1.5, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 1)
+
+    # l_s_max = [-0.1383, -1.5, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, 1.5, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 2)
+
+    # l_s_max = [-0.1383, -0.2614, -1.5, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, 1.5, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 3)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, 0.5, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -2.5, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 4)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, 1.5, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -1.5, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 5)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, 1, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -2, -1.0462,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 6)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, 0.5,  2.9252, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -2.5,  2.9252, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 7)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  4.5, 0.4044,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  1, 0.4044,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 8)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 2,  1.5942]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, -1,  1.5942]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 9)
+
+    # l_s_max = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  3]
+    # l_s_true = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  1.5942]
+    # l_s_min = [-0.1383, -0.2614, -0.2328, -1.1990, -0.0818, -0.4015, -1.0462,  2.9252, 0.4044,  0]
+    # z = analysis.latent_space_generation_maxmin(l_s_max, l_s_true, l_s_min, 2, knot_predictor, 10)
+
+
+
+
 
     # for i in latent_dim_values[2]:
     #     l_s = [0.0, 0.0, i, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -439,7 +525,5 @@ if __name__ == "__main__":
     pers_len = args.pers_len
     pdct = args.predictor
     model_type = args.model_type
-    if pdct == "dowker":
-        dtype = "SIGWRITHE"
 
     main()

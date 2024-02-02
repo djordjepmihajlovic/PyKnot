@@ -185,6 +185,21 @@ class Decoder_StA(nn.Module):
 
         return z.reshape((-1, 100, 1)) 
     
+################## <--StS Decoder--> ###################
+    
+class Decoder_StS(nn.Module):
+    def __init__(self, input_shape, latent_dims):
+        super(Decoder_StS, self).__init__()
+
+        self.linear1 = nn.Linear(latent_dims, 320)
+        self.linear2 = nn.Linear(320, 100*100) #input_shape[0]*input_shape[1])
+
+    def forward(self, z):
+        z = F.leaky_relu(self.linear1(z))
+        z = self.linear2(z) 
+
+        return z.reshape((-1, 100, 100)) 
+    
 ################## <--XYZ Decoder-> ###################
     
 class Decoder_XYZ(nn.Module):
@@ -334,7 +349,7 @@ class VariationalEncoderFFNN(nn.Module):
         mu = self.linear3(x) # mean (mu) layer
         log_sigma = self.linear4(x) # log variance layer
 
-        return mu, log_sigma  # not currently log_sigma has a tanh (for XYZ)
+        return mu, log_sigma # tanh activation function for log_sigma 
     
 ################## <--VAE RNN Encoder (two encodings= mean encoding and deviation encoding)--> ###################
     
@@ -373,7 +388,7 @@ class VariationalAutoencoder(pl.LightningModule):
         self.optimiser = opt
         self.beta = beta
         self.encoder = VariationalEncoderFFNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_XYZ(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_StS(input_shape = input_shape, latent_dims = latent_dims)
 
     def reparameterization(self, mu, sigma):
 
