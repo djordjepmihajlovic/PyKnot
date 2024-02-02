@@ -31,7 +31,7 @@ class Analysis:
 
         encoded_samples = pd.DataFrame(encoded_samples)
 
-        original_sample = x[ch-1:ch]
+        # original_sample = x[ch-1:ch]
 
         encoded_labels = encoded_samples["label"].copy()
         encoded_samples = encoded_samples.drop("label",axis=1)
