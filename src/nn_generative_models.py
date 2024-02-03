@@ -25,7 +25,7 @@ class Encoder(nn.Module):
         x = F.leaky_relu(self.linear3(x))
         return self.linear4(x)
     
-################## <--3 side by side FFNN Encoders--> ###################
+################## <--xyz FFNN Encoders--> ###################
 
 class Encoder_XYZ(nn.Module):
     def __init__(self, input_shape, latent_dims):
@@ -349,7 +349,7 @@ class VariationalEncoderFFNN(nn.Module):
         mu = self.linear3(x) # mean (mu) layer
         log_sigma = self.linear4(x) # log variance layer
 
-        return mu, log_sigma # tanh activation function for log_sigma 
+        return mu, log_sigma 
     
 ################## <--VAE RNN Encoder (two encodings= mean encoding and deviation encoding)--> ###################
     
@@ -373,9 +373,9 @@ class VariationalEncoderRNN(nn.Module):
         x = F.tanh(x[:, -1, :])  # taking output from the last time step
     
         mu = self.fcmu(x)
-        log_sigma = self.fcsig(x)
+        log_sigma = self.fcsig(x) 
 
-        return mu, log_sigma
+        return mu, log_sigma 
     
 ################## <--VariationalAutoencoder (pl.LightningModule), forward (enc+dec), train, test, val--> ###################
     

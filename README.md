@@ -97,7 +97,10 @@ for source activation (slurm cluster usage on University of Edinburgh compute no
 conda activate pyknot
 ```
 
+THINGS TO DO!
 
+- XYZ reconstruction/attention with StS on cluster
+- analyze trained StS models (latent dims 10: 35000, latent dims 20: 25000)
 
 
 
