@@ -70,7 +70,7 @@ def main():
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
-            generate(input_shape=in_layer, latent_dims = 50, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs, model = model) # note model here is standard FFNN used for predicting generated knot type
+            generate(input_shape=in_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs, model = model) # note model here is standard FFNN used for predicting generated knot type
 
 ################## <--'invariant' problem : predict data from StA -> some invariant--> ###################
 
