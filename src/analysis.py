@@ -103,7 +103,7 @@ class Analysis:
         plt.ylim([-2.5, 2.5])
         plt.grid()
         plt.xlabel('Bead index')
-        plt.ylabel(f'Generated StA Writhe {knot_type}.')
+        plt.ylabel(f'Generated StS Writhe {knot_type}.')
         plt.title(f"Certainty: {certainty:.2f}")
         ax = plt.gca()
         # if knot_type == 0:
@@ -220,15 +220,17 @@ class Analysis:
             pca = PCA(n_components=2)
             encoded_samples_reduced_PCA = pca.fit_transform(encoded_samples)
             sns.scatterplot( x=encoded_samples_reduced_PCA[:,0], y=encoded_samples_reduced_PCA[:,1], hue=[label_names[l] for l in encoded_labels])
-            plt.title(f"StA {method} of β-VAE latent space")
+            plt.title(f"StS {method} of β-VAE latent space")
             plt.savefig(f"{method}.png")
+            plt.close()
 
         elif method == "TSNE":
             tsne = TSNE(n_components=2)
             encoded_samples_reduced_TSNE = tsne.fit_transform(encoded_samples)
             sns.scatterplot( x=encoded_samples_reduced_TSNE[:,0], y=encoded_samples_reduced_TSNE[:,1], hue=[label_names[l] for l in encoded_labels])
-            plt.title(f"StA {method} of β-VAE latent space")
+            plt.title(f"StS {method} of β-VAE latent space")
             plt.savefig(f"{method}.png")
+            plt.close()
 
 
 
