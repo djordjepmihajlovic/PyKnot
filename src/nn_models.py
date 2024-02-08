@@ -93,7 +93,7 @@ class RNNModel(nn.Module):
         self.lstm1 = nn.LSTM(input_shape[1], 64, batch_first=True, bidirectional=False)
         self.lstm2 = nn.LSTM(64, 32, batch_first=True, bidirectional=True)
 
-        self.fc = nn.Linear(100, output_shape)
+        self.fc = nn.Linear(32, output_shape)
 
     def forward(self, x):
 
