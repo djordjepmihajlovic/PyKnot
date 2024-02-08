@@ -81,14 +81,17 @@ class RNNModel(nn.Module):
     def __init__(self, input_shape, output_shape, norm):
         super(RNNModel, self).__init__()
 
-        if norm:
-            self.bn_layer = nn.BatchNorm1d(input_shape[0])
-            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100)
-        else:
-            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
+        # if norm:
+        #     self.bn_layer = nn.BatchNorm1d(input_shape[0])
+        #     self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100)
+        # else:
+        #     self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
 
-        self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
-        self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
+        # self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
+        # self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
+
+        self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 64, batch_first=True, bidirectional=False)
+        self.lstm2 = nn.LSTM(64, 32, batch_first=True, bidirectional=True)
 
         self.fc = nn.Linear(100, output_shape)
 
@@ -106,7 +109,20 @@ class RNNModel(nn.Module):
         out = self.fc(out)
 
         # return out # <- std
-        return out.view(-1, 100, 1) # <- XYZ2Sig (unadulterated data)
+        if self.pred == "class":
+            return F.softmax(x, dim=1) 
+        
+        elif self.pred == "dowker":
+            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
+        
+        elif self.pred == "jones":
+            return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
+        
+        # also technically this makes little sense, i think the neural network is just 'learning' the different knot types
+        # and then choosing the correct label :(
+        
+        elif self.pred == "quantumA2":
+            return x.view(-1, 31, 2) # <- same as Jones
 
 ################## <--CNN--> ###################
 
