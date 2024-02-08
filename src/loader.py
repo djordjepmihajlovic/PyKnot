@@ -143,8 +143,8 @@ class data_2_inv(Dataset):
 
         self.knot = knot
 
-        # Loading the dataset labels
-        labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
+        ## Loading the dataset labels, only needed for direct dowker prediction
+        # labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
         
         if invariant == "dowker":
 
