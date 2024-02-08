@@ -13,6 +13,7 @@ from loader import *
 from ml_models import *  # KNN and DT models
 from nn_models import *
 from nn_generative_models import *
+from nn_concept_models import *
 from analysis import *
 from data_generation import *
 
@@ -30,9 +31,9 @@ def main():
     if pdct == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
         for i, knot in enumerate(knots): 
             indicies = np.arange(0, len_db) # first len_db
-            #datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+            datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-            datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+            #datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -76,9 +77,14 @@ def main():
 
     elif pdct in properties: 
 
+        # StS predict dowker unseen **wed 7th Feb**
+
+        # Renzo ricca helicity 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(Subset(StA_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            #datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            ##on cluster use below:
+            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -91,8 +97,11 @@ def main():
 
         ## unsupervised predictions
 
-        # dataset_unsupervised= Subset(StA_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)
-        # dont_train, test_dataset_singular, val_dataset_singular = split_train_test_validation(dataset_unsupervised, (int(len(dataset_unsupervised)*0.1)), (int(len(dataset_unsupervised)*0.7)), (int(len(dataset_unsupervised)*0.2)), bs)
+        #dataset_unsupervised= Subset(data_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)
+
+        ##on cluster use below:
+        dataset_unsupervised= (Subset(data_2_inv(os.path.join(master_knots_dir,"5_2",f"N{Nbeads}",f"lp{pers_len}"), "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies))
+        dont_train, test_dataset_singular, val_dataset_singular = split_train_test_validation(dataset_unsupervised, (int(len(dataset_unsupervised)*0.1)), (int(len(dataset_unsupervised)*0.7)), (int(len(dataset_unsupervised)*0.2)), bs)
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
@@ -104,7 +113,7 @@ def main():
             in_layer = (Nbeads, 1) # input layer
 
         if pdct == "dowker":
-            out_layer = 32 # max length of longest row in dowker_{knot_choice}
+            out_layer = 7 # max length of longest row in dowker_{knot_choice}
 
         elif pdct == "jones":
             out_layer = 20 #[10*2]
@@ -115,7 +124,7 @@ def main():
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss()
-            train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset_singular, test_loader= test_dataset_singular, epochs = epochs)
 
         if mode == "generate":
             print("generate not available for invariant prediction; try: python main.py -m generate -pred class")
@@ -150,6 +159,31 @@ def main():
             loss_fn = nn.MSELoss() 
             optimizer = "adam"
             generate_with_attention(input_shape=in_layer, output_shape=out_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+
+    elif pdct == "concept":
+        for i, knot in enumerate(knots):
+            indicies = np.arange(0, len_db) # first len_db
+            datasets.append(Subset(ConceptKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+
+        dataset = ConcatDataset(datasets) # concatenate datasets together
+        print(dataset[0])
+
+        ninputs = len(dataset)
+        print(ninputs)
+
+        train_len = int(ninputs * (0.9))
+        test_len = int(ninputs * (0.075))
+        val_len = ninputs - (train_len + test_len)
+        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
+
+        in_layer = (Nbeads, 1)
+        concept_layer = (8, 1) # 5x1 tensor
+        out_layer = len(knots)
+
+        if mode == "train":
+            loss_fn = nn.CrossEntropyLoss()
+            optimizer = "adam"
+            train_with_bottleneck(input_shape=in_layer, concept_shape=concept_layer, output_shape=out_layer, loss_fn=loss_fn, optimizer=optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
 
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
@@ -293,7 +327,15 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     # plt.show()
         
 # def check_knot(knot_construct, model, loss_fn, optimizer):
+        
+def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
+    neural = onlyconceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
+
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
+    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+    trainer.fit(neural, train_loader, val_loader)
+    trainer.test(dataloaders=test_loader)
 
 
 def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs, model):
@@ -357,6 +399,7 @@ def generate(input_shape, latent_dims, loss_fn, optimizer, train_loader, val_loa
     # z = []
     # for i in latent_dim_values[0]:
     #     l_s = [343.6745, -196.2178, -101.6741, -1174.2119, -1111.2736, i, 1814.0918, 93.6785, -139.0003, 1502.3513]
+    # shortest line from two ideal latent spaces
     #     # [833.0503, 790.7610, -437.7817, -865.9095, 841.9703, 187.5121, -1747.0660, -2124.1187, -787.0219, 805.7379] 0_1 ideal
     #     # z = analysis.latent_space_generation(l_s, 1, knot_predictor, val)
     #     x1, y1, z1 = analysis.latent_space_generation_XYZ(l_s, 1, val)

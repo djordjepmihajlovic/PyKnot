@@ -62,13 +62,13 @@ class FFNNModel(nn.Module):
             return F.softmax(x, dim=1) 
         
         elif self.pred == "dowker":
-            return x.view(-1, 32, 1) # <- have: StA_2_DT (-1, 7, 1) (7Class)
+            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
         
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
         
         # also technically this makes little sense, i think the neural network is just 'learning' the different knot types
-        # and then choosing the correct label
+        # and then choosing the correct label :(
         
         elif self.pred == "quantumA2":
             return x.view(-1, 31, 2) # <- same as Jones
@@ -270,7 +270,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.00001)
+        optimizer = optim.Adam(model.parameters(), lr=0.000001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:
@@ -309,7 +309,7 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = optim.Adam(model.parameters(), lr=0.00001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:

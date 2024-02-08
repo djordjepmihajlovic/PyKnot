@@ -1,8 +1,8 @@
 # fixes up csv files such that zeros are appended
-
+# this program 0 pads all data files such that we can have consistently shaped inputs for ML training
 import csv
 
-knot_choice = "0_1"
+knot = "0_1"
 
 def pad_row(row, target_lengths):
     padded_row = row + [0] * (target_lengths - len(row))
@@ -23,6 +23,7 @@ def find_longest_row_length(csv_file):
         max_row_length = max(len(row) for row in reader)
     return max_row_length
 
-max_length = find_longest_row_length(f'../../knot data/dowker_{knot_choice}_padded.csv')
+max_length = find_longest_row_length(f'../../knot data/sta concepts/peaks prominence=0.2/peak distance/peaksep_{knot}_prom=0.2.csv')
+print(max_length)
 
-pad_csv(f'../../knot data/dowker_{knot_choice}.csv', f'../../knot data/dowker_{knot_choice}_padded.csv', max_length)
+pad_csv(f'../../knot data/sta concepts/peaks prominence=0.2/peak distance/peaksep_{knot}_prom=0.2.csv', f'../../knot data/sta concepts/peaks prominence=0.2/peak distance/peaksep_{knot}_prom=0.2_padded.csv', 8)

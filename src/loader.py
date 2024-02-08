@@ -78,7 +78,7 @@ class KnotDataset(Dataset):
         else:
             return self.dataset[idx]
         
-class StA_2_inv(Dataset):
+class data_2_inv(Dataset):
 
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label, invariant):
         """Class wrapper for dataset generation --> prediction problem
@@ -96,7 +96,7 @@ class StA_2_inv(Dataset):
         Returns:
             torch.Dataset
         """
-        super(StA_2_inv, self).__init__()
+        super(data_2_inv, self).__init__()
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
 
@@ -144,17 +144,17 @@ class StA_2_inv(Dataset):
         self.knot = knot
 
         # Loading the dataset labels
-        labels = np.loadtxt(f'../knot data/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
+        labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
         
         if invariant == "dowker":
 
             ## used for pure dowker code
-            # self.label = torch.tensor(self.dowker_codes[self.knot])
-            # self.label = self.label.view(7, 1)
+            self.label = torch.tensor(self.dowker_codes[self.knot])
+            self.label = self.label.view(7, 1)
 
             ## used for generated dowker code
-            self.label = torch.tensor(labels, dtype=torch.float32)
-            self.label = self.label.view(-1, 32, 1)
+            # self.label = torch.tensor(labels, dtype=torch.float32)
+            # self.label = self.label.view(-1, 32, 1)
 
         elif invariant == "jones":
             self.label = torch.tensor(self.jones[self.knot])
@@ -176,9 +176,72 @@ class StA_2_inv(Dataset):
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
             dowker_lb = math.floor(idx/100) # get label attributed to 100 bead section
-            return self.dataset[idx], self.label[dowker_lb]
+            return self.dataset[idx], self.label #self.label[dowker_lb]
         else:
             return self.dataset[idx]
+        
+
+class ConceptKnotDataset(Dataset):
+
+    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
+        """Class wrapper for dataset generation --> prediction problem
+
+        Args:
+            (example: SIGWRITHE --> DT code)
+            dirname (str): knot master directory location
+            knot (str): knot being called
+            net (str): neural network trype
+            dtype (str): data type used for features (eg. SIGWRITHE)
+            Nbeads (int): number of beads
+            pers_len (int): persistence length
+            label: corresponding label of data being called
+
+        Returns:
+            torch.Dataset
+        """
+        super(ConceptKnotDataset, self).__init__()
+
+        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
+
+        n_col = len(select_cols)
+        
+        print((os.path.join(dirname, fname)))
+
+        self.label = label
+
+        # Loading the dataset file
+
+        if dtype == "SIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
+
+
+        self.knot = knot
+
+        # Loading the dataset labels
+
+        concept1 = np.loadtxt(f'../knot data/sta concepts/peaks prominence=0.2/peak order/peakpermute_{knot}_prom=0.2_padded.csv', delimiter=',', dtype=np.float32)
+        concept2 = np.loadtxt(f'../knot data/sta concepts/peaks prominence=0.2/peak distance/peaksep_{knot}_prom=0.2_padded.csv', delimiter=',', dtype=np.float32)
+
+        self.concept1 = torch.tensor(concept1, dtype=torch.float32)
+        self.concept1 = self.concept1.view(-1, 8, 1) # 5 is max length of peak order (padded)
+
+        self.concept2 = torch.tensor(concept2, dtype=torch.float32)
+        self.concept2 = self.concept2.view(-1, 8, 1)
+
+        self.dataset = torch.tensor(data, dtype=torch.float32)
+        self.dataset = self.dataset.view(-1, Nbeads, n_col)
+
+        if dtype == "XYZ":
+            self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
+
+    def __len__(self):
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        lb = math.floor(idx/100) # get concepts attributed to 100 bead section
+        return self.dataset[idx], self.concept1[lb], self.concept2[lb], self.label
+
+        
         
 class WeightedKnotDataset(Dataset):  # right now going to set up so that it takes in StS and creates XYZ
 

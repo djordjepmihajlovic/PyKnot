@@ -36,8 +36,8 @@ latent dim 9: | (min), (...), (0), (...), (max)
 
 In addition decision tree models have designed and tested, 
 An attempt to train StA to predict dowker code failed X
-Attempt to train StS to predict dowker code?
-Attempt to train XYZ to predict dowker code?
+Attempt to train StS to predict dowker code, failed X
+Attempt to train XYZ to predict dowker code?? - not hopefull...
 
 
 

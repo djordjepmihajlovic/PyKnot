@@ -6,3 +6,4 @@ src/latent_plots
 *.png
 src/__pycache__
 *.pyc
+/knot data

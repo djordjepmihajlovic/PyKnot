@@ -100,7 +100,21 @@ conda activate pyknot
 THINGS TO DO!
 
 - XYZ reconstruction/attention with StS on cluster
-- analyze trained StS models (latent dims 10: 35000, latent dims 20: 25000)
+- analyze trained StS models (latent dims 10: 35000, latent dims 20: 25000, latent dims 50: )
+- ideal latent dim size 
+- concept bottleneck models:
+
+--> BOTTLENECK CONCEPTS <--
+StA:
+* Peak number
+* Peak prominence order
+* Avg peak separation
+* Avg peak width
+
+
+* Test different prominences for peak number?
+* How to deal with `looping'?
+
 
 
 
