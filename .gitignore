@@ -6,4 +6,7 @@ src/latent_plots
 *.png
 src/__pycache__
 *.pyc
-/knot data
+/knot data/ideal
+/knot data/plots
+/knot data/reconstructions
+/knot data/sta concepts
