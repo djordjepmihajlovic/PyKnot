@@ -80,7 +80,7 @@ def generate_model(net, in_layer, out_layer, norm, predict):
         model = setup_FFNN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL", predict=predict)
     
     elif net == "RNN":
-        model = setup_RNN(in_layer, out_layer, opt="adam", norm=norm, loss="MSE")
+        model = setup_RNN(in_layer, out_layer, opt="adam", norm=norm, loss="MSE", predict=predict)
 
     elif net == "CNN":
         model = setup_CNN(in_layer, out_layer, opt="adam", norm=norm, loss="CEL")

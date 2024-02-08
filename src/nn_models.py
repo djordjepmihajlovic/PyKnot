@@ -78,7 +78,7 @@ class FFNNModel(nn.Module):
 ################## <--RNN--> ###################
 
 class RNNModel(nn.Module):
-    def __init__(self, input_shape, output_shape, norm):
+    def __init__(self, input_shape, output_shape, norm, predict):
         super(RNNModel, self).__init__()
 
         # if norm:
@@ -94,6 +94,7 @@ class RNNModel(nn.Module):
         self.lstm2 = nn.LSTM(64, 32, batch_first=True, bidirectional=True)
 
         self.fc = nn.Linear(64, output_shape)
+        self.pred = predict
 
     def forward(self, x):
 
@@ -295,7 +296,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
 ################## <--RNN config--> ###################
 
-def setup_RNN(input_shape, output_shape, opt, norm, loss):
+def setup_RNN(input_shape, output_shape, opt, norm, loss, predict):
     """setup function --> defines required network using helper
 
     Args:
@@ -312,7 +313,7 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss):
     """
 
     # model
-    model = RNNModel(input_shape, output_shape, norm)
+    model = RNNModel(input_shape, output_shape, norm, predict)
 
     # loss function 
     if loss == "CEL":
