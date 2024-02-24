@@ -137,7 +137,6 @@ class Encoder_CNN(nn.Module):
 
         return mu
 
-
 ################## <--Attention using StS data--> ###################
 
 class Attention(nn.Module):
@@ -238,6 +237,22 @@ class Decoder_CNN(nn.Module):
         z = z.permute(0, 2, 1)
 
         return z
+    
+################## <--Decoder Cond--> ###################
+    
+class Decoder_StA_Cond(nn.Module):
+    def __init__(self, input_shape, cond_shape, latent_dims):
+        super(Decoder_StA_Cond, self).__init__()
+
+        self.linear1 = nn.Linear(latent_dims + cond_shape[0]*cond_shape[1], 320)
+        self.linear2 = nn.Linear(320, input_shape[0]*input_shape[1])
+
+    def forward(self, z, cond):
+        z = torch.cat([z, cond], dim=1)
+        z = F.leaky_relu(self.linear1(z))
+        z = self.linear2(z) 
+
+        return z.reshape((-1, 100, 3)) 
     
 ################## <--Autoencoder (pl.LightningModule), forward (enc+dec), train, test, val--> ###################
     
@@ -351,6 +366,29 @@ class VariationalEncoderFFNN(nn.Module):
 
         return mu, log_sigma 
     
+################## <--Cond .VAE Encoder (two encodings= mean encoding and deviation encoding)--> ###################
+
+class Cond_VariationalEncoder(nn.Module):
+    def __init__(self, input_shape, cond_shape, latent_dims):
+        super(Cond_VariationalEncoder, self).__init__()
+        self.flatten = nn.Flatten()
+
+        self.linear1 = nn.Linear(input_shape[0]*input_shape[1] + cond_shape[0]*cond_shape[1], 320)
+        self.linear2 = nn.Linear(320, 64) 
+        self.linear3 = nn.Linear(64, latent_dims)
+        self.linear4 = nn.Linear(64, latent_dims)
+
+    def forward(self, x, cond):
+        # x = torch.flatten(x, start_dim=1)
+        x = self.flatten(x)
+        x = torch.cat([x, cond], dim=1)
+        x = F.leaky_relu(self.linear1(x))
+        x = F.leaky_relu(self.linear2(x))
+        mu = self.linear3(x) # mean (mu) layer
+        log_sigma = self.linear4(x) # log variance layer
+
+        return mu, log_sigma 
+    
 ################## <--VAE RNN Encoder (two encodings= mean encoding and deviation encoding)--> ###################
     
 class VariationalEncoderRNN(nn.Module):
@@ -388,7 +426,7 @@ class VariationalAutoencoder(pl.LightningModule):
         self.optimiser = opt
         self.beta = beta
         self.encoder = VariationalEncoderFFNN(input_shape = input_shape, latent_dims = latent_dims)
-        self.decoder = Decoder_StS(input_shape = input_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_StA(input_shape = input_shape, latent_dims = latent_dims)
 
     def reparameterization(self, mu, sigma):
 
@@ -435,4 +473,63 @@ class VariationalAutoencoder(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch 
         z = self.forward(x)
+
+################## <--VariationalAutoencoder (pl.LightningModule), forward (enc+dec), train, test, val--> ###################
+    
+class ConditionalVAE(pl.LightningModule):
+
+    def __init__(self,  input_shape, cond_shape, latent_dims,  loss, opt, beta):
+
+        super().__init__()
+
+        self.optimiser = opt
+        self.beta = beta
+        self.encoder = Cond_VariationalEncoder(input_shape = input_shape, cond_shape = cond_shape, latent_dims = latent_dims)
+        self.decoder = Decoder_StA_Cond(input_shape = input_shape, cond_shape = cond_shape, latent_dims = latent_dims)
+
+    def reparameterization(self, mu, sigma):
+
+        epsilon = torch.randn_like(sigma)                    
+        z = mu + sigma*epsilon                          
+        return z
+        
+    def forward(self, x, cond):
+
+        mean, log_sigma = self.encoder(x, cond)
+        z = self.reparameterization(mean, torch.exp(0.5 * log_sigma)) 
+        x_hat = self.decoder(z, cond)
+        return x_hat, mean, log_sigma, z
+
+    def configure_optimizers(self):
+
+        if self.optimiser == 'adam':
+            return torch.optim.Adam(self.parameters(), lr=0.0001) # 0.001 FFNN 
+        
+    def loss_function(self, x, x_hat, mean, log_sigma):
+
+        MSE = F.mse_loss(x_hat, x, reduction='sum') # reduction sum returned best results for StA
+        KLD = self.beta*(- 0.5 * torch.sum(1+ log_sigma - mean.pow(2) - log_sigma.exp()))
+
+        return MSE + KLD
+
+    def training_step(self, batch, batch_idx,  loss_name = 'train_loss'):
+        x, cond, y = batch
+        x_hat, mean, log_sigma = self.forward(x, cond)
+
+        loss = self.loss_function(x, x_hat, mean, log_sigma) # x in place of y usually
+        self.log(loss_name, loss, on_epoch=True, on_step=True)
+
+        return loss
+    
+    def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
+        x, cond, y = batch
+        x_hat, mean, log_sigma = self.forward(x, cond)
+
+        loss = self.loss_function(x, x_hat, mean, log_sigma) # x in place of y usually
+        self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        x, cond, y = batch 
+        x_hat, mean, log_sigma = self.forward(x, cond)
 

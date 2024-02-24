@@ -58,7 +58,7 @@ class FFNNModel(nn.Module):
         x = self.output_layer(x)
 
 
-        if self.pred == "class":
+        if self.pred == "class" or "latent":
             return F.softmax(x, dim=1) 
         
         elif self.pred == "dowker":
@@ -117,9 +117,6 @@ class RNNModel(nn.Module):
         
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
-        
-        # also technically this makes little sense, i think the neural network is just 'learning' the different knot types
-        # and then choosing the correct label :(
         
         elif self.pred == "quantumA2":
             return x.view(-1, 31, 2) # <- same as Jones
@@ -219,24 +216,24 @@ class NN(pl.LightningModule):
         # calculate acc
 
         # # std. label
-        # _, predicted = torch.max(z.data, 1) 
-        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        _, predicted = torch.max(z.data, 1) 
+        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
         ## dowker
-        true = 0
-        false = 0
-        predicted = torch.round(z)
-        el = (y-predicted)
+        # true = 0
+        # false = 0
+        # predicted = torch.round(z)
+        # el = (y-predicted)
 
-        for idx, i in enumerate(el):
-            if torch.sum(i) == 0.0:
-                true += 1
-            else:
-                false += 1
-                # print(f"true: {y[idx]}")
-                # print(f"predicted: {predicted[idx]}")
+        # for idx, i in enumerate(el):
+        #     if torch.sum(i) == 0.0:
+        #         true += 1
+        #     else:
+        #         false += 1
+        #         # print(f"true: {y[idx]}")
+        #         # print(f"predicted: {predicted[idx]}")
 
-        test_acc = true/(true+false)
+        # test_acc = true/(true+false)
         #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs
@@ -286,7 +283,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.000001)
+        optimizer = optim.Adam(model.parameters(), lr=0.0001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:

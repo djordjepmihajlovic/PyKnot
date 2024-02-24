@@ -4,6 +4,7 @@ from sklearn import tree
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 import pickle
 from pathlib import Path
@@ -44,9 +45,9 @@ class DecisionTree:
 
         DT = Path(f"../trained models/DT_{self.prob}.sav")
 
-        if DT.is_file() == True:
+        if DT.is_file() == False:
             print("training...")
-            clf = tree.DecisionTreeClassifier(max_depth=10)
+            clf = tree.DecisionTreeClassifier(max_depth=20)
             clf = clf.fit(self.X_train, self.y_train)
             filename = f'DT_{self.prob}.sav'
             pickle.dump(clf, open(filename, 'wb'))
@@ -62,13 +63,7 @@ class DecisionTree:
         conf_mat = confusion_matrix(self.y_test, y_pred)
         print(f"Accuracy: {score*100}%")
         print(conf_mat)
-
-        sns.heatmap(conf_mat, annot=True, fmt='g');  
-        ax = plt.gca()
-        ax.set_xlabel('Predicted labels')
-        ax.set_ylabel('True labels')
-        ax.set_title('Confusion Matrix')
-        ax.xaxis.set_ticklabels(get_knots(self.prob)); ax.yaxis.set_ticklabels(get_knots(self.prob))
+        ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=get_knots(self.prob)).plot()
         plt.show()
 
         TREE = Path(f"../trained models/tree_{self.prob}.log")
@@ -78,6 +73,9 @@ class DecisionTree:
                 fout.write(text_rep)
 
         test_point = self.X_train[2]
+        prediction = clf.predict(test_point.reshape(1, -1))
+        print(self.y_train[2])
+        print(prediction)
         decision_path = clf.decision_path(test_point.reshape(1, -1)).toarray()[0]
         tree_structure = clf.tree_
         importance = (clf.feature_importances_)

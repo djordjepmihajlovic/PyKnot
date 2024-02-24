@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
+import numpy as np
 
 # lightning modules
 import pytorch_lightning as pl
@@ -62,7 +64,7 @@ class conceptFFNNModel(nn.Module):
 
         x = self.output_layer(x)
 
-        return x_concept1.view(-1, 5, 1), x_concept2.view(-1, 5, 1), F.softmax(x, dim=1) 
+        return x_concept1.view(-1, 1, 1), x_concept2.view(-1, 1, 1), F.softmax(x, dim=1) 
     
 ################## <--FFNN--> ###################
 
@@ -142,7 +144,7 @@ class conceptNN(pl.LightningModule):
         loss_prediction = self.loss_classify(z, y)
         loss_concept1 = self.loss_concept(z_concept1, c1)
         loss_concept2 = self.loss_concept(z_concept2, c2)
-        loss = loss_prediction + loss_concept1 + loss_concept2
+        loss = 0.001*(loss_concept1 + loss_concept2) + 5*(loss_prediction)
 
         self.log(loss_name, loss, on_epoch=True, on_step=True)
         return loss
@@ -154,7 +156,7 @@ class conceptNN(pl.LightningModule):
         loss_prediction = self.loss_classify(z, y)
         loss_concept1 = self.loss_concept(z_concept1, c1)
         loss_concept2 = self.loss_concept(z_concept2, c2)
-        loss = loss_prediction + loss_concept1 + loss_concept2
+        loss = 0.001*(loss_concept1 + loss_concept2) + 5*(loss_prediction)
 
         self.log(loss_name, loss, on_epoch=True, on_step=True)
         return loss
@@ -194,14 +196,8 @@ class conceptNN(pl.LightningModule):
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
 
-        # predicted_np = predicted.cpu().numpy()
-        # y_np = y.cpu().numpy()
-
-        # # Calculate confusion matrix
-        # confusion_mat = confusion_matrix(y_np, predicted_np)
-        # print(confusion_mat)
-
         # self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
+
         return loss
 
     def configure_optimizers(self):
@@ -226,7 +222,7 @@ class onlyconceptNN(pl.LightningModule):
         self.model = onlyconceptFFNNModel(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape)
         self.loss_concept = nn.MSELoss()
         self.loss_classify = loss
-        self.optimiser = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimiser = optim.Adam(self.model.parameters(), lr=0.000001)
 
     def forward(self, x):
         # apply model layers

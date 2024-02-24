@@ -5,6 +5,7 @@ from scipy.signal import find_peaks
 import pandas as pd
 import matplotlib.pyplot as plt
 from helper import *
+import math
 
 class StA():
     def __init__(self, prob, test_data, train_data):
@@ -49,11 +50,11 @@ class StA():
         area_7_3 = []
 
         for idx, X in enumerate(self.X_train):
-            if self.y_train[idx] == 0:
+            if self.y_train[idx] == 1:
                 maxima, _ = find_peaks(X, prominence=1, width=5)
                 area_0_1.append(np.trapz(y=X, x=indicies))
 
-            if self.y_train[idx] == 1: 
+            if self.y_train[idx] == 0: 
                 area_3_1.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 2: 
@@ -90,45 +91,49 @@ class StA():
                 L = X
                 area_7_3.append(np.trapz(y=X, x=indicies))
 
-        area_0_1 = np.array(area_0_1)
-        print(f"area mean of 0_1: {np.average(area_0_1)} with std: {np.std(area_0_1)}")
+        # area_0_1 = np.array(area_0_1)
+        # print(f"area mean of 0_1: {np.average(area_0_1)} with std: {np.std(area_0_1)}")
 
         area_3_1 = np.array(area_3_1)
         print(f"area mean of 3_1: {np.average(area_3_1)} with std: {np.std(area_3_1)}")
 
-        area_4_1 = np.array(area_4_1)
-        print(f"area mean of 4_1: {np.average(area_4_1)} with std: {np.std(area_4_1)}")
+        # area_4_1 = np.array(area_4_1)
+        # print(f"area mean of 4_1: {np.average(area_4_1)} with std: {np.std(area_4_1)}")
 
-        area_5_1 = np.array(area_5_1)
-        print(f"area mean of 5_1: {np.average(area_5_1)} with std: {np.std(area_5_1)}")
+        # area_5_1 = np.array(area_5_1)
+        # print(f"area mean of 5_1: {np.average(area_5_1)} with std: {np.std(area_5_1)}")
 
-        area_5_2 = np.array(area_5_2)
-        print(f"area mean of 5_2: {np.average(area_5_2)} with std: {np.std(area_5_2)}")
+        # area_5_2 = np.array(area_5_2)
+        # print(f"area mean of 5_2: {np.average(area_5_2)} with std: {np.std(area_5_2)}")
 
-        area_6_1 = np.array(area_6_1)
-        print(f"area mean of 6_1: {np.average(area_6_1)} with std: {np.std(area_6_1)}")
+        # area_6_1 = np.array(area_6_1)
+        # print(f"area mean of 6_1: {np.average(area_6_1)} with std: {np.std(area_6_1)}")
 
-        area_6_2 = np.array(area_6_2)
-        print(f"area mean of 6_2: {np.average(area_6_2)} with std: {np.std(area_6_2)}")
+        # area_6_2 = np.array(area_6_2)
+        # print(f"area mean of 6_2: {np.average(area_6_2)} with std: {np.std(area_6_2)}")
 
-        area_6_3 = np.array(area_6_3)
-        print(f"area mean of 6_3: {np.average(area_6_3)} with std: {np.std(area_6_3)}")
+        # area_6_3 = np.array(area_6_3)
+        # print(f"area mean of 6_3: {np.average(area_6_3)} with std: {np.std(area_6_3)}")
 
-        area_7_1 = np.array(area_7_1)
-        print(f"area mean of 7_1: {np.average(area_7_1)} with std: {np.std(area_7_1)}")
+        # area_7_1 = np.array(area_7_1)
+        # print(f"area mean of 7_1: {np.average(area_7_1)} with std: {np.std(area_7_1)}")
 
-        area_7_2 = np.array(area_7_2)
-        print(f"area mean of 7_2: {np.average(area_7_2)} with std: {np.std(area_7_2)}")
+        # area_7_2 = np.array(area_7_2)
+        # print(f"area mean of 7_2: {np.average(area_7_2)} with std: {np.std(area_7_2)}")
 
-        area_7_3 = np.array(area_7_3)
-        print(f"area mean of 7_3: {np.average(area_7_3)} with std: {np.std(area_7_3)}")
+        # area_7_3 = np.array(area_7_3)
+        # print(f"area mean of 7_3: {np.average(area_7_3)} with std: {np.std(area_7_3)}")
 
         # sns.histplot(area_0_1, color="purple", label= "0_1", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_3_1, color="orange", label="3_1", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_4_1, color="blue", label="4_1", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_5_1, color="red", label="5_1", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_5_2, color="green", label="5_2", linewidth=0.1, edgecolor = "black")
-        sns.histplot(area_6_2, color="yellow", label="6_2", linewidth=0.1, edgecolor = "black")
+        # sns.histplot(area_0_1, color="yellow", label="3_1_3_1", linewidth=0.1, edgecolor = "black")
+        sns.histplot(area_3_1, color="black", label="3_1-3_1", linewidth=0.1, edgecolor = "black")
+        # plt.axvline(x=6.29 * 10*2, color='red', linestyle='--', linewidth=1)
+
+        # sns.histplot(area_4_1, color="pink", label="8_20", linewidth=0.1, edgecolor = "black")
         plt.xlabel("AUC")
         plt.legend()
         plt.show()

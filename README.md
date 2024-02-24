@@ -117,4 +117,6 @@ StA:
 
 
 
+Want to connect StA `peaks' meaning semantically with knot diagrams - can maybe investigate effects of reidemeister moves?
+
 

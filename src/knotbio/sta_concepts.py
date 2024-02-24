@@ -6,73 +6,105 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 knot = "0_1"
+KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2", "7_1", "7_2", "7_3"]
+peak_order_data = [[],[],[],[],[], [], [], []]
+peak_separations = [[],[],[],[],[], [], [], []]
+sta_area = [[],[],[],[],[],[],[],[]]
+avg_peak = [[],[],[],[],[],[],[],[]]
 
-dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/"
-fname = os.path.join("SIGWRITHE", f"3DSignedWrithe_{knot}.dat.lp{10}.dat.nos")
+for indx, knot in enumerate(KnotID):
 
-f = open(os.path.join(dirname, fname), "r")
+    dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/"
+    fname = os.path.join("SIGWRITHE", f"3DSignedWrithe_{knot}.dat.lp{10}.dat.nos")
 
-len_db = 100000
-knot_count = int(len_db/100)
-knot_count = np.arange(0, knot_count, 1)
+    f = open(os.path.join(dirname, fname), "r")
 
-sta = [[] for x in knot_count]
+    len_db = 100000
+    knot_count = int(len_db/100)
+    knot_count = np.arange(0, knot_count, 1)
 
-end = 401
-j = 0
+    sta = [[] for x in knot_count]
 
-print(sta)
+    end = 401
+    j = 0
 
-for i in range(0, len_db):
-    data = f.readline() 
-    if i>=1:
-        point = [data]
-        point = [float(value) for item in point for value in item.strip().split()]
-        sta[j].append(point[2])
-        if i % 100 == 0:
-            j += 1
+    for i in range(0, len_db):
+        data = f.readline() 
+        if i>=1:
+            point = [data]
+            point = [float(value) for item in point for value in item.strip().split()]
+            sta[j].append(point[2])
+            if i % 100 == 0:
+                j += 1
 
-x = np.arange(0, 100, 1)
-
-peak_order_data = []
-peak_count_data = []
-peak_separations = []
-
-for i in range(0, len(knot_count)): 
-
-    peaks, properties = find_peaks(sta[i], prominence=0.5)
-    vals = properties['prominences']
-    prominence_order = np.array(vals).argsort().tolist()[::-1] # should be invariant to permutation
-    prominence_order = [k+1 for k in prominence_order]
-    peak_order_data.append(prominence_order)
-    peak_count_data.append(len(prominence_order))
-    if len(peaks) > 1:
-        sep = np.diff(peaks).tolist()
-        extr = 100-peaks[-1]+peaks[0] # looping back
-        sep.append(extr)
-    else:
-        sep = []
-
-    peak_separations.append(sep)
+    x = np.arange(0, 100, 1)
 
 
-print(peak_separations)
 
-with open(f'../../knot data/sta concepts/peaks prominence=0.5/peak order/peakpermute_{knot}_prom=0.5.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerows(peak_order_data) 
+    prominences = np.linspace(0.05, 3.5, 50)
 
-# sns.set_theme(style="darkgrid")
-# plt.plot(x, sta[0])
-# ax = plt.gca()
-# ax.get_yaxis().set_visible(False)
-# plt.title(f"StA writhe")
-# plt.tight_layout()
+
+    for j in range(0, len(prominences)):
+
+        peak_count_data = [[],[],[],[],[],[],[],[]]
+
+        for i in range(0, len(knot_count)): 
+
+
+
+            indices = np.arange(0, len(sta[i]), 1)
+            area = np.trapz(y=sta[i], x=indices)
+            if knot == "4_1" and i == 0:
+                ideal_4_1 = sta[i]
+
+            peaks, properties = find_peaks(sta[i], prominence=prominences[j])
+            vals = properties['prominences']
+            prom_sum = np.prod(vals)
+            prominence_order = np.array(vals).argsort().tolist()[::-1] # should be invariant to permutation
+            prominence_order = [k+1 for k in prominence_order]
+            peak_order_data[indx].append(prominence_order)
+            peak_count_data[indx].append([len(prominence_order)])
+            if len(peaks) > 1:
+                sep = np.diff(peaks).tolist()
+                extr = 100-peaks[-1]+peaks[0] # looping back
+                sep.append(extr)
+            else:
+                sep = []
+
+            peak_separations[indx].append(sep)
+            sta_area[indx].append([area])
+        avg_peak[indx].append(np.sum(peak_count_data[indx])/len(peak_count_data[indx]))
+
+
+
+    # with open(f'../../knot data/sta concepts/peaks prominence=variable/peak count/peakcount_{knot}_prom=var.csv', 'w', newline='') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(peak_count_data[indx]) 
+
+sns.set_theme(style="darkgrid")
+plt.plot(x, ideal_4_1)
+ax = plt.gca()
+ax.get_yaxis().set_visible(False)
+plt.title(f"StA writhe")
+plt.tight_layout()
+plt.show()
 # for i, idx in enumerate(peaks):
 #     plt.plot(peaks[i], sta[0][peaks[i]], "x")
 #     plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
 #            ymax = sta[0][peaks[i]], color = "C1", linestyle = "dotted")
-    
-# plt.show()
+# print(avg_peak)
+
+for indx, x in enumerate(avg_peak):
+    # if indx < 5:
+    plt.plot(x, prominences, label = f"{KnotID[indx]}")
+plt.legend()
+plt.ylabel("Peak prominence")
+plt.xlabel("Avg. peak count")
+plt.show()
 
 # knot data/sta concepts
+
+
+
+
+   

@@ -109,8 +109,17 @@ def get_knots(problem):
     if problem == "Conway":
         Knotind = ["0_1", "conway", "kt"]
 
+    elif problem == "unknot":
+        Knotind = ["0_1"]
+
+    elif problem == "trefoil":
+        Knotind = ["5_1"]
+
+    elif problem == "0GlobalWrithe":
+        Knotind = ["0_1", "4_1", "6_3"]
+
     elif problem == "5Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1"] # "5_2"] # testing 5_2 unsupervised
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2"] # testing 5_2 unsupervised
 
     elif problem == "5Class5v6":
         Knotind = ["5_1", "5_2", "6_1", "6_2", "6_3"]
@@ -122,7 +131,7 @@ def get_knots(problem):
         Knotind = ["9_1", "9_42", "10_1", "10_2", "10_71"]
 
     elif problem == "6Class":
-        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2"] # "6_3"]
+        Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
 
     elif problem == "7Class":
         Knotind = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3"] # "7_3"] #, "7_4", "7_5", "7_6", "7_7"]
