@@ -7,7 +7,7 @@ import math
 
 def vassiliev(knot_type, Nbeads, pers_len):
 
-    master_knots_dir = "/storage/cmstore04/projects/Knotdatabase"
+    master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
 
