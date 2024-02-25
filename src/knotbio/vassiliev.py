@@ -59,7 +59,7 @@ print(f"Combinatorics {combinatorics}: ", avgs)
 
 combinatorics = 6
 for x in knots:
-    STS = load(x, 100, 10) # this is quite slow
+    STS = load(x, 100, 10) 
     test_points = combinations(indicies, combinatorics)
     avg, v_d = vassiliev_combinatorical(STS, test_points, combinatorics)
     with open(f'vassiliev_{x}_combinatorics{combinatorics}.csv', 'w', newline='') as f:
