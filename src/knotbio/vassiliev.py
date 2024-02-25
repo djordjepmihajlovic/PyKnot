@@ -20,7 +20,7 @@ def vassiliev(knot_type, Nbeads, pers_len):
     test_points = list(itertools.combinations(indicies, 4))
     vassiliev_data = []
 
-    for idy in range(0, len(STS)):
+    for idy in range(0, 10):
         integral = 0
         for idx, i in enumerate(test_points):
             integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]]
