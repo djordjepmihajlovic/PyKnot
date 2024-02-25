@@ -23,7 +23,7 @@ def combinations(indicies, combinatorics):
 
 @njit
 def vassiliev_combinatorical(STS, test_points):
-    combinatorics = 4
+    combinatorics = 6
     vassiliev_data = []
     for idy in range(0, 10):
         integral = 0
@@ -45,11 +45,12 @@ def vassiliev_combinatorical(STS, test_points):
 knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 avgs = []
 indicies = np.arange(0, 100, 1)
+c = 6
 for x in knots:
     STS = load(x, 100, 10) # this is quite slow
-    test_points = combinations(indicies, 4)
+    test_points = combinations(indicies, c)
     avg, v_d = vassiliev_combinatorical(STS, test_points)
-    with open(f'vassiliev_{x}_comb_{4}.csv', 'w', newline='') as f:
+    with open(f'vassiliev_{x}_comb_{c}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for item in v_d:
             writer.writerow([item])
