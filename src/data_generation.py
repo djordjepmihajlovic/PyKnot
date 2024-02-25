@@ -50,11 +50,11 @@ class StA():
         area_7_3 = []
 
         for idx, X in enumerate(self.X_train):
-            if self.y_train[idx] == 1:
+            if self.y_train[idx] == 0:
                 maxima, _ = find_peaks(X, prominence=1, width=5)
                 area_0_1.append(np.trapz(y=X, x=indicies))
 
-            if self.y_train[idx] == 0: 
+            if self.y_train[idx] == 1: 
                 area_3_1.append(np.trapz(y=X, x=indicies))
 
             elif self.y_train[idx] == 2: 
@@ -100,8 +100,8 @@ class StA():
         # area_4_1 = np.array(area_4_1)
         # print(f"area mean of 4_1: {np.average(area_4_1)} with std: {np.std(area_4_1)}")
 
-        # area_5_1 = np.array(area_5_1)
-        # print(f"area mean of 5_1: {np.average(area_5_1)} with std: {np.std(area_5_1)}")
+        area_5_1 = np.array(area_5_1)
+        print(f"area mean of 5_1: {np.average(area_5_1)} with std: {np.std(area_5_1)}")
 
         # area_5_2 = np.array(area_5_2)
         # print(f"area mean of 5_2: {np.average(area_5_2)} with std: {np.std(area_5_2)}")
@@ -130,7 +130,7 @@ class StA():
         # sns.histplot(area_5_1, color="red", label="5_1", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_5_2, color="green", label="5_2", linewidth=0.1, edgecolor = "black")
         # sns.histplot(area_0_1, color="yellow", label="3_1_3_1", linewidth=0.1, edgecolor = "black")
-        sns.histplot(area_3_1, color="black", label="3_1-3_1", linewidth=0.1, edgecolor = "black")
+        sns.histplot(area_3_1, color="black", label="3_1-3_1", linewidth=0.1, edgecolor = "black", bins=500)
         # plt.axvline(x=6.29 * 10*2, color='red', linestyle='--', linewidth=1)
 
         # sns.histplot(area_4_1, color="pink", label="8_20", linewidth=0.1, edgecolor = "black")

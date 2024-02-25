@@ -326,8 +326,8 @@ class LatentKnotDataset(Dataset):
         """
         super(LatentKnotDataset, self).__init__()
 
-        dataset = np.loadtxt(f'../knot data/latent space 5 class/encoded_samples_2.csv', delimiter=',', dtype=np.float32)
-        labels = np.loadtxt(f'../knot data/latent space 5 class/encoded_labels_2.csv', delimiter=',', dtype=np.float32)
+        dataset = np.loadtxt(f'../knot data/latent space 5Class/encoded_samples_2.csv', delimiter=',', dtype=np.float32)
+        labels = np.loadtxt(f'../knot data/latent space 5Class/encoded_labels_2.csv', delimiter=',', dtype=np.float32)
 
         feature_1 = dataset[:, 0]
         feature_2 = dataset[:, 1]

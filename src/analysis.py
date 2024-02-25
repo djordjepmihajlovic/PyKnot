@@ -8,6 +8,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from matplotlib.ticker import AutoMinorLocator
+from scipy.signal import find_peaks 
 
 
 class Analysis:
@@ -18,6 +19,12 @@ class Analysis:
         self.prob = prob
 
     def generative_latent_space(self): # change in this for StS to XYZ
+        """
+        Generate a latent space from the given data.
+
+        Returns:
+            np.array: The latent space.
+        """
 
         encoded_samples = []
         true_sample = []
@@ -66,62 +73,55 @@ class Analysis:
 
         return x, y, z
 
-    def latent_space_generation(self, latent_space, dim, model, val):
+    def latent_space_generation(self, latent_space_x, latent_space_y, true_sample):
+        """
+        Return a decoded sample from a given latent space point.
+
+        Args:
+            latent_space_x (float): The x coordinate of the latent space point.
+            latent_space_y (float): The y coordinate of the latent space point.
+            true_sample (np.array): The true sample.
+
+        Returns:
+            np.array: The decoded sample.
+        """
 
         self.model.decoder.eval()
-
         with torch.no_grad():
-            z = self.model.decoder(torch.Tensor(latent_space))
+            z = self.model.decoder(torch.tensor([latent_space_x, latent_space_y], dtype=torch.float32))
 
         x_list = np.arange(0, 100)
 
         prediction = z.detach().numpy()[0]
 
         print(f'{z} : predicted StA Writhe')
-        with torch.no_grad():
-            z_new = model.forward(z)
-            _, knot_type = torch.max(z_new.data, 1) 
-            total = torch.sum(z_new.data)
-            certainty = torch.max(z_new.data) / total
-            print(knot_type)
-
-        knot_names= {0: "unknot", 1: "trefoil (3_1)", 2: "figure-8 (4_1)", 3: "pentafoil (5_1)", 4: "three twist (5_2)"}
 
         z = np.polyfit(x_list, prediction, 20)
         z = [item for sublist in z.tolist() for item in sublist]
         p = np.poly1d(z)
 
-        sns.set_theme()
-        plt.subplot(1, 1, 1)
+        peaks, properties = find_peaks(np.array(true_sample).flatten(), prominence=0.1)
+        vals = properties['prominences']
+
+
+        sns.set_style("whitegrid") 
+        for i in peaks:
+            plt.scatter(i, prediction[i], marker='x', color='r')
         plt.plot(x_list,prediction, '.', x_list, p(x_list), '--')
-        plt.ylim([0.5, 1])
-        plt.grid()
+        plt.plot(true_sample, label = "True StA Writhe")
+
+        plt.ylim([-2.5, 2.5])
         plt.xlabel('Bead index')
-        plt.ylabel(f'Generated StA Writhe {knot_type}.')
-        plt.title(f"Certainty: {certainty:.2f}")
-        ax = plt.gca()
-        # if knot_type == 0:
-        #     ax.set_facecolor('xkcd:lightblue')
-        # elif knot_type == 1:
-        #     ax.set_facecolor('xkcd:coral')
-        # elif knot_type == 2:
-        #     ax.set_facecolor('xkcd:goldenrod')
-        # elif knot_type == 3:
-        #     ax.set_facecolor('xkcd:lightgreen')
-        # elif knot_type == 4:
-        #     ax.set_facecolor('xkcd:lavender')
-
-
-        # include 'certainty'
-            
-
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
+        plt.ylabel(f'Generated StA Writhe.')
+        plt.gca().tick_params(which="both", direction="in", right=True, top=True)
+        plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+        plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+        plt.gca().xaxis.set_ticks_position('both')
+        plt.gca().yaxis.set_ticks_position('both')
         plt.tight_layout()
         plt.show()
 
-        return prediction
-    
+        return prediction, peaks
 # refactor for showing max vs min on one plot
     
     def latent_space_generation_maxmin(self, latent_space_1, latent_space_t, latent_space_2, dim, model, val):
@@ -193,7 +193,7 @@ class Analysis:
         plt.show()
 
 
-    def dimensional_reduction_plot(self, method, encoded_samples, encoded_labels, latent_space, new_data, new_data_label):
+    def dimensional_reduction_plot(self, method, encoded_samples, encoded_labels):
 
         label_names=['0_1', '3_1', '4_1', '5_1', '5_2']
 

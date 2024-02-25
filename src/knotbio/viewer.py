@@ -23,7 +23,7 @@ len_db = 100000
 knot_count = int(len_db/100)
 print(knot_count)
 knot_num = 2
-limit = 900
+limit = 3149200
 
 for i in range(0, limit):
 
