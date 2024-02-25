@@ -5,12 +5,13 @@ import torch
 import itertools
 import math
 
-def vassiliev(knot_type):
+def vassiliev(knot_type, Nbeads, pers_len):
 
-    master_knot_dir = "/storage/cmstore04/projects/Knotdatabase"
+    master_knots_dir = "/storage/cmstore04/projects/Knotdatabase"
+    master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
 
-    STS = np.loadtxt(os.path.join(master_knot_dir, fname_sts))
+    STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
     torch.tensor(STS, dtype=torch.float32)  
     STS = STS.reshape(-1, 100, 100)
 
@@ -39,7 +40,7 @@ def vassiliev(knot_type):
 knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 avgs = []
 for x in knots:
-    avg = vassiliev(x)
+    avg = vassiliev(x, 100, 10)
     avgs.append(avg)
 
 print(avgs)
