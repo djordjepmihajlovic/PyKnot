@@ -58,7 +58,7 @@ for x in knots:
     STS = load(x, 100, 10) # this is quite slow
     test_points = combinations(indicies, c)
     avg, v_d = vassiliev_combinatorical(STS, test_points)
-    with open(f'vassiliev_{x}_comb_{c}.csv', 'w', newline='') as f:
+    with open(f'vassiliev_{x}_comb_{c}_abs.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for item in v_d:
             writer.writerow([item])
