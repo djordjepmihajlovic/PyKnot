@@ -7,6 +7,8 @@ import math
 
 def vassiliev_combinatorical(knot_type, Nbeads, pers_len, combinatorics):
 
+    my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
+
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
@@ -23,24 +25,29 @@ def vassiliev_combinatorical(knot_type, Nbeads, pers_len, combinatorics):
     for idy in range(0, 10):
         integral = 0
         for idx, i in enumerate(test_points):
-            integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]]
+            if combinatorics == 4:
+                integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
+            elif combinatorics == 6:
+                integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
+            elif combinatorics == 8:
+                integral += STS[idy][i[0], i[4]]*STS[idy][i[1], i[5]]*STS[idy][i[2], i[6]]*STS[idy][i[3], i[7]]
 
         self_linking = integral / (100 * 100 * 8 * math.pi)
         vassiliev = (6 * self_linking) + (1/4)
         vassiliev_data.append(vassiliev)
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
 
-    with open(f'vassiliev_{knot_type}.csv', 'w', newline='') as f:
+    with open(f'vassiliev_{knot_type}_combinatorics{combinatorics}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for item in vassiliev_data:
             writer.writerow([item])
 
     return avg_vassiliev
 
-knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
+knots = ["5_1", "7_2"]
 avgs = []
 for x in knots:
-    avg = vassiliev_combinatorical(x, 100, 10, 4)
+    avg = vassiliev_combinatorical(x, 100, 10, 6)
     avgs.append(avg)
 
 print(avgs)
