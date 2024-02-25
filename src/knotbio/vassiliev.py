@@ -25,7 +25,7 @@ def combinations(indicies, combinatorics):
 def vassiliev_combinatorical(STS, test_points):
     combinatorics = 6
     vassiliev_data = []
-    for idy in range(0, 10):
+    for idy in range(0, 1):
         integral = 0
         for idx, i in enumerate(test_points):
             if combinatorics == 4:
