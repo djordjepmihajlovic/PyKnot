@@ -5,7 +5,7 @@ import torch
 import itertools
 import math
 
-def vassiliev(knot_type, Nbeads, pers_len):
+def vassiliev_combinatorical(knot_type, Nbeads, pers_len, combinatorics):
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
@@ -17,7 +17,7 @@ def vassiliev(knot_type, Nbeads, pers_len):
 
     STA_dat = []
     indicies = np.arange(0, 100, 1)
-    test_points = list(itertools.combinations(indicies, 4))
+    test_points = list(itertools.combinations(indicies, combinatorics))
     vassiliev_data = []
 
     for idy in range(0, 10):
@@ -37,10 +37,10 @@ def vassiliev(knot_type, Nbeads, pers_len):
 
     return avg_vassiliev
 
-knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
 avgs = []
 for x in knots:
-    avg = vassiliev(x, 100, 10)
+    avg = vassiliev_combinatorical(x, 100, 10, 4)
     avgs.append(avg)
 
 print(avgs)
