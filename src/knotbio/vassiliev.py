@@ -1,12 +1,14 @@
 import os
 import csv
 import numpy as np
-import torch
 import itertools
 import math
 from numba import njit
 
 def load(knot_type, Nbeads, pers_len):
+    '''
+    Load the data from the knots database
+    '''
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
@@ -19,17 +21,23 @@ def load(knot_type, Nbeads, pers_len):
     return STS
 
 def combinations(indicies, combinatorics):
+    '''
+    Generate all possible combinations of indicies (100Cx)
+    '''
     return list(itertools.combinations(indicies, combinatorics))
 
 @njit
 def vassiliev_combinatorical(STS, test_points):
-    combinatorics = 6
+    '''
+    Calculate the Vassiliev invariants for a given knot
+    '''
+    combinatorics = 4
     vassiliev_data = []
     for idy in range(0, 1):
         integral = 0
         for idx, i in enumerate(test_points):
             if combinatorics == 4:
-                integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
+                integral += abs(STS[idy][i[0], i[2]])*STS[idy][i[1], i[3]] # these are symmetry groups
             elif combinatorics == 6:
                 integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
             elif combinatorics == 8:
@@ -45,7 +53,7 @@ def vassiliev_combinatorical(STS, test_points):
 knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 avgs = []
 indicies = np.arange(0, 100, 1)
-c = 6
+c = 4
 for x in knots:
     STS = load(x, 100, 10) # this is quite slow
     test_points = combinations(indicies, c)
