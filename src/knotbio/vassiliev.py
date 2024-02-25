@@ -4,24 +4,26 @@ import numpy as np
 import torch
 import itertools
 import math
+from numba import njit
 
-def vassiliev_combinatorical(knot_type, Nbeads, pers_len, combinatorics):
-
-    my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
+def load(knot_type, Nbeads, pers_len):
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
+
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
-
+    my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
+    fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
-    torch.tensor(STS, dtype=torch.float32)  
-    STS = STS.reshape(-1, 100, 100)
+    STS = STS.reshape(-1, Nbeads, Nbeads)
+    return STS
 
-    STA_dat = []
-    indicies = np.arange(0, 100, 1)
-    test_points = list(itertools.combinations(indicies, combinatorics))
+def combinations(indicies, combinatorics):
+    return list(itertools.combinations(indicies, combinatorics))
+
+@njit
+def vassiliev_combinatorical(STS, test_points, combinatorics):
     vassiliev_data = []
-
     for idy in range(0, 10):
         integral = 0
         for idx, i in enumerate(test_points):
@@ -37,20 +39,36 @@ def vassiliev_combinatorical(knot_type, Nbeads, pers_len, combinatorics):
         vassiliev_data.append(vassiliev)
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
 
-    with open(f'vassiliev_{knot_type}_combinatorics{combinatorics}.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        for item in vassiliev_data:
-            writer.writerow([item])
+    return avg_vassiliev, vassiliev_data
 
-    return avg_vassiliev
-
-knots = ["5_1", "7_2"]
+knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 avgs = []
+indicies = np.arange(0, 100, 1)
+combinatorics = 4
 for x in knots:
-    avg = vassiliev_combinatorical(x, 100, 10, 6)
+    STS = load(x, 100, 10) # this is quite slow
+    test_points = combinations(indicies, combinatorics)
+    avg, v_d = vassiliev_combinatorical(STS, test_points, combinatorics)
+    with open(f'vassiliev_{x}_combinatorics{combinatorics}.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        for item in v_d:
+            writer.writerow([item])
     avgs.append(avg)
 
-print(avgs)
+print(f"Combinatorics {combinatorics}: ", avgs)
+
+combinatorics = 6
+for x in knots:
+    STS = load(x, 100, 10) # this is quite slow
+    test_points = combinations(indicies, combinatorics)
+    avg, v_d = vassiliev_combinatorical(STS, test_points, combinatorics)
+    with open(f'vassiliev_{x}_combinatorics{combinatorics}.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        for item in v_d:
+            writer.writerow([item])
+    avgs.append(avg)
+
+print(f"Combinatorics {combinatorics}: ", avgs)
     
 
 
