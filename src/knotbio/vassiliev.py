@@ -31,9 +31,10 @@ def vassiliev_combinatorical(STS, test_points):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
+    samples = 100
     combinatorics = 4
     vassiliev_data = []
-    for idy in range(0, 1):
+    for idy in range(0, samples): # samples
         integral = 0
         for idx, i in enumerate(test_points):
             if combinatorics == 4:
