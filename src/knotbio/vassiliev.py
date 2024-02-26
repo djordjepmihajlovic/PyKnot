@@ -38,7 +38,7 @@ def vassiliev_combinatorical(STS, test_points):
         integral = 0
         for idx, i in enumerate(test_points):
             if combinatorics == 4:
-                integral += abs(STS[idy][i[0], i[2]])*STS[idy][i[1], i[3]] # these are symmetry groups
+                integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
             elif combinatorics == 6:
                 integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
             elif combinatorics == 8:
@@ -59,7 +59,7 @@ for x in knots:
     STS = load(x, 100, 10) # this is quite slow
     test_points = combinations(indicies, c)
     avg, v_d = vassiliev_combinatorical(STS, test_points)
-    with open(f'vassiliev_{x}_comb_{c}_abs.csv', 'w', newline='') as f:
+    with open(f'vassiliev_{x}_comb_{c}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for item in v_d:
             writer.writerow([item])
