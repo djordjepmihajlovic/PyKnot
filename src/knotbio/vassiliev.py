@@ -16,7 +16,7 @@ def load(knot_type, Nbeads, pers_len):
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
-    STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
+    STS = np.loadtxt(os.path.join(my_knot_dir, fname_sts))
     STS = STS.reshape(-1, Nbeads, Nbeads)
     return STS
 
@@ -31,14 +31,16 @@ def vassiliev_combinatorical(STS, test_points):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 1000
+    samples = 1
     combinatorics = 4
     vassiliev_data = []
     for idy in range(0, samples): # samples
         integral = 0
+        integral_alt = 0
         for idx, i in enumerate(test_points):
             if combinatorics == 4:
                 integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
+                integral_alt += STS[idy][i[0], i[3]]*STS[idy][i[1], i[3]]*STS[idy][i[2], i[3]]
             elif combinatorics == 6:
                 integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
             elif combinatorics == 8:
@@ -51,7 +53,7 @@ def vassiliev_combinatorical(STS, test_points):
 
     return avg_vassiliev, vassiliev_data
 
-knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7", "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21"]
+knots = ["3_1"]
 avgs = []
 indicies = np.arange(0, 100, 1)
 c = 4

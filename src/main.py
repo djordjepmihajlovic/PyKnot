@@ -43,9 +43,9 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-            #datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+                datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -231,14 +231,13 @@ def main():
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
     if model_type == "NN":
-        A = []
-        # neural = NN(model=model, loss=loss_fn, opt=optimizer)
-        neural = NN.load_from_checkpoint("../trained models/StA_standard_prediction_2_ls/checkpoints/epoch=31-step=4224.ckpt", model=model, loss=loss_fn, opt=optimizer)
+        neural = NN(model=model, loss=loss_fn, opt=optimizer)
+        # neural = NN.load_from_checkpoint("../trained models/StA_standard_prediction_2_ls/checkpoints/epoch=31-step=4224.ckpt", model=model, loss=loss_fn, opt=optimizer)
         # neural = NN.load_from_checkpoint("../trained models/StA_standard_prediction_2ls_SQRGRN8/checkpoints/epoch=28-step=2320.ckpt", model=model, loss=loss_fn, opt=optimizer)
-        # early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
-        # trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
-        # trainer.fit(neural, train_loader, val_loader)
-        # trainer.test(dataloaders=test_loader)
+        early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
+        trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
+        trainer.fit(neural, train_loader, val_loader)
+        trainer.test(dataloaders=test_loader)
         ## will need to add back to function arguments
 
     elif model_type == "DT":
@@ -272,42 +271,43 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     conf_mat = confusion_matrix(all_y, all_predicted)
 
     # Display confusion matrix
-    knot_labels = ["0_1", "3_1", "4_1", "5_1", "5_2"]
-    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knot_labels).plot()
+    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot()
     plt.title("StA Knot Classification")
-    plt.savefig("confusion_matrix.png")
+    plt.savefig(f"confusion_matrix_{prob}.png")
     plt.close()
 
-    e_s_data = np.loadtxt(f'../knot data/latent space {prob}/encoded_samples_2.csv', delimiter=',', dtype=np.float32)
-    latent_space_1 = np.linspace(np.max(e_s_data[:, 0]), np.min(e_s_data[:, 0]), 100)
-    latent_space_2 = np.linspace(np.max(e_s_data[:, 1]), np.min(e_s_data[:, 1]), 100)
+    if pdct == "latent":
 
-    Z = np.zeros((100, 100))
+        e_s_data = np.loadtxt(f'../knot data/latent space {prob}/encoded_samples_2.csv', delimiter=',', dtype=np.float32)
+        latent_space_1 = np.linspace(np.max(e_s_data[:, 0]), np.min(e_s_data[:, 0]), 100)
+        latent_space_2 = np.linspace(np.max(e_s_data[:, 1]), np.min(e_s_data[:, 1]), 100)
 
-    for idx, i in enumerate(latent_space_1):
-        for idy, j in enumerate(latent_space_2):
-            z = torch.tensor([i, j], dtype=torch.float32)
-            z = z.unsqueeze(0)
-            _, predicted = torch.max(neural.forward(z).data, 1)
-            Z[idx][idy] = predicted
+        Z = np.zeros((100, 100))
 
-    plt.contourf(latent_space_1, latent_space_2, Z, cmap='viridis')
+        for idx, i in enumerate(latent_space_1):
+            for idy, j in enumerate(latent_space_2):
+                z = torch.tensor([i, j], dtype=torch.float32)
+                z = z.unsqueeze(0)
+                _, predicted = torch.max(neural.forward(z).data, 1)
+                Z[idx][idy] = predicted
 
-    # investigation in 3_1 space
-    marker_x_3_1 = []
-    marker_y_3_1 = []
-    mid_y = np.linspace(-1.0, 1.2, 5)
-    mid_x = np.linspace(-0.3, 1.2, 5)
-    for idx, i in enumerate(mid_y):
-        marker_x_3_1.append(mid_x[idx])
-        marker_y_3_1.append(mid_y[idx])
+        plt.contourf(latent_space_1, latent_space_2, Z, cmap='viridis')
 
-    plt.scatter(marker_x_3_1, marker_y_3_1, color='red', marker='x')
-    plt.colorbar()
-    plt.title("2D latent space input (StA)")
-    plt.xlabel("Latent space 1")
-    plt.ylabel("Latent space 2")
-    plt.show()
+        # investigation in 3_1 space
+        marker_x_3_1 = []
+        marker_y_3_1 = []
+        mid_y = np.linspace(-1.0, 1.2, 5)
+        mid_x = np.linspace(-0.3, 1.2, 5)
+        for idx, i in enumerate(mid_y):
+            marker_x_3_1.append(mid_x[idx])
+            marker_y_3_1.append(mid_y[idx])
+
+        plt.scatter(marker_x_3_1, marker_y_3_1, color='red', marker='x')
+        plt.colorbar()
+        plt.title("2D latent space input (StA)")
+        plt.xlabel("Latent space 1")
+        plt.ylabel("Latent space 2")
+        plt.show()
 
         
 def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):

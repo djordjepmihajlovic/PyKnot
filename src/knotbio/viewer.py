@@ -23,7 +23,9 @@ len_db = 100000
 knot_count = int(len_db/100)
 print(knot_count)
 knot_num = 2
-limit = 3149200
+limit = 100
+
+XYZ = open(f"../../knot data/ideal/3_1.csv", "r")
 
 for i in range(0, limit):
 
@@ -44,13 +46,7 @@ for i in range(0, limit):
             STA_dat.append(point[2])
 
 z = np.arange(0, 99, 1)
-print(len(z))
-def ideal_4_1(z, a, b, c, d, e, f, g, h, i, j):
-    return a*z**9 + b*z**8 + c*z**7 + d*z**6 + e*z**5 + f*z**4 + g*z**3 + h*z**2 + i*z + j
 
-initial_guess = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
-popt, pcov = curve_fit(ideal_4_1, z, STA_dat, p0=initial_guess)
-print("HOMFLY 4_1 param: ", popt)
 
 sns.set_style("whitegrid")
 plt.plot(STA_dat)
@@ -81,7 +77,15 @@ ax = plt.axes(projection='3d')
 
 ## plot in 3D 
 
-ax.plot3D(X_dat, Y_dat, Z_dat, 'b-')
+floor_Z = min(Z_dat) * np.ones(len(Z_dat)) * 3
+floor_Y = min(Y_dat) * np.ones(len(Y_dat)) * 3
+ax.plot3D(X_dat, Y_dat, Z_dat, 'b-', label='3D 3_1')
+ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [Z_dat[-1], Z_dat[0]], 'b-')
+ax.plot3D(X_dat, Y_dat, floor_Z, 'r-', label='2D projection')
+ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [floor_Z[-1], floor_Z[0]], 'r-')
+ax.plot3D(X_dat, floor_Y, Z_dat, 'r-')
+ax.plot3D([X_dat[-1], X_dat[0]], [floor_Y[-1], floor_Y[0]], [Z_dat[-1], Z_dat[0]], 'r-')
+ax.legend()
 
 ## 4_1 ideals
 # ax.plot3D(X_dat[9], Y_dat[9], Z_dat[9], 'yo')
