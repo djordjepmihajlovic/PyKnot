@@ -100,8 +100,8 @@ class FFNN_Combinatoric(nn.Module):
             self.combinatoric_layer1 = nn.Linear(input_shape[0]*input_shape[1], input_shape[0]*input_shape[1])
 
         # hidden layers to FFNN
-        self.combinatoric_layer2 = nn.Linear((input_shape[0]*input_shape[1]), input_shape[0]*input_shape[1])
-        self.combinatoric_layer3 = nn.Linear((input_shape[0]*input_shape[1]), (input_shape[0]*input_shape[1]))
+        # self.combinatoric_layer2 = nn.Linear((input_shape[0]*input_shape[1]), input_shape[0]*input_shape[1])
+        # self.combinatoric_layer3 = nn.Linear((input_shape[0]*input_shape[1]), (input_shape[0]*input_shape[1]))
 
         # output layer
         self.output_layer = nn.Linear((input_shape[0]*input_shape[1]), output_shape)
@@ -114,14 +114,14 @@ class FFNN_Combinatoric(nn.Module):
 
         # separate layers -> hopefully this will allow the network to learn the different combinations
         x_ij = self.combinatoric_layer1(x)
-        x_kl = self.combinatoric_layer2(x)
-        x_mn = self.combinatoric_layer3(x)
+        # x_kl = self.combinatoric_layer2(x)
+        # x_mn = self.combinatoric_layer3(x)
 
         # intermediate multiplied layers
-        x_int = torch.mul(x_ij, x_kl)
-        x_int = torch.mul(x_int, x_mn)
+        # x_int = torch.mul(x_ij, x_kl)
+        # x_int = torch.mul(x_int, x_mn)
 
-        x = self.output_layer(x_int)
+        x = self.output_layer(x_ij)
 
         if self.pred == "class" or "latent":
             return F.softmax(x, dim=1) 
