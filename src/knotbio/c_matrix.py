@@ -18,8 +18,6 @@ def gen_c_matrix():
         for j in range(0, N):
             if i<j:
                 for k in range(0, N):
-                    if k%10 == 0:
-                        print(k)
                     for l in range(0, N):
                         if j<k and k<l:
                             for m in range(0, N):
