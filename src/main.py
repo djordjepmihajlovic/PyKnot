@@ -271,7 +271,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     conf_mat = confusion_matrix(all_y, all_predicted)
 
     # Display confusion matrix
-    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot()
+    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots, include_values=False).plot()
     plt.title("StA Knot Classification")
     plt.savefig(f"confusion_matrix_{prob}.png")
     plt.close()
