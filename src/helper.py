@@ -113,7 +113,7 @@ def get_knots(problem):
         Knotind = ["0_1"]
 
     elif problem == "trefoil":
-        Knotind = ["5_1"]
+        Knotind = ["3_1"]
 
     elif problem == "0GlobalWrithe":
         Knotind = ["0_1", "4_1", "6_3"]

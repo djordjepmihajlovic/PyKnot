@@ -13,10 +13,8 @@ from sklearn.preprocessing import StandardScaler
 
 # scipy modules
 from scipy.signal import find_peaks
-from scipy.ndimage import gaussian_filter1d
 from scipy.stats import kurtosis
 from scipy.stats import skew
-from scipy.stats import shapiro
 
 # code modules
 from helper import *
@@ -37,7 +35,7 @@ def main():
 
 ################## <--classic classification problem + reconstruction--> ###################
 
-    if pdct == "class": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
+    if pdct == "class" or pdct == "combinatoric": # used for doing a std classify problem, note combinatoric tries learn multiplications of data.
         for i, knot in enumerate(knots): 
             indicies = np.arange(0, len_db) # first len_db
             if mode == "conditional": # generate tensors for conditional labels

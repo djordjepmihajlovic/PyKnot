@@ -72,7 +72,59 @@ class FFNNModel(nn.Module):
         
         elif self.pred == "quantumA2":
             return x.view(-1, 31, 2) # <- same as Jones
+
+################## <--FFNN to StS combinations--> ###################
+
+class FFNN_Combinatoric(nn.Module):
+    # define model structure i.e. layers
+    def __init__(self, input_shape, output_shape, norm, predict):
+        """nn.Module initialization --> builds neural network
+
+        Args:
+            input_shape (list): dim of input array
+            output_shape (int): size of output array
+            norm (bool): norm
+
+        Returns:
+            nn.Module
+        """
+        super(FFNN_Combinatoric, self).__init__()
+        self.flatten_layer = nn.Flatten()
+        self.pred = predict
         
+        # init layers
+        if norm:
+            self.bn_layer = nn.BatchNorm1d(input_shape[0])
+            self.combinatoric_layer1 = nn.Linear(input_shape[0]*input_shape[1], input_shape[0]*input_shape[1])
+        else:
+            self.combinatoric_layer1 = nn.Linear(input_shape[0]*input_shape[1], input_shape[0]*input_shape[1])
+
+        # hidden layers to FFNN
+        self.combinatoric_layer2 = nn.Linear((input_shape[0]*input_shape[1]), input_shape[0]*input_shape[1])
+        self.combinatoric_layer3 = nn.Linear((input_shape[0]*input_shape[1]), (input_shape[0]*input_shape[1]))
+
+        # output layer
+        self.output_layer = nn.Linear((input_shape[0]*input_shape[1]), output_shape)
+
+    def forward(self, x):
+        x = self.flatten_layer(x)
+
+        if hasattr(self, 'bn_layer'):
+            x = self.bn_layer(x)
+
+        # separate layers -> hopefully this will allow the network to learn the different combinations
+        x_ij = self.combinatoric_layer1(x)
+        x_kl = self.combinatoric_layer2(x)
+        x_mn = self.combinatoric_layer3(x)
+
+        # intermediate multiplied layers
+        x_int = torch.mul(x_ij, x_kl)
+        x_int = torch.mul(x_int, x_mn)
+
+        x = self.output_layer(x_int)
+
+        if self.pred == "class" or "latent":
+            return F.softmax(x, dim=1) 
 
 
 ################## <--RNN--> ###################
@@ -271,7 +323,10 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
     """
 
     # model
-    model = FFNNModel(input_shape, output_shape, norm, predict)
+    if predict == "class":
+        model = FFNNModel(input_shape, output_shape, norm, predict)
+    elif predict == "combinatoric":
+        model = FFNN_Combinatoric(input_shape, output_shape, norm, predict)
 
     # loss function 
     if loss == "CEL":
