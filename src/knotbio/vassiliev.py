@@ -4,6 +4,7 @@ import numpy as np
 import itertools
 import math
 from numba import njit
+from argparse import ArgumentParser
 
 def load(knot_type, Nbeads, pers_len):
     '''
@@ -27,13 +28,11 @@ def combinations(indicies, combinatorics):
     return list(itertools.combinations(indicies, combinatorics))
 
 @njit
-def vassiliev_combinatorical(STS, test_points):
+def vassiliev_combinatorical(STS, test_points, combinatorics, t):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
     samples = 3
-    combinatorics = 6
-    t = 2
     vassiliev_data = []
     for idy in range(0, samples): # samples
         integral = 0
@@ -90,22 +89,33 @@ def milnor_combinatorical(STS, test_points):
 
     return avg_milnor, milnor_data
 
-knots = ["3_1", "4_1", "5_1"]
-avgs = []
-indicies = np.arange(0, 100, 1)
-c = 6
-t = 2
-for x in knots:
-    STS = load(x, 100, 10) # this is quite slow
-    test_points = combinations(indicies, c)
-    avg, v_d = vassiliev_combinatorical(STS, test_points)
-    with open(f'vassiliev_{x}_comb_{c}_{t}.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        for item in v_d:
-            writer.writerow([item])
-    avgs.append(avg)
+def main():
+    knots = ["3_1", "4_1", "5_1"]
+    avgs = []
+    indicies = np.arange(0, 100, 1)
+    for x in knots:
+        STS = load(x, 100, 10) # this is quite slow
+        test_points = combinations(indicies, c)
+        avg, v_d = vassiliev_combinatorical(STS, test_points, c, t)
+        with open(f'vassiliev_{x}_comb_{c}_{t}.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in v_d:
+                writer.writerow([item])
+        avgs.append(avg)
 
-print(f"Combinatorics {6}: ", avgs)
+    print(f"Combinatorics {6}: ", avgs)
+
+if __name__ == "__main__":
+
+    par = ArgumentParser()
+    par.add_argument("-c", "--combination", type=int, default=4, help="Combinations N s.t., 100C(N)")
+    par.add_argument("-t", "--type", type=int, default=1, help="Combinatorial set (arbitrary)")
+    args = par.parse_args()
+
+    c = args.combination
+    t = args.type
+
+    main()
     
 
 
