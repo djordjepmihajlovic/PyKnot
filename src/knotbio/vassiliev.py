@@ -33,18 +33,22 @@ def vassiliev_combinatorical(STS, test_points):
     '''
     samples = 3
     combinatorics = 6
+    t = 2
     vassiliev_data = []
     for idy in range(0, samples): # samples
         integral = 0
         integral_alt = 0
         for idx, i in enumerate(test_points):
-            
+
             if combinatorics == 4:
                 integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
                 integral_alt += STS[idy][i[0], i[3]]*STS[idy][i[1], i[3]]*STS[idy][i[2], i[3]]
 
             elif combinatorics == 6:
-                integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
+                if t ==1:
+                    integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
+                elif t==2:
+                    integral += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]]
                                                             
             elif combinatorics == 8:
                 integral += STS[idy][i[0], i[4]]*STS[idy][i[1], i[5]]*STS[idy][i[2], i[6]]*STS[idy][i[3], i[7]]
@@ -90,11 +94,12 @@ knots = ["3_1", "4_1", "5_1"]
 avgs = []
 indicies = np.arange(0, 100, 1)
 c = 6
+t = 2
 for x in knots:
     STS = load(x, 100, 10) # this is quite slow
     test_points = combinations(indicies, c)
     avg, v_d = vassiliev_combinatorical(STS, test_points)
-    with open(f'vassiliev_{x}_comb_{c}.csv', 'w', newline='') as f:
+    with open(f'vassiliev_{x}_comb_{c}_{t}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         for item in v_d:
             writer.writerow([item])
