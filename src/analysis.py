@@ -9,6 +9,7 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from matplotlib.ticker import AutoMinorLocator
 from scipy.signal import find_peaks 
+import torchvision
 
 
 class Analysis:
@@ -296,74 +297,6 @@ class Analysis:
         plt.suptitle(f"StA Writhe vs Bead Index (FFNN)")
         plt.show()
 
-    ## regular shap -----
-
-    # explainer = shap.DeepExplainer(neural, Variable(ti))
-    # shap_values = explainer.shap_values(Variable(tr))
-
-    # # shap value gives the amount that a given feature has contributed to the determination of a prediction
-    # # so shap value can be amount that writhe at bead index (x) has contributed to class prediction (3_1) for example.
-
-    # unknot = []
-    # trefoil = []
-    # four_one = []
-    # five_one = []
-    # five_two = []
-
-    # unk_sta = []
-    # tref_sta = []
-    # four_sta = []
-    # fivei_sta = []
-    # fiveii_sta = []
-
-    # for idx, elem in enumerate(dat):
-    #     check = torch.argmax(elem)
-    #     if check == 0:
-    #         unknot.append(shap_values[0][idx])
-    #         unk_sta.append(tr[idx])
-    #         unk = idx
-    #     elif check == 1:
-    #         trefoil.append(shap_values[1][idx]) # shap_values for specific class calc. in this case trefoil
-    #         tref_sta.append(tr[idx]) # list of sta data corresponding to predicted trefoils
-    #         iii = idx
-    #     elif check ==2:
-    #         four_one.append(shap_values[2][idx])
-    #         four_sta.append(tr[idx])
-    #         iv = idx
-    #     elif check == 3:
-    #         five_one.append(shap_values[3][idx])
-    #         fivei_sta.append(tr[idx])
-    #         v = idx
-    #     elif check == 4:
-    #         five_two.append(shap_values[4][idx])
-    #         fiveii_sta.append(tr[idx])
-    #         v2 = idx
-
-    # x_list = np.arange(0, 100)
-
-    # plt.subplot(2, 1, 1)
-    # plt.plot(x_list, tr[v2])
-    # plt.xlabel('Bead index')
-    # plt.ylabel('StA Writhe')
-    # plt.grid()
-
-    # plt.subplot(2, 1, 2)
-    # plt.plot(x_list, shap_values[0][v2], label = "-0_1")
-    # plt.plot(x_list, shap_values[1][v2], label = "-3_1")
-    # plt.plot(x_list, shap_values[2][v2], label = "-4_1")
-    # plt.plot(x_list, shap_values[3][v2], label = "-5_1")
-    # plt.plot(x_list, shap_values[4][v2], label = "-5_2")
-    # plt.legend()
-    # ax = plt.gca()
-    # yabs_max = abs(max(ax.get_ylim(), key=abs))
-    # ax.set_ylim([-yabs_max, yabs_max])
-    # plt.xlabel('Bead index')
-    # plt.ylabel('Specific SHAP importance')
-    # plt.grid()
-
-    # plt.suptitle(f"Predicition: (5_2) {dat[v2]}")
-    # plt.show()
-
     def DT_interpreter(self, tree_structure, importance, test_point, decision_path):
 
         x = np.arange(0, 100)  
@@ -429,6 +362,43 @@ class Analysis:
         plt.title("DT model +ve prediction")
 
         plt.show()
+
+
+    def saliency_map(self):
+        #we don't need gradients w.r.t. weights for a trained model
+        for param in self.model.parameters():
+            param.requires_grad = False
+        
+        #set model in eval mode
+        self.model.eval()
+
+        self.data.requires_grad = True
+
+        preds = self.model(self.data)
+        score, indices = torch.max(preds, 1)
+        score.backward()
+
+        slc, _ = torch.max(torch.abs(input.grad[0]), dim=0)
+
+        slc = (slc - slc.min())/(slc.max()-slc.min())
+
+        #apply inverse transform on image
+
+        input_img = self.data[0]
+        #plot image and its saleincy map
+        plt.figure(figsize=(10, 10))
+        plt.subplot(1, 2, 1)
+        plt.imshow(np.transpose(input_img.detach().numpy(), (1, 2, 0)))
+        plt.xticks([])
+        plt.yticks([])
+        plt.subplot(1, 2, 2)
+        plt.imshow(slc.numpy(), cmap=plt.cm.hot)
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+
+        plt.savefig("saliency_map.png")
+
 
 
 
