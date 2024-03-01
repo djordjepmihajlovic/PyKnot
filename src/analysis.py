@@ -369,20 +369,15 @@ class Analysis:
         
         #set model in eval mode
         self.model.eval()
-
-        self.data.requires_grad = True
-
-        preds = self.model(self.data)
-        score, indices = torch.max(preds, 1)
-        score.backward()
-
-        slc, _ = torch.max(torch.abs(input.grad[0]), dim=0)
-
-        slc = (slc - slc.min())/(slc.max()-slc.min())
-
-        #apply inverse transform on image
-
-        input_img = self.data[0]
+        for x, y in self.data:
+            x.requires_grad = True
+            input_img = x[0]
+            preds = self.model(x)
+            score, indices = torch.max(preds, 1)
+            score.backward()
+            slc, _ = torch.max(torch.abs(x.grad[0]), dim=0)
+            slc = (slc - slc.min())/(slc.max()-slc.min())
+        
         #plot image and its saleincy map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
