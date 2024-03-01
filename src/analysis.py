@@ -9,8 +9,6 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from matplotlib.ticker import AutoMinorLocator
 from scipy.signal import find_peaks 
-import torchvision
-
 
 class Analysis:
     def __init__(self, data, model, prob):
