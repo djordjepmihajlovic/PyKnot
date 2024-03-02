@@ -107,6 +107,7 @@ class FFNN_Combinatoric(nn.Module):
         self.output_layer = nn.Linear((input_shape[0]*input_shape[1]), output_shape)
 
     def forward(self, x):
+        
         x = self.flatten_layer(x)
 
         if hasattr(self, 'bn_layer'):

@@ -368,12 +368,11 @@ class Analysis:
             param.requires_grad = False
 
         for x, y in self.data:
-            x = x[0]
+            x = x
             break
             
         print(x.shape)
-        print(x) 
-        x = torch.flatten(x)
+        print(x)
 
         # Set model in eval mode
         self.model.eval()       
@@ -395,11 +394,11 @@ class Analysis:
         # Plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(x.detach().numpy())
+        plt.imshow(x[0].detach().numpy())
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map, cmap=plt.cm.hot)
+        plt.imshow(saliency_map[0], cmap=plt.cm.hot)
         plt.xticks([])
         plt.yticks([])
         plt.show()
