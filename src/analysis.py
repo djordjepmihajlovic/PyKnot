@@ -386,7 +386,7 @@ class Analysis:
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map[0].squeeze().cpu().numpy(), cmap=plt.cm.hot)
+        plt.imshow(saliency_map.squeeze().cpu().numpy(), cmap=plt.cm.hot)
         plt.xticks([])
         plt.yticks([])
         plt.show()
