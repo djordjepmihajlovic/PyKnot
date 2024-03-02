@@ -371,12 +371,13 @@ class Analysis:
         self.model.eval()
         for x, y in self.data:
             x.requires_grad = True
-            input_img = x[0]
+            input_img = x
             preds = self.model(x)
-            score, indices = torch.max(preds, 1)
-            score.backward()
-            slc, _ = torch.max(torch.abs(x.grad[0]), dim=0)
-            slc = (slc - slc.min())/(slc.max()-slc.min())
+            self.model.zero_grad()
+            loss = torch.nn.CrossEntropyLoss()
+            loss_cal = loss(preds, y)
+            loss_cal.backward()
+            saliency_map = x.grad.abs().max(1)[0]
         
         #plot image and its saleincy map
         plt.figure(figsize=(10, 10))
@@ -385,7 +386,7 @@ class Analysis:
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(slc.numpy(), cmap=plt.cm.hot)
+        plt.imshow(saliency_map.squeeze().cpu().numpy(), cmap=plt.cm.hot)
         plt.xticks([])
         plt.yticks([])
         plt.show()
