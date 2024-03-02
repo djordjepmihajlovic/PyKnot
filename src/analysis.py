@@ -370,22 +370,19 @@ class Analysis:
         #set model in eval mode
         self.model.eval()
         for x, y in self.data:
-            x = x[0]
-            y = y[0]
-            break
-        x.requires_grad = True
-        input_img = x
-        preds = self.model(x)
-        self.model.zero_grad()
-        loss = torch.nn.CrossEntropyLoss()
-        loss_cal = loss(preds, y)
-        loss_cal.backward()
-        saliency_map = x.grad.abs().max(1)[0]
-        
+            x.requires_grad = True
+            input_img = x
+            preds = self.model(x)
+            self.model.zero_grad()
+            loss = torch.nn.CrossEntropyLoss()
+            loss_cal = loss(preds, y)
+            loss_cal.backward()
+            saliency_map = x.grad.abs().max(1)[0]
+            
         #plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(input_img.detach().numpy())
+        plt.imshow(input_img[0].detach().numpy())
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
@@ -396,7 +393,7 @@ class Analysis:
 
         plt.savefig(f"saliency_map_{self.prob}.png")
 
-        print(saliency_map.shape())
+        print(saliency_map.shape)
 
 
 
