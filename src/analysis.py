@@ -377,7 +377,7 @@ class Analysis:
             loss = torch.nn.CrossEntropyLoss()
             loss_cal = loss(preds, y)
             loss_cal.backward()
-            saliency_map = x.grad.abs().max(1)[0]
+            saliency_map = x.grad.abs().max(1)
             
         #plot image and its saliency map
         plt.figure(figsize=(10, 10))
@@ -386,7 +386,7 @@ class Analysis:
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map.squeeze().cpu().numpy(), cmap=plt.cm.hot)
+        plt.imshow(saliency_map[0].squeeze().cpu().numpy(), cmap=plt.cm.hot)
         plt.xticks([])
         plt.yticks([])
         plt.show()
