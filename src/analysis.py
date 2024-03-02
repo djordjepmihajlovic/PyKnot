@@ -363,7 +363,7 @@ class Analysis:
 
 
     def saliency_map(self):
-        #we don't need gradients w.r.t. weights for a trained model
+        # We don't need gradients w.r.t. weights for a trained model
         for param in self.model.parameters():
             param.requires_grad = False
 
@@ -372,9 +372,10 @@ class Analysis:
             break
             
         print(x.shape)
-        print(x[0]) 
+        print(x) 
+        x = torch.flatten(x)
 
-        #set model in eval mode
+        # Set model in eval mode
         self.model.eval()       
         # Forward pass
         output = self.model(x)
@@ -391,7 +392,7 @@ class Analysis:
         # Convert the gradients to a numpy array and squeeze if necessary
         saliency_map = gradients.numpy().squeeze()
 
-        #plot image and its saliency map
+        # Plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
         plt.imshow(x.detach().numpy())
