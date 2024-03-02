@@ -277,8 +277,10 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     inputs, labels = next(iter(test_loader))
 
     # Choose an input image and its corresponding label
-    input_image = inputs[0:1]
+    input_image = inputs[0]
     target_label = labels[0]
+    print(target_label)
+    print(input_image)
     test = [input_image, target_label]
 
     analysis = Analysis(data=test, model=neural, prob=prob)
