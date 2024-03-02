@@ -274,7 +274,14 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     plt.savefig(f"confusion_matrix_{prob}.png")
     plt.close()
 
-    analysis = Analysis(data=test_loader[0], model=neural, prob=prob)
+    inputs, labels = next(iter(test_loader))
+
+    # Choose an input image and its corresponding label
+    input_image = inputs[0:1]
+    target_label = labels[0]
+    test = [input_image, target_label]
+
+    analysis = Analysis(data=test, model=neural, prob=prob)
     analysis.saliency_map()
 
 
