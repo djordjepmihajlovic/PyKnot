@@ -17,7 +17,7 @@ def load(knot_type, Nbeads, pers_len):
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
-    STS = np.loadtxt(os.path.join(my_knot_dir, fname_sts))
+    STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
     STS = STS.reshape(-1, Nbeads, Nbeads)
     return STS
 
