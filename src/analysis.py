@@ -366,34 +366,44 @@ class Analysis:
         #we don't need gradients w.r.t. weights for a trained model
         for param in self.model.parameters():
             param.requires_grad = False
-        
-        #set model in eval mode
-        self.model.eval()
+
         for x, y in self.data:
-            x.requires_grad = True
-            input_img = x
-            preds = self.model(x)
-            self.model.zero_grad()
-            loss = torch.nn.CrossEntropyLoss()
-            loss_cal = loss(preds, y)
-            loss_cal.backward()
-            saliency_map = x.grad.abs().max(1)
+            x = x[0]
+            break
             
+        print(x.shape)
+        print(x[0]) 
+
+        #set model in eval mode
+        self.model.eval()       
+        # Forward pass
+        output = self.model(x)
+        # Calculate gradients
+        output.backward(torch.ones_like(output))
+        # Get gradients
+        gradients = x.grad.data
+        # Take the absolute value of gradients
+        gradients = torch.abs(gradients)
+        # Find the maximum value across all channels
+        max_grad = torch.max(gradients)
+        # Normalize gradients
+        gradients /= max_grad
+        # Convert the gradients to a numpy array and squeeze if necessary
+        saliency_map = gradients.numpy().squeeze()
+
         #plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(input_img[0].detach().numpy())
+        plt.imshow(x.detach().numpy())
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map[0].squeeze().cpu().numpy(), cmap=plt.cm.hot)
+        plt.imshow(saliency_map, cmap=plt.cm.hot)
         plt.xticks([])
         plt.yticks([])
         plt.show()
 
         plt.savefig(f"saliency_map_{self.prob}.png")
-
-        print(saliency_map[0].squeeze().cpu().numpy().shape)
 
 
 
