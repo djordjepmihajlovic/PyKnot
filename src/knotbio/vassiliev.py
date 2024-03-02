@@ -32,7 +32,7 @@ def vassiliev_combinatorical(STS, test_points, combinatorics, t):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 3
+    samples = 10
     vassiliev_data = []
     c = 6
     for idy in range(0, samples): # samples
@@ -44,7 +44,7 @@ def vassiliev_combinatorical(STS, test_points, combinatorics, t):
                 integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
 
             elif combinatorics == 6:
-                integral += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]                                                 
+                integral += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]]                                                 
 
         if combinatorics == 4:
             self_linking = integral / (100 * 100 * 8 * math.pi)
@@ -60,7 +60,7 @@ def vassiliev_combinatorical(STS, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["3_1"]
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
     avgs = []
     indicies = np.arange(0, 100, 1)
     for x in knots:
