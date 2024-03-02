@@ -40,20 +40,17 @@ def vassiliev_combinatorical(STS, test_points, combinatorics, t):
         for idx, i in enumerate(test_points):
             print(idx)
 
-            if combinatorics == 4:
-                integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
+            # integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
 
-            elif combinatorics == 6:
-                integral += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]]                                                 
+            integral += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]]                                                 
 
-        if combinatorics == 4:
-            self_linking = integral / (100 * 100 * 8 * math.pi)
-            vassiliev = (6 * self_linking) + (1/4)
-            vassiliev_data.append(vassiliev)
+        # self_linking = integral / (100 * 100 * 8 * math.pi)
+        # vassiliev = (6 * self_linking) + (1/4)
+        # vassiliev_data.append(vassiliev)
 
-        elif combinatorics == 6:
-            self_linking = integral / (100 * 100 * 100)
-            vassiliev_data.append(self_linking)
+        # elif combinatorics == 6:
+        self_linking = integral / (100 * 100 * 100)
+        vassiliev_data.append(self_linking)
 
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
 
