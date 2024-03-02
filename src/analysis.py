@@ -371,13 +371,13 @@ class Analysis:
         self.model.eval()
         for x, y in self.data:
             x.requires_grad = True
-            input_img = x
+            input_img = x[0]
             preds = self.model(x)
             self.model.zero_grad()
             loss = torch.nn.CrossEntropyLoss()
             loss_cal = loss(preds, y)
             loss_cal.backward()
-            saliency_map = x.grad.abs().max(1)[0]
+            saliency_map = x[0].grad.abs().max(1)[0]
         
         #plot image and its saleincy map
         plt.figure(figsize=(10, 10))
