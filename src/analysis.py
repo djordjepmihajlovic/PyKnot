@@ -369,8 +369,10 @@ class Analysis:
         
         #set model in eval mode
         self.model.eval()
-        x = self.data[0]
-        y = self.data[1]
+        for x, y in self.data:
+            x = x[0]
+            y = y[0]
+            break
         x.requires_grad = True
         input_img = x
         preds = self.model(x)
