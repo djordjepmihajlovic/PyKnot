@@ -393,7 +393,7 @@ class Analysis:
 
         plt.savefig(f"saliency_map_{self.prob}.png")
 
-        print(saliency_map.shape)
+        print(saliency_map[0].squeeze().cpu().numpy().shape)
 
 
 
