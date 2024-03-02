@@ -379,10 +379,10 @@ class Analysis:
             loss_cal.backward()
             saliency_map = x.grad.abs().max(1)[0]
         
-        #plot image and its saleincy map
+        #plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(np.transpose(input_img[0].detach().numpy(), (1, 2, 0)))
+        plt.imshow(input_img[0].detach().numpy())
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
