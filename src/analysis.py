@@ -376,6 +376,8 @@ class Analysis:
 
         # Set model in eval mode
         self.model.eval()       
+
+        x.requires_grad = True
         # Forward pass
         output = self.model(x)
         # Calculate gradients
