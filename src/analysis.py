@@ -391,7 +391,9 @@ class Analysis:
         plt.yticks([])
         plt.show()
 
-        plt.savefig("saliency_map.png")
+        plt.savefig(f"saliency_map_{self.prob}.png")
+
+        print(saliency_map.shape())
 
 
 
