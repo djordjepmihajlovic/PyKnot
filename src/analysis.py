@@ -364,7 +364,10 @@ class Analysis:
         plt.show()
 
 
-    def saliency_map(self):
+    def saliency_map(self, knots):
+        '''
+        Generate a saliency map for the given model and data.
+        '''
         # We don't need gradients w.r.t. weights for a trained model
         for param in self.model.parameters():
             param.requires_grad = False
@@ -384,7 +387,7 @@ class Analysis:
         # Forward pass
         output = self.model(x)
         # Calculate gradients
-        label = one_hot(y, num_classes=5)
+        label = one_hot(y, num_classes=len(knots))
         output.backward(label)
         # Get gradients
         gradients = x.grad.data
@@ -398,20 +401,91 @@ class Analysis:
         saliency_map = gradients.numpy().squeeze()
 
         # Plot image and its saliency map
-        for num in range(0, 5):
-            plt.figure(figsize=(10, 10))
-            plt.subplot(1, 2, 1)
-            plt.imshow(x[num].detach().numpy())
-            plt.xticks([])
-            plt.yticks([])
-            plt.subplot(1, 2, 2)
-            plt.imshow(saliency_map[num], cmap='hot')
-            plt.xticks([])
-            plt.yticks([])
-            plt.show()
+        plt.figure(figsize=(10, 10))
+        plt.subplot(1, 2, 1)
+        plt.imshow(x[num].detach().numpy())
+        plt.xticks([])
+        plt.yticks([])
+        plt.subplot(1, 2, 2)
+        plt.imshow(saliency_map[0], cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
 
-            plt.savefig(f"saliency_map_{self.prob}_{num}.png")
-            plt.clf()
+        plt.savefig(f"saliency_map_{self.prob}_{0}.png")
+        plt.clf()
+
+        # average saliency maps per knot - see differences or similarities
+            
+        for idx, num in enumerate(x):
+            avg_saliency_0_1 = np.zeros((100, 100))
+            avg_saliency_3_1 = np.zeros((100, 100)) 
+            avg_saliency_4_1 = np.zeros((100, 100))
+            avg_saliency_5_1 = np.zeros((100, 100))
+            avg_saliency_5_2 = np.zeros((100, 100))
+            saliency_total = np.zeros((100, 100))
+
+            if y[idx] == 0:
+                avg_saliency_0_1 += saliency_map[idx]
+            
+            elif y[idx] == 1:
+                avg_saliency_3_1 += saliency_map[idx]
+
+            elif y[idx] == 2:
+                avg_saliency_4_1 += saliency_map[idx]
+
+            elif y[idx] == 3:
+                avg_saliency_5_1 += saliency_map[idx]
+
+            elif y[idx] == 4:
+                avg_saliency_5_2 += saliency_map[idx]
+
+            saliency_total += saliency_map[idx]
+
+        plt.imshow(avg_saliency_0_1, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_0_1.png")
+        plt.clf()
+
+        plt.imshow(avg_saliency_3_1, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_3_1.png")
+        plt.clf()
+
+        plt.imshow(avg_saliency_4_1, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_4_1.png")
+        plt.clf()
+
+        plt.imshow(avg_saliency_5_1, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_5_1.png")
+        plt.clf()
+
+        plt.imshow(avg_saliency_5_2, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_5_2.png")
+        plt.clf()
+
+        plt.imshow(saliency_total, cmap='hot')
+        plt.xticks([])
+        plt.yticks([])
+        plt.show()
+        plt.savefig(f"avg_saliency_map_all.png")
+        plt.clf()
+            
+
+
 
 
 
