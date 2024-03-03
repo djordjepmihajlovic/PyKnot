@@ -398,18 +398,21 @@ class Analysis:
         saliency_map = gradients.numpy().squeeze()
 
         # Plot image and its saliency map
-        plt.figure(figsize=(10, 10))
-        plt.subplot(1, 2, 1)
-        plt.imshow(x[0].detach().numpy())
-        plt.xticks([])
-        plt.yticks([])
-        plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map[0], cmap='hot')
-        plt.xticks([])
-        plt.yticks([])
-        plt.show()
+        for num in range(0, 5):
+            plt.figure(figsize=(10, 10))
+            plt.subplot(1, 2, 1)
+            plt.imshow(x[num].detach().numpy())
+            plt.xticks([])
+            plt.yticks([])
+            plt.subplot(1, 2, 2)
+            plt.imshow(saliency_map[num], cmap='hot')
+            plt.xticks([])
+            plt.yticks([])
+            plt.show()
 
-        plt.savefig(f"saliency_map_{self.prob}.png")
+            plt.savefig(f"saliency_map_{self.prob}_{num}.png")
+            plt.clf()
+
 
 
 
