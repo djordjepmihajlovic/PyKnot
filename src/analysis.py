@@ -370,6 +370,7 @@ class Analysis:
 
         for x, y in self.data:
             x = x
+            y = y
             break
             
         print(x.shape)
@@ -382,7 +383,7 @@ class Analysis:
         # Forward pass
         output = self.model(x)
         # Calculate gradients
-        output.backward(torch.ones_like(output))
+        output.backward(y)
         # Get gradients
         gradients = x.grad.data
         # Take the absolute value of gradients
@@ -408,7 +409,7 @@ class Analysis:
 
         plt.savefig(f"saliency_map_{self.prob}.png")
 
-        print(len(saliency_map[0]), len(saliency_map[0][0]))
+        print(len(saliency_map), len(saliency_map[0]), len(saliency_map[0][0]))
 
         with open(f'saliency_7', 'w', newline='') as f:
             writer = csv.writer(f)
