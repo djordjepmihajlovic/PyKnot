@@ -1,4 +1,5 @@
 import torch
+from torch.nn.functional import one_hot
 import shap
 import csv
 import numpy as np
@@ -383,7 +384,8 @@ class Analysis:
         # Forward pass
         output = self.model(x)
         # Calculate gradients
-        output.backward(y)
+        label = one_hot(y, num_classes=15)
+        output.backward(label)
         # Get gradients
         gradients = x.grad.data
         # Take the absolute value of gradients
@@ -408,13 +410,6 @@ class Analysis:
         plt.show()
 
         plt.savefig(f"saliency_map_{self.prob}.png")
-
-        print(len(saliency_map), len(saliency_map[0]), len(saliency_map[0][0]))
-
-        with open(f'saliency_7', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in saliency_map[0:2]:
-                writer.writerow([item])
 
 
 
