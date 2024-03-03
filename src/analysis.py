@@ -403,7 +403,7 @@ class Analysis:
         # Plot image and its saliency map
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 2, 1)
-        plt.imshow(x[num].detach().numpy())
+        plt.imshow(x[0].detach().numpy())
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
