@@ -1,5 +1,6 @@
 import torch
 import shap
+import csv
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -400,12 +401,19 @@ class Analysis:
         plt.xticks([])
         plt.yticks([])
         plt.subplot(1, 2, 2)
-        plt.imshow(saliency_map[0], cmap=plt.cm.hot)
+        plt.imshow(saliency_map[0], cmap='hot')
         plt.xticks([])
         plt.yticks([])
         plt.show()
 
         plt.savefig(f"saliency_map_{self.prob}.png")
+
+        print(len(saliency_map[0]), len(saliency_map[0][0]))
+
+        with open(f'saliency_7', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in saliency_map[0:2]:
+                writer.writerow([item])
 
 
 

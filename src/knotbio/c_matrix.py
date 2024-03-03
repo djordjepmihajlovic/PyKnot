@@ -32,14 +32,17 @@ def gen_c_matrix():
 
 x_1, x_2, x_3 = gen_c_matrix()
 sns.heatmap(x_1, annot=False, cmap='viridis')
+plt.title(r'$\omega_{ij}$ for $i<j<k<l<m<n$')
 plt.savefig('comb_matrix_1(100C4).png')
 plt.clf()
 
 sns.heatmap(x_2, annot=False, cmap='viridis')
+plt.title(r'$\omega_{kl}$ for $i<j<k<l<m<n$')
 plt.savefig('comb_matrix_2(100C4).png')
 plt.clf()
 
 sns.heatmap(x_3, annot=False, cmap='viridis')
+plt.title(r'$\omega_{mn}$ for $i<j<k<l<m<n$')
 plt.savefig('comb_matrix_3(100C4).png')
 plt.clf()
 
