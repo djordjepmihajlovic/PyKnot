@@ -384,7 +384,7 @@ class Analysis:
         # Forward pass
         output = self.model(x)
         # Calculate gradients
-        label = one_hot(y, num_classes=15)
+        label = one_hot(y, num_classes=5)
         output.backward(label)
         # Get gradients
         gradients = x.grad.data
