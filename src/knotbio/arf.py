@@ -34,7 +34,7 @@ def arf_STS(STS):
         for i in range(0, (N/2)):
             integral += STS[idy][(2*i - 1), (2*i - 1)] * STS[idy][(2*i), (2*i)]
 
-        arf = (integral%2) / (100 * 100)
+        arf = integral % 2
         arf_data.append(arf)
 
 

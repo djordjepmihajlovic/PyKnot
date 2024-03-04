@@ -40,12 +40,12 @@ def vassiliev_combinatorical_STS(STS):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 100
+    samples = 10
     vassiliev_data = []
 
-    c = 6
     for idy in range(0, samples): # samples
-        integral = 0
+        integral1 = 0
+        integral2 = 0
         N = 100
         for i in range(0, N):
             for j in range(0, N):
@@ -56,13 +56,14 @@ def vassiliev_combinatorical_STS(STS):
                                 for m in range(0, N):
                                     for n in range(0, N):
                                         if l<m and m<n:
-                                            integral += STS[idy][i, j]*STS[idy][k, l]*STS[idy][m, n] 
+                                            integral1 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n] 
+                                            integral2 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
 
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
+        integral = (0.5 * integral1) + integral2
         vassiliev = integral / (100 * 100 * 100)
         vassiliev_data.append(vassiliev)
-
 
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
 
@@ -73,7 +74,7 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 1000
+    samples = 100
     vassiliev_data = []
     for idy in range(0, samples): # samples
         integral = 0
@@ -98,14 +99,14 @@ def main():
         print("Calculating Vassiliev invariants...")
         v_d, av = vassiliev_combinatorical_STS(STS)
 
-        with open(f'vassiliev_{x}_comb_{6}_12_34_56.csv', 'w', newline='') as f:
+        with open(f'vassiliev_{x}_v3.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for item in v_d:
                 writer.writerow([item])
         avgs.append(av)
 
 
-    print(f"Combinatorics [123456]: ", avgs)
+    print(f"Vassiliev: ", avgs)
 
 
     # for x in knots:
