@@ -40,17 +40,12 @@ def vassiliev_combinatorical_STS(STS):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 5
-    vassiliev1_data = []
-    vassiliev2_data = []
-    vassiliev3_data = []
-    vassiliev4_data = []
+    samples = 100
+    vassiliev_data = []
+
     c = 6
     for idy in range(0, samples): # samples
-        integral1 = 0
-        integral2 = 0
-        integral3 = 0
-        integral4 = 0
+        integral = 0
         N = 100
         for i in range(0, N):
             for j in range(0, N):
@@ -61,28 +56,17 @@ def vassiliev_combinatorical_STS(STS):
                                 for m in range(0, N):
                                     for n in range(0, N):
                                         if l<m and m<n:
-                                            integral1 += STS[idy][i, m]*STS[idy][j, l]*STS[idy][k, n] # these are symmetry groups
-                                            integral2 += STS[idy][i, j]*STS[idy][k, l]*STS[idy][m, n] 
-                                            integral3 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n]
-                                            integral4 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
+                                            integral += STS[idy][i, j]*STS[idy][k, l]*STS[idy][m, n] 
 
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
-        vassiliev1 = integral1 / (100 * 100 * 100)
-        vassiliev1_data.append(vassiliev1)
-        vassiliev2 = integral2 / (100 * 100 * 100)
-        vassiliev3 = integral3 / (100 * 100 * 100)
-        vassiliev4 = integral4 / (100 * 100 * 100)
-        vassiliev2_data.append(vassiliev2)
-        vassiliev3_data.append(vassiliev3)
-        vassiliev4_data.append(vassiliev4)
+        vassiliev = integral / (100 * 100 * 100)
+        vassiliev_data.append(vassiliev)
 
-    avg_vassiliev1 = sum(vassiliev1_data) / len(vassiliev1_data)
-    avg_vassiliev2 = sum(vassiliev2_data) / len(vassiliev2_data)
-    avg_vassiliev3 = sum(vassiliev3_data) / len(vassiliev3_data)
-    avg_vassiliev4 = sum(vassiliev4_data) / len(vassiliev4_data)
 
-    return vassiliev1_data, vassiliev2_data, vassiliev3_data, vassiliev4_data, avg_vassiliev1, avg_vassiliev2, avg_vassiliev3, avg_vassiliev4
+    avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
+
+    return vassiliev_data, avg_vassiliev
 
 @njit
 def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
@@ -106,44 +90,23 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["5_1", "7_2", "3_1_3_1", "3_1-3_1", "8_20"]
-    avgs1 = []
-    avgs2 = []
-    avgs3 = []
-    avgs4 = []
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+    avgs = []
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
         print("StS loaded")
         print("Calculating Vassiliev invariants...")
-        v_d1, v_d2, v_d3, v_d4, av_1, av_2, av_3, av_4 = vassiliev_combinatorical_STS(STS)
-        with open(f'vassiliev_{x}_comb_{6}_15_24_36.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in v_d1:
-                writer.writerow([item])
-        avgs1.append(av_1)
+        v_d, av = vassiliev_combinatorical_STS(STS)
 
         with open(f'vassiliev_{x}_comb_{6}_12_34_56.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            for item in v_d2:
+            for item in v_d:
                 writer.writerow([item])
-        avgs2.append(av_2)
+        avgs.append(av)
 
-        with open(f'vassiliev_{x}_comb_{6}_13_25_46.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in v_d3:
-                writer.writerow([item])
-        avgs3.append(av_3)
 
-        with open(f'vassiliev_{x}_comb_{6}_14_25_36.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in v_d4:
-                writer.writerow([item])
-        avgs4.append(av_4)
+    print(f"Combinatorics [123456]: ", avgs)
 
-    print(f"Combinatorics [152436]: ", avgs1)
-    print(f"Combinatorics [123456]: ", avgs2)
-    print(f"Combinatorics [132546]: ", avgs3)
-    print(f"Combinatorics [142536]: ", avgs4)
 
     # for x in knots:
     #     print(x)
