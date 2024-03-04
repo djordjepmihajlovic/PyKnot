@@ -40,7 +40,7 @@ def vassiliev_combinatorical_STS(STS):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 10
+    samples = 100
     vassiliev_data = []
 
     for idy in range(0, samples): # samples
@@ -62,7 +62,7 @@ def vassiliev_combinatorical_STS(STS):
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
         integral = (0.5 * integral1) + integral2
-        vassiliev = integral / (100 * 100 * 100)
+        vassiliev = integral / (100 * 100 * 100 * -2)
         vassiliev_data.append(vassiliev)
 
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
@@ -91,7 +91,7 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3"]
     avgs = []
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
