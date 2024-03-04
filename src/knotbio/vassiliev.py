@@ -106,7 +106,7 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["3_1"]
+    knots = ["5_1", "7_2", "3_1_3_1", "3_1-3_1", "8_20"]
     avgs1 = []
     avgs2 = []
     avgs3 = []
