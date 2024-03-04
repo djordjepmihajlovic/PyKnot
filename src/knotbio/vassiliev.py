@@ -17,7 +17,7 @@ def load_STS(knot_type, Nbeads, pers_len):
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
-    STS = np.loadtxt(os.path.join(my_knot_dir, fname_sts))
+    STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
     STS = STS.reshape(-1, Nbeads, Nbeads)
     return STS
 
@@ -47,23 +47,40 @@ def vassiliev_combinatorical_STS(STS, test_points, combinatorics, t):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
-    samples = 10
-    vassiliev_data = []
+    samples = 5
+    vassiliev1_data = []
+    vassiliev2_data = []
+    vassiliev3_data = []
+    vassiliev4_data = []
     c = 6
     for idy in range(0, samples): # samples
-        integral = 0
+        integral1 = 0
+        integral2 = 0
+        integral3 = 0
+        integral4 = 0
         for idx, i in enumerate(test_points):
-            print(idx)
+            integral1 += STS[idy][i[0], i[4]]*STS[idy][i[1], i[3]]*STS[idy][i[2], i[5]] # these are symmetry groups
+            integral2 += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]] 
+            integral3 += STS[idy][i[0], i[2]]*STS[idy][i[1], i[4]]*STS[idy][i[3], i[5]]
+            integral4 += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
 
-            integral += STS[idy][i[0], i[2]]*STS[idy][i[1], i[3]] # these are symmetry groups
+        # self_linking = integral / (100 * 100 * 8 * math.pi)
+        # vassiliev = (6 * self_linking) + (1/4)
+        vassiliev1 = integral1 / (100 * 100 * 100)
+        vassiliev1_data.append(vassiliev1)
+        vassiliev2 = integral2 / (100 * 100 * 100)
+        vassiliev3 = integral3 / (100 * 100 * 100)
+        vassiliev4 = integral4 / (100 * 100 * 100)
+        vassiliev2_data.append(vassiliev2)
+        vassiliev3_data.append(vassiliev3)
+        vassiliev4_data.append(vassiliev4)
 
-        self_linking = integral / (100 * 100 * 8 * math.pi)
-        vassiliev = (6 * self_linking) + (1/4)
-        vassiliev_data.append(vassiliev)
+    avg_vassiliev1 = sum(vassiliev1_data) / len(vassiliev1_data)
+    avg_vassiliev2 = sum(vassiliev2_data) / len(vassiliev2_data)
+    avg_vassiliev3 = sum(vassiliev3_data) / len(vassiliev3_data)
+    avg_vassiliev4 = sum(vassiliev4_data) / len(vassiliev4_data)
 
-    avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
-
-    return avg_vassiliev, vassiliev_data
+    return vassiliev1_data, vassiliev2_data, vassiliev3_data, vassiliev4_data, avg_vassiliev1, avg_vassiliev2, avg_vassiliev3, avg_vassiliev4
 
 @njit
 def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
@@ -87,38 +104,63 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3"]
-    avgs = []
+    knots = ["5_1", "7_2", "3_1_3_1", "3_1-3_1", "8_20"]
+    avgs1 = []
+    avgs2 = []
+    avgs3 = []
+    avgs4 = []
     indicies = np.arange(0, 100, 1)
+    for x in knots:
+        STS = load_STS(x, 100, 10) # this is quite slow
+        print("StS loaded")
+        test_points = combinations(indicies, 6)
+        print("Combinations generated")
+        print("Calculating Vassiliev invariants...")
+        v_d1, v_d2, v_d3, v_d4, av_1, av_2, av_3, av_4 = vassiliev_combinatorical_STS(STS, test_points, 6, 1)
+        with open(f'vassiliev_{x}_comb_{6}_15_24_36.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in v_d1:
+                writer.writerow([item])
+        avgs1.append(av_1)
+
+        with open(f'vassiliev_{x}_comb_{6}_12_34_56.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in v_d2:
+                writer.writerow([item])
+        avgs2.append(av_2)
+
+        with open(f'vassiliev_{x}_comb_{6}_13_25_46.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in v_d3:
+                writer.writerow([item])
+        avgs3.append(av_3)
+
+        with open(f'vassiliev_{x}_comb_{6}_14_25_36.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in v_d4:
+                writer.writerow([item])
+        avgs4.append(av_4)
+
+    print(f"Combinatorics [152436]: ", avgs1)
+    print(f"Combinatorics [123456]: ", avgs2)
+    print(f"Combinatorics [132546]: ", avgs3)
+    print(f"Combinatorics [142536]: ", avgs4)
+
     # for x in knots:
-    #     STS = load_STS(x, 100, 10) # this is quite slow
-    #     print("StS loaded")
-    #     test_points = combinations(indicies, 6)
+    #     print(x)
+    #     STA = load_STA(x, 100, 10)
+    #     print("StA loaded")
+    #     test_points = combinations(indicies, 3)
     #     print("Combinations generated")
     #     print("Calculating Vassiliev invariants...")
-    #     avg, v_d = vassiliev_combinatorical_STS(STS, test_points, 6, 1)
-    #     with open(f'vassiliev_{x}_comb_{6}_{1}.csv', 'w', newline='') as f:
+    #     avg, v_d = vassiliev_combinatorical_STA(STA, test_points, 2, 1)
+    #     with open(f'vassiliev_{x}_sta.csv', 'w', newline='') as f:
     #         writer = csv.writer(f)
     #         for item in v_d:
     #             writer.writerow([item])
     #     avgs.append(avg)
 
-    # print(f"Combinatorics {6}: ", avgs)
-    for x in knots:
-        print(x)
-        STA = load_STA(x, 100, 10)
-        print("StA loaded")
-        test_points = combinations(indicies, 3)
-        print("Combinations generated")
-        print("Calculating Vassiliev invariants...")
-        avg, v_d = vassiliev_combinatorical_STA(STA, test_points, 2, 1)
-        with open(f'vassiliev_{x}_sta.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in v_d:
-                writer.writerow([item])
-        avgs.append(avg)
-
-    print(f"Combinatorics: ", avgs)
+    # print(f"Combinatorics: ", avgs)
 
 
 

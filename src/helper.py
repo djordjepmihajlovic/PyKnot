@@ -148,6 +148,9 @@ def get_knots(problem):
     elif problem == "SQRGRN8":
         Knotind = ["3_1_3_1", "3_1-3_1", "8_20"]  # square knot, granny knot, 8_20
 
+    elif problem == "sameVASSILIEV":
+        Knotind = ["5_1", "7_2", "3_1_3_1", "3_1-3_1", "8_20"]
+
     else:
         raise Exception("Problem not available")
 
