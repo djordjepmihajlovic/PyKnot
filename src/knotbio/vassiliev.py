@@ -16,7 +16,6 @@ def load_STS(knot_type, Nbeads, pers_len):
 
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
-    fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
     STS = STS.reshape(-1, Nbeads, Nbeads)
     return STS
@@ -36,14 +35,8 @@ def load_STA(knot_type, Nbeads, pers_len):
     STA = STA.reshape(-1, Nbeads)
     return STA
 
-def combinations(indicies, combinatorics):
-    '''
-    Generate all possible combinations of indicies (100Cx)
-    '''
-    return list(itertools.combinations(indicies, combinatorics))
-
 @njit
-def vassiliev_combinatorical_STS(STS, test_points, combinatorics, t):
+def vassiliev_combinatorical_STS(STS):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
@@ -58,11 +51,20 @@ def vassiliev_combinatorical_STS(STS, test_points, combinatorics, t):
         integral2 = 0
         integral3 = 0
         integral4 = 0
-        for idx, i in enumerate(test_points):
-            integral1 += STS[idy][i[0], i[4]]*STS[idy][i[1], i[3]]*STS[idy][i[2], i[5]] # these are symmetry groups
-            integral2 += STS[idy][i[0], i[1]]*STS[idy][i[2], i[3]]*STS[idy][i[4], i[5]] 
-            integral3 += STS[idy][i[0], i[2]]*STS[idy][i[1], i[4]]*STS[idy][i[3], i[5]]
-            integral4 += STS[idy][i[0], i[3]]*STS[idy][i[1], i[4]]*STS[idy][i[2], i[5]]
+        N = 100
+        for i in range(0, N):
+            for j in range(0, N):
+                if i<j:
+                    for k in range(0, N):
+                        for l in range(0, N):
+                            if j<k and k<l:
+                                for m in range(0, N):
+                                    for n in range(0, N):
+                                        if l<m and m<n:
+                                            integral1 += STS[idy][i, m]*STS[idy][j, l]*STS[idy][k, n] # these are symmetry groups
+                                            integral2 += STS[idy][i, j]*STS[idy][k, l]*STS[idy][m, n] 
+                                            integral3 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n]
+                                            integral4 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
 
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
@@ -104,19 +106,16 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["5_1", "7_2", "3_1_3_1", "3_1-3_1", "8_20"]
+    knots = ["3_1"]
     avgs1 = []
     avgs2 = []
     avgs3 = []
     avgs4 = []
-    indicies = np.arange(0, 100, 1)
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
         print("StS loaded")
-        test_points = combinations(indicies, 6)
-        print("Combinations generated")
         print("Calculating Vassiliev invariants...")
-        v_d1, v_d2, v_d3, v_d4, av_1, av_2, av_3, av_4 = vassiliev_combinatorical_STS(STS, test_points, 6, 1)
+        v_d1, v_d2, v_d3, v_d4, av_1, av_2, av_3, av_4 = vassiliev_combinatorical_STS(STS)
         with open(f'vassiliev_{x}_comb_{6}_15_24_36.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for item in v_d1:
