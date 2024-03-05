@@ -12,7 +12,10 @@ def load_STS(knot_type, Nbeads, pers_len):
     '''
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
-    master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
+    if knot_type == "conway" or "kt":
+        master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{200}",f"lp{pers_len}")
+    else:
+        master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
 
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
