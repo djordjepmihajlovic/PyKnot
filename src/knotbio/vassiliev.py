@@ -12,10 +12,7 @@ def load_STS(knot_type, Nbeads, pers_len):
     '''
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
-    if knot_type == "conway" or "kt":
-        master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{200}",f"lp{pers_len}")
-    else:
-        master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
+    master_knots_dir = os.path.join(master_knots_dir,knot_type,f"N{Nbeads}",f"lp{pers_len}")
 
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
@@ -94,7 +91,7 @@ def vassiliev_combinatorical_STA(STA, test_points, combinatorics, t):
     return avg_vassiliev, vassiliev_data
 
 def main():
-    knots = ["conway", "kt", "3_1_3_1", "3_1-3_1", "8_20"]
+    knots = ["3_1_3_1", "3_1-3_1"]
     avgs = []
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
