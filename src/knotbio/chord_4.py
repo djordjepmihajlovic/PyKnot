@@ -106,3 +106,6 @@ def main():
             writer = csv.writer(f)
             for item in chord_6:
                 writer.writerow([item])
+
+
+main()

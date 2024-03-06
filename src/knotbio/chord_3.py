@@ -55,6 +55,7 @@ def chord_combinatorical_STS(STS):
 def main():
     knots = ["3_1"]
     avgs = []
+    print("here")
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
         print("StS loaded")
@@ -75,5 +76,8 @@ def main():
             writer = csv.writer(f)
             for item in chord_3:
                 writer.writerow([item])
+
+
+main()
 
 
