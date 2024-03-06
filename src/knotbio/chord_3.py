@@ -53,7 +53,7 @@ def chord_combinatorical_STS(STS):
 
 
 def main():
-    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+    knots = ["3_1"]
     avgs = []
     for x in knots:
         STS = load_STS(x, 100, 10) # this is quite slow
