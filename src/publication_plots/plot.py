@@ -57,7 +57,7 @@ def plot_vassiliev():
     sns.set_palette(custom_palette)
     df_vassiliev.plot(kind = 'bar', rot= 0, width = 0.7, figsize=(10,5), linewidth=1, edgecolor = "black")
     plt.xlabel("Knot Type")
-    plt.ylabel(r'$3^{nd}$-Order Vassiliev Invariant ($v_{3}$)')
+    plt.ylabel(r'$2^{nd}$-Order Vassiliev Invariant ($v_{2}$)')
     # plt.title(r'$I(K)_{(1,3)(2,4)} = \oint\oint\oint\oint_{K}\frac{r_{1}-r_{3}}{|r_{1}-r_{3}|^{3}} \cdot \frac{r_{2}-r_{4}}{|r_{2}-r_{4}|^{3}} \approx \sum_{1<2<3<4}\omega_{StS}[1][3]*\omega_{StS}[2][4]$', y=1.05)
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
     plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
