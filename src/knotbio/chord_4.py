@@ -67,7 +67,7 @@ def chord_combinatorical_STS_parallel(STS):
     return chord_data
 
 def main():
-    knots = ["3_1"]
+    knots = ["8_16"]
     avgs = []
     for x in knots:
         STS = load_STS(x, 100, 10)
