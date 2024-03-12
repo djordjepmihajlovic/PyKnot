@@ -53,20 +53,20 @@ class StA():
         for idx, X in enumerate(self.X_train):
             if self.y_train[idx] == 0:
                 maxima, _ = find_peaks(X, prominence=1, width=5)
-                area_0_1.append(np.trapz(y=X, x=indicies))
+                area_0_1.append(np.trapz(y=X, x=indicies)/(6*math.pi))
 
             if self.y_train[idx] == 1: 
-                area_3_1.append(np.trapz(y=X, x=indicies))
+                area_3_1.append(np.trapz(y=X, x=indicies)/(6*math.pi))
 
             elif self.y_train[idx] == 2: 
-                area_4_1.append(np.trapz(y=X, x=indicies))
+                area_4_1.append(np.trapz(y=X, x=indicies)/(6*math.pi))
 
             elif self.y_train[idx] == 3:
                 V = X
-                area_5_1.append(np.trapz(y=X, x=indicies))
+                area_5_1.append(np.trapz(y=X, x=indicies)/(6*math.pi))
 
             elif self.y_train[idx] == 4:
-                area_5_2.append(np.trapz(y=X, x=indicies))
+                area_5_2.append(np.trapz(y=X, x=indicies)/(6*math.pi))
 
             elif self.y_train[idx] == 5:
                 L = X
@@ -138,6 +138,7 @@ class StA():
         # sns.histplot(area_4_1, color="pink", label="8_20", linewidth=0.1, edgecolor = "black")
         plt.xlabel("Global Writhe")
         plt.ylabel("Frequency")
+        plt.gca().tick_params(which="both", direction="in", right=True, top=True)
         plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
         plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
         plt.gca().xaxis.set_ticks_position('both')

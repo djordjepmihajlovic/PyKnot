@@ -6,6 +6,7 @@ import torch.nn.functional as F
 
 # lightning modules
 import pytorch_lightning as pl
+from torchmetrics.regression import MeanAbsolutePercentageError
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -279,23 +280,25 @@ class NN(pl.LightningModule):
         # _, predicted = torch.max(z.data, 1) 
         # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        ## dowker
-        true = 0
-        false = 0
-        el = (y-z)
+        # ## dowker
+        # true = 0
+        # false = 0
+        # el = (y-z)
 
-        print(f"pred: {z}, true: {y}")
+        # print(f"pred: {z}, true: {y}")
 
-        for idx, i in enumerate(el):
-            if torch.sum(i) == 0.0:
-                true += 1
-            else:
-                false += 1
-                # print(f"true: {y[idx]}")
-                # print(f"predicted: {predicted[idx]}")
+        # for idx, i in enumerate(el):
+        #     if torch.sum(i) == 0.0:
+        #         true += 1
+        #     else:
+        #         false += 1
+        #         # print(f"true: {y[idx]}")
+        #         # print(f"predicted: {predicted[idx]}")
 
-        test_acc = true/(true+false)
-        test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
+        # test_acc = true/(true+false)
+        # test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
+
+        test_acc = MeanAbsolutePercentageError(z, y)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})

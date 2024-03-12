@@ -4,13 +4,15 @@ import seaborn as sns
 from scipy.signal import find_peaks
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 knot = "0_1"
-KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2", "7_1", "7_2", "7_3"]
-peak_order_data = [[],[],[],[],[], [], [], []]
-peak_separations = [[],[],[],[],[], [], [], []]
-sta_area = [[],[],[],[],[],[],[],[]]
-avg_peak = [[],[],[],[],[],[],[],[]]
+KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2"]
+KnotIDtex = [r'$0_{1}$', r'$3_{1}$', r'$4_{1}$', r'$5_{1}$', r'$5_{2}$']
+peak_order_data = [[],[],[],[],[]]
+peak_separations = [[],[],[],[],[]]
+sta_area = [[],[],[],[],[]]
+avg_peak = [[],[],[],[],[]]
 
 for indx, knot in enumerate(KnotID):
 
@@ -96,10 +98,15 @@ plt.show()
 
 for indx, x in enumerate(avg_peak):
     # if indx < 5:
-    plt.plot(x, prominences, label = f"{KnotID[indx]}")
+    plt.plot(x, prominences, label = f"{KnotIDtex[indx]}")
 plt.legend()
 plt.ylabel("Peak prominence")
-plt.xlabel("Avg. peak count")
+plt.xlabel(r'Avg. $\omega_{StA}$ peak count')
+plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+plt.gca().xaxis.set_ticks_position('both')
+plt.gca().yaxis.set_ticks_position('both')
+plt.axhline(y=0.5, color='k', linestyle='--')
 plt.show()
 
 # knot data/sta concepts
