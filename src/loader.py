@@ -220,6 +220,13 @@ class data_2_inv(Dataset):
         ## Loading the dataset labels, only needed for direct dowker prediction
         # labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
         
+        # labels = np.loadtxt(f'../knot data/v2/{self.knot}_v2.csv', delimiter=',', dtype=np.float32)
+        #on cluster use
+        labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
+
+        self.label = torch.tensor(labels, dtype=torch.float32)
+        self.label = self.label.view(-1, 1)
+        
         if invariant == "dowker":
 
             ## used for pure dowker code
@@ -227,8 +234,8 @@ class data_2_inv(Dataset):
             self.label = self.label.view(7, 1)
 
             ## used for generated dowker code
-            # self.label = torch.tensor(labels, dtype=torch.float32)
-            # self.label = self.label.view(-1, 32, 1)
+            self.label = torch.tensor(labels, dtype=torch.float32)
+            self.label = self.label.view(-1, 32, 1)
 
         elif invariant == "jones":
             self.label = torch.tensor(self.jones[self.knot])
@@ -237,6 +244,8 @@ class data_2_inv(Dataset):
         elif invariant == "quantumA2":
             self.label = torch.tensor(self.quantumA2[self.knot])
             self.label = self.label.view(31, 2)
+
+        
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
         self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
@@ -250,7 +259,7 @@ class data_2_inv(Dataset):
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
             dowker_lb = math.floor(idx/100) # get label attributed to 100 bead section
-            return self.dataset[idx], self.label #self.label[dowker_lb]
+            return self.dataset[idx], self.label[dowker_lb] #self.label[dowker_lb]
         else:
             return self.dataset[idx]
         

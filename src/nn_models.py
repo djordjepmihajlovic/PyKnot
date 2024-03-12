@@ -58,8 +58,12 @@ class FFNNModel(nn.Module):
         x = self.output_layer(x)
 
 
-        if self.pred == "class" or "latent":
-            return F.softmax(x, dim=1) 
+        if self.pred == "class":
+            # return F.softmax(x, dim=1) 
+            return x.view(-1, 1, 1)
+        
+        elif self.pred == "v2":
+            return x.view(-1, 1)
         
         elif self.pred == "dowker":
             return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
@@ -165,6 +169,9 @@ class RNNModel(nn.Module):
         if self.pred == "class":
             return F.softmax(x, dim=1) 
         
+        elif self.pred == "v2":
+            return x.view(-1, 1, 1)
+        
         elif self.pred == "dowker":
             return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
         
@@ -269,25 +276,26 @@ class NN(pl.LightningModule):
         # calculate acc
 
         # # std. label
-        _, predicted = torch.max(z.data, 1) 
-        test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+        # _, predicted = torch.max(z.data, 1) 
+        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
         ## dowker
-        # true = 0
-        # false = 0
-        # predicted = torch.round(z)
-        # el = (y-predicted)
+        true = 0
+        false = 0
+        el = (y-z)
 
-        # for idx, i in enumerate(el):
-        #     if torch.sum(i) == 0.0:
-        #         true += 1
-        #     else:
-        #         false += 1
-        #         # print(f"true: {y[idx]}")
-        #         # print(f"predicted: {predicted[idx]}")
+        print(f"pred: {z}, true: {y}")
 
-        # test_acc = true/(true+false)
-        #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
+        for idx, i in enumerate(el):
+            if torch.sum(i) == 0.0:
+                true += 1
+            else:
+                false += 1
+                # print(f"true: {y[idx]}")
+                # print(f"predicted: {predicted[idx]}")
+
+        test_acc = true/(true+false)
+        test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
@@ -324,10 +332,11 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
     """
 
     # model
-    if predict == "class":
-        model = FFNNModel(input_shape, output_shape, norm, predict)
-    elif predict == "combinatoric":
+       
+    if predict == "combinatoric":
         model = FFNN_Combinatoric(input_shape, output_shape, norm, predict)
+    else:
+        model = FFNNModel(input_shape, output_shape, norm, predict)
 
     # loss function 
     if loss == "CEL":
@@ -339,7 +348,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = optim.Adam(model.parameters(), lr=0.000001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:

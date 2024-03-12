@@ -30,7 +30,7 @@ from data_generation import *
 device = torch.device("cpu")
 def main():
 
-    properties = {"dowker", "jones", "quantumA2", "HOMFLY"}
+    properties = {"dowker", "jones", "quantumA2", "HOMFLY", "v2"}
     datasets = []
 
 ################## <--classic classification problem + reconstruction--> ###################
@@ -41,9 +41,9 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-                datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+                # datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -108,6 +108,8 @@ def main():
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
+        print(dataset[0])
+
         ninputs = len(dataset) # total dataset length
         print(ninputs)
         train_len = int(ninputs * (0.9))
@@ -120,8 +122,8 @@ def main():
         #dataset_unsupervised= Subset(data_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)
 
         ##on cluster use below:
-        dataset_unsupervised= (Subset(data_2_inv(os.path.join(master_knots_dir,"5_2",f"N{Nbeads}",f"lp{pers_len}"), "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies))
-        dont_train, test_dataset_singular, val_dataset_singular = split_train_test_validation(dataset_unsupervised, (int(len(dataset_unsupervised)*0.1)), (int(len(dataset_unsupervised)*0.7)), (int(len(dataset_unsupervised)*0.2)), bs)
+        # dataset_unsupervised= (Subset(data_2_inv(os.path.join(master_knots_dir,"5_2",f"N{Nbeads}",f"lp{pers_len}"), "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies))
+        # dont_train, test_dataset_singular, val_dataset_singular = split_train_test_validation(dataset_unsupervised, (int(len(dataset_unsupervised)*0.1)), (int(len(dataset_unsupervised)*0.7)), (int(len(dataset_unsupervised)*0.2)), bs)
 
         if dtype  == "XYZ":
             in_layer = (Nbeads, 3)
@@ -141,10 +143,13 @@ def main():
         elif pdct == "quantumA2":
             out_layer = 62 #[31*2]
 
+        elif pdct == "v2":
+            out_layer = 1
+
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss()
-            train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset_singular, test_loader= test_dataset_singular, epochs = epochs)
+            train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
         if mode == "generate":
             print("generate not available for invariant prediction; try: python main.py -m generate -pred class")
@@ -251,33 +256,35 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     all_predicted = []
     all_y = []
 
-    with torch.no_grad():
-        for x, y in test_loader:
-            z = neural.forward(x)
-        
-            _, predicted = torch.max(z.data, 1) 
-            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+    if pdct == "class":
 
-            predicted_np = predicted.cpu().numpy()
-            y_np = y.cpu().numpy()
+        with torch.no_grad():
+            for x, y in test_loader:
+                z = neural.forward(x)
+            
+                _, predicted = torch.max(z.data, 1) 
+                test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-            # Accumulate predictions
-            all_predicted.extend(predicted_np)
-            all_y.extend(y_np)
+                predicted_np = predicted.cpu().numpy()
+                y_np = y.cpu().numpy()
 
-    # Calculate confusion matrix over all batches
-    conf_mat = confusion_matrix(all_y, all_predicted)
+                # Accumulate predictions
+                all_predicted.extend(predicted_np)
+                all_y.extend(y_np)
 
-    # Display confusion matrix
-    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
-    plt.title("StS Knot Classification")
-    plt.savefig(f"confusion_matrix_{prob}.png")
-    plt.close()
+        # Calculate confusion matrix over all batches
+        conf_mat = confusion_matrix(all_y, all_predicted)
 
-    # Choose an input image and its corresponding label
+        # Display confusion matrix
+        ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
+        plt.title("StS Knot Classification")
+        plt.savefig(f"confusion_matrix_{prob}.png")
+        plt.close()
 
-    analysis = Analysis(data=test_loader, model=neural, prob=prob)
-    analysis.saliency_map(knots=knots)
+        # Choose an input image and its corresponding label
+
+        analysis = Analysis(data=test_loader, model=neural, prob=prob)
+        analysis.saliency_map(knots=knots)
 
 
     if pdct == "latent":
@@ -316,7 +323,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         
 def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    neural = onlyconceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
+    neural = conceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
     # neural = onlyconceptNN.load_from_checkpoint("lightning_logs/version_310/checkpoints/epoch=25-step=6500.ckpt", input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
     #version 302
 
