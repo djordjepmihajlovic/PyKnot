@@ -285,8 +285,6 @@ class NN(pl.LightningModule):
         false = 0
         el = (y-z)
 
-        print(f"pred: {z}, true: {y}")
-
         for idx, i in enumerate(el):
             if torch.sum(i) == 0.0:
                 true += 1
