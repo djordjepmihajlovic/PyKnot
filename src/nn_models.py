@@ -297,11 +297,11 @@ class NN(pl.LightningModule):
 
         # test_acc = true/(true+false)
         # test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
-
+        loss_mae = nn.L1Loss(z, y)
         test_acc = MeanAbsolutePercentageError(z, y)
 
         # log outputs
-        self.log_dict({'test_loss': loss, 'test_acc': test_acc})
+        self.log_dict({'test_loss': loss_mae, 'test_acc': test_acc})
 
         # predicted_np = predicted.cpu().numpy()
         # y_np = y.cpu().numpy()
