@@ -281,27 +281,25 @@ class NN(pl.LightningModule):
         # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
         # ## dowker
-        # true = 0
-        # false = 0
-        # el = (y-z)
+        true = 0
+        false = 0
+        el = (y-z)
 
-        # print(f"pred: {z}, true: {y}")
+        print(f"pred: {z}, true: {y}")
 
-        # for idx, i in enumerate(el):
-        #     if torch.sum(i) == 0.0:
-        #         true += 1
-        #     else:
-        #         false += 1
-        #         # print(f"true: {y[idx]}")
-        #         # print(f"predicted: {predicted[idx]}")
+        for idx, i in enumerate(el):
+            if torch.sum(i) == 0.0:
+                true += 1
+            else:
+                false += 1
+                # print(f"true: {y[idx]}")
+                # print(f"predicted: {predicted[idx]}")
 
-        # test_acc = true/(true+false)
-        # test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
-        loss_mae = nn.L1Loss(z, y)
-        test_acc = MeanAbsolutePercentageError(z, y)
+        test_acc = true/(true+false)
+        test_acc = (torch.sum(el).item()/ (torch.sum(y).item()))**(1/2)
 
         # log outputs
-        self.log_dict({'test_loss': loss_mae, 'test_acc': test_acc})
+        self.log_dict({'test_loss': loss, 'test_acc': test_acc})
 
         # predicted_np = predicted.cpu().numpy()
         # y_np = y.cpu().numpy()
