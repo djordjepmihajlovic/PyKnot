@@ -63,7 +63,7 @@ class FFNNModel(nn.Module):
             # return F.softmax(x, dim=1) 
             return x.view(-1, 1, 1)
         
-        elif self.pred == "v2":
+        elif self.pred == "v2" or self.pred == "v3":
             return x.view(-1, 1)
         
         elif self.pred == "dowker":
