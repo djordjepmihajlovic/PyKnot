@@ -30,7 +30,7 @@ from data_generation import *
 device = torch.device("cpu")
 def main():
 
-    properties = {"dowker", "jones", "quantumA2", "HOMFLY", "v2"}
+    properties = {"dowker", "jones", "quantumA2", "HOMFLY", "v2", "v3"}
     datasets = []
 
 ################## <--classic classification problem + reconstruction--> ###################
