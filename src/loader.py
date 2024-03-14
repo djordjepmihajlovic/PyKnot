@@ -219,13 +219,21 @@ class data_2_inv(Dataset):
 
         ## Loading the dataset labels, only needed for direct dowker prediction
         # labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
-        
+
         # labels = np.loadtxt(f'../knot data/v2/{self.knot}_v2.csv', delimiter=',', dtype=np.float32)
         #on cluster use
-        labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
 
-        self.label = torch.tensor(labels, dtype=torch.float32)
-        self.label = self.label.view(-1, 1)
+        if invariant == "v2":
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
+
+            self.label = torch.tensor(labels, dtype=torch.float32)
+            self.label = self.label.view(-1, 1)
+
+        if invariant == "v3":
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3.csv', delimiter=',', dtype=np.float32)
+
+            self.label = torch.tensor(labels, dtype=torch.float32)
+            self.label = self.label.view(-1, 1)
         
         if invariant == "dowker":
 
