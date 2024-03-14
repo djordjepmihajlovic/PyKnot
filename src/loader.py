@@ -81,7 +81,7 @@ class KnotDataset(Dataset):
 class CondKnotDataset(Dataset):
 
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
-        """Class wrapper for dataset generation --> classification problem
+        """Class wrapper for dataset generation --> conditional classification problem
 
         Args:
             dirname (str): knot master directory location
@@ -155,7 +155,7 @@ class CondKnotDataset(Dataset):
 class data_2_inv(Dataset):
 
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label, invariant):
-        """Class wrapper for dataset generation --> prediction problem
+        """Class wrapper for dataset generation --> knot invariant prediction problem
 
         Args:
             (example: SIGWRITHE --> DT code)
@@ -166,6 +166,7 @@ class data_2_inv(Dataset):
             Nbeads (int): number of beads
             pers_len (int): persistence length
             label: corresponding label of data being called
+            invariant: invariant being predicted
 
         Returns:
             torch.Dataset
@@ -173,21 +174,6 @@ class data_2_inv(Dataset):
         super(data_2_inv, self).__init__()
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-
-        self.dowker_codes = {"0_1":[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                            "3_1":[4.0, 6.0, 2.0, 0.0, 0.0, 0.0, 0.0], 
-                            "4_1":[4.0, 6.0, 8.0, 2.0, 0.0, 0.0, 0.0], 
-                            "5_1":[6.0, 8.0, 10.0, 2.0, 4.0, 0.0, 0.0], 
-                            "5_2":[4.0, 8.0, 10.0, 2.0, 6.0, 0.0, 0.0], 
-                            "6_1":[4.0, 8.0, 12.0, 10.0, 2.0, 6.0, 0.0], 
-                            "6_2":[4.0, 8.0, 10.0, 12.0, 2.0, 6.0, 0.0], 
-                            "6_3":[4.0, 8.0, 10.0, 2.0, 12.0, 6.0, 0.0], 
-                            "7_1":[8.0, 10.0, 12.0, 14.0, 2.0, 4.0, 6.0], 
-                            "7_2":[4.0, 10.0, 14.0, 12.0, 2.0, 8.0, 6.0], 
-                            "7_3":[6.0, 10.0, 12.0, 14.0, 2.0, 4.0, 8.0], 
-                            "3_1_3_1":[10.0, -6.0, -8.0, -4.0, 12.0, 2.0, 0.0, 0.0], # square
-                            "3_1-3_1":[10.0, 6.0, 8.0, 4.0, 12.0, 2.0, 0.0, 0.0], # granny
-                            "8_20":[12.0, -8.0, 16.0, -2.0, -14.0, -4.0, 6.0, -10.0]} 
         
         self.jones = {"0_1":[[0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
                              [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
@@ -218,9 +204,6 @@ class data_2_inv(Dataset):
         self.knot = knot
 
         ## Loading the dataset labels, only needed for direct dowker prediction
-        # labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
-
-        # labels = np.loadtxt(f'../knot data/v2/{self.knot}_v2.csv', delimiter=',', dtype=np.float32)
         #on cluster use
 
         if invariant == "v2":
@@ -237,11 +220,8 @@ class data_2_inv(Dataset):
         
         if invariant == "dowker":
 
-            ## used for pure dowker code
-            self.label = torch.tensor(self.dowker_codes[self.knot])
-            self.label = self.label.view(7, 1)
-
             ## used for generated dowker code
+            labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 32, 1)
 
@@ -253,7 +233,6 @@ class data_2_inv(Dataset):
             self.label = torch.tensor(self.quantumA2[self.knot])
             self.label = self.label.view(31, 2)
 
-        
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
         self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
@@ -267,7 +246,7 @@ class data_2_inv(Dataset):
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
             dowker_lb = math.floor(idx/100) # get label attributed to 100 bead section
-            return self.dataset[idx], self.label[dowker_lb] #self.label[dowker_lb]
+            return self.dataset[idx], self.label[dowker_lb] 
         else:
             return self.dataset[idx]
         
@@ -275,7 +254,7 @@ class data_2_inv(Dataset):
 class ConceptKnotDataset(Dataset):
 
     def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
-        """Class wrapper for dataset generation --> prediction problem
+        """Class wrapper for dataset generation --> Concept bottleneck classifiers
 
         Args:
             (example: SIGWRITHE --> DT code)
@@ -285,6 +264,7 @@ class ConceptKnotDataset(Dataset):
             dtype (str): data type used for features (eg. SIGWRITHE)
             Nbeads (int): number of beads
             pers_len (int): persistence length
+            concept: corresponding concept(s) of data being called
             label: corresponding label of data being called
 
         Returns:
@@ -366,76 +346,6 @@ class LatentKnotDataset(Dataset):
     def __getitem__(self, idx):
         lb = math.floor(idx/10) # get label attributed to 10 latent dimension
         return self.dataset[idx], int(self.labels[idx])
-        
-        
-class WeightedKnotDataset(Dataset):  # right now going to set up so that it takes in StS and creates XYZ
-
-    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
-        """Class wrapper for dataset generation --> classification problem
-
-        Args:
-            dirname (str): knot master directory location
-            knot (str): knot being called
-            net (str): neural network trype
-            dtype (str): problem type
-            Nbeads (int): number of beads
-            pers_len (int): persistence length
-            label (int): corresponding label of data being called
-
-        Returns:
-            three outputs: 
-            torch.Tensor()
-                dataset[idx], weights (StS)[idx], label
-        """
-        super(WeightedKnotDataset, self).__init__()
-
-        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-        fname_w = os.path.join("SIGWRITHEMATRIX", f"3DSignedWritheMatrix_{knot}.dat.lp{pers_len}.dat")
-
-        n_col = len(select_cols)
-        type_list = [torch.float32] * n_col
-
-        # Loading the dataset file
-
-        if dtype == "XYZ":
-            data_label = np.loadtxt(os.path.join(dirname, fname))
-
-        if dtype == "SIGWRITHE":
-            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
-
-        print((os.path.join(dirname, fname)))
-
-        data_feature = np.loadtxt(os.path.join(dirname, fname_w))
-        print((os.path.join(dirname, fname_w)))
-
-        self.dataset_label = torch.tensor(data_label, dtype=torch.float32)
-        self.dataset_feature = torch.tensor(data_feature, dtype=torch.float32)
-
-        # Reshape data
-        self.dataset_label = self.dataset_label.view(-1, Nbeads, n_col) #XYZ
-        self.dataset_feature = self.dataset_feature.view(-1, Nbeads, len(np.arange(Nbeads))) #StS
-
-        self.label = label
-
-        if dtype == "XYZ":
-            self.dataset_label = self.dataset_label - torch.mean(self.dataset_label, dim=0)
-
-        # Add Kymoknot labels if loading for a localization problem
-        if "localise" in net:
-            label_data = np.loadtxt(dirname + f"KYMOKNOT/BU__KN_{knot}.dat.cleaned")[:, 2]
-            label_dataset = torch.tensor(label_data, dtype=torch.float32)
-            label_dataset = label_dataset.view(-1, Nbeads, 1)
-            self.dataset = TensorDataset(self.dataset, label_dataset)
-
-
-    def __len__(self):
-        return len(self.dataset_feature)
-
-    def __getitem__(self, idx):
-        if hasattr(self, 'label'):
-            return self.dataset_feature[idx], self.dataset_label[idx], self.label
-        else:
-            return self.dataset[idx]
         
 
         

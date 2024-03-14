@@ -32,7 +32,6 @@ def main():
 
     properties = {"dowker", "jones", "quantumA2", "HOMFLY", "v2", "v3"}
     datasets = []
-
 ################## <--classic classification problem + reconstruction--> ###################
 
     if pdct == "class" or pdct == "combinatoric": # used for doing a std classify problem, note combinatoric tries learn multiplications of data.
@@ -146,6 +145,9 @@ def main():
         elif pdct == "v2":
             out_layer = 1
 
+        elif pdct == "v3":
+            out_layer = 1
+
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
             loss_fn = nn.MSELoss()
@@ -154,36 +156,6 @@ def main():
         if mode == "generate":
             print("generate not available for invariant prediction; try: python main.py -m generate -pred class")
 
-
-################## <--generative weighted reconstruction--> ###################
-
-# nb. takes in XYZ data + StS data as weights and passes through specified encoder -> decoder architecture
-
-# maybe deprecated we will see........
-
-    elif pdct == "weighted": # used for doing a std classify problem vs. prediction problem (only Sig2XYZ right now)
-        for i, knot in enumerate(knots): 
-            datasets.append(WeightedKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i))
-
-        dataset = ConcatDataset(datasets) # concatenate datasets together
-        indicies = np.arange(0, 100000)
-        dataset = Subset(dataset, indicies)
-
-        ninputs = len(dataset)
-        print(ninputs)
-
-        train_len = int(ninputs * (0.9))
-        test_len = int(ninputs * (0.075))
-        val_len = ninputs - (train_len + test_len)
-        train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
-
-        in_layer = (Nbeads, Nbeads)
-        out_layer = (Nbeads, 3)
-
-        if mode == "generate":
-            loss_fn = nn.MSELoss() 
-            optimizer = "adam"
-            generate_with_attention(input_shape=in_layer, output_shape=out_layer, latent_dims = 10, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
     elif pdct == "concept":
         for i, knot in enumerate(knots):
