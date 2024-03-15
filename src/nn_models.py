@@ -269,6 +269,7 @@ class NN(pl.LightningModule):
         return loss
     
     def test_step(self, batch, batch_idx, loss_name ='test_loss'):
+
         #test
         x, y = batch 
         z = self.forward(x)
@@ -280,13 +281,13 @@ class NN(pl.LightningModule):
         # _, predicted = torch.max(z.data, 1) 
         # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        # ## dowker
+        # ## invariant
         true = 0
         false = 0
         el = (y-z)
 
         for idx, i in enumerate(el):
-            if torch.sum(i) == 0.0:
+            if torch.round(i, decimals=2) == 0.0:
                 true += 1
             else:
                 false += 1
@@ -294,19 +295,10 @@ class NN(pl.LightningModule):
                 # print(f"predicted: {predicted[idx]}")
 
         test_acc = true/(true+false)
-        test_acc = (torch.sum(el).item()/ (torch.sum(y).item()))**(1/2)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
 
-        # predicted_np = predicted.cpu().numpy()
-        # y_np = y.cpu().numpy()
-
-        # # Calculate confusion matrix
-        # confusion_mat = confusion_matrix(y_np, predicted_np)
-        # print(confusion_mat)
-
-        # self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
         return loss
 
     def configure_optimizers(self):

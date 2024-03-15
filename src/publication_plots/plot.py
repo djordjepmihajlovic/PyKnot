@@ -40,9 +40,12 @@ def plot_vassiliev():
     mse_t = 0
     error_percentage = 0
     modulo = []
-    for idx, i in enumerate(avgs_v3):
-        mse = (i - true_vals_v3[idx])**2
-        mse_t += mse
+    for idx, i in enumerate(avgs):
+        if idx < 15:
+            mse_t += i
+    
+    mse_t/=len(avgs)
+    print(mse_t)
 
 
     print(f'MSE: {mse_t/len(avgs)}')
