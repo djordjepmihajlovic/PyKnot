@@ -287,7 +287,7 @@ class NN(pl.LightningModule):
         el = (y-z)
 
         for idx, i in enumerate(el):
-            if torch.round(i, decimals=2) == 0.0:
+            if i < 0.1:
                 true += 1
             else:
                 false += 1
