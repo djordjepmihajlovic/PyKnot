@@ -199,7 +199,7 @@ class CNNModel(nn.Module):
         x = x.view(-1, 32 * 25 * 25)  # Reshape to [256, 32 * 25 * 25]
         
         # Fully connected layers with activation
-        x = self.relu(self.fc1(x))  # [256, 32 * 25 * 25] -> [256, 128]
+        x = F.relu(self.fc1(x))  # [256, 32 * 25 * 25] -> [256, 128]
         x = self.fc2(x)  # [256, 128] -> [256, 1]
         
         # return out # <- std
