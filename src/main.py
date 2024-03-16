@@ -107,14 +107,14 @@ def main():
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
-        print((dataset.size()))
-
         ninputs = len(dataset) # total dataset length
         print(ninputs)
         train_len = int(ninputs * (0.9))
         test_len = int(ninputs * (0.075))
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
+
+        print(train_dataset.dataset.data.shape)
 
         ## unsupervised predictions
 
@@ -142,10 +142,7 @@ def main():
         elif pdct == "quantumA2":
             out_layer = 62 #[31*2]
 
-        elif pdct == "v2":
-            out_layer = 1
-
-        elif pdct == "v3":
+        elif pdct == "v2" or pdct == "v3":
             out_layer = 1
 
         if mode == "train":
