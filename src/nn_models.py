@@ -192,8 +192,8 @@ class CNNModel(nn.Module):
 
     def forward(self, x):
 
-        x = self.pool(self.relu(self.conv1(x)))  # [256, 16, 100, 100] -> [256, 16, 50, 50]
-        x = self.pool(self.relu(self.conv2(x)))  # [256, 32, 50, 50] -> [256, 32, 25, 25]
+        x = self.pool(F.relu(self.conv1(x)))  # [256, 16, 100, 100] -> [256, 16, 50, 50]
+        x = self.pool(F.relu(self.conv2(x)))  # [256, 32, 50, 50] -> [256, 32, 25, 25]
         
         # Flatten the feature maps
         x = x.view(-1, 32 * 25 * 25)  # Reshape to [256, 32 * 25 * 25]
