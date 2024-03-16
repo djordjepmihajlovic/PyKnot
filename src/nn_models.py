@@ -282,6 +282,9 @@ class NN(pl.LightningModule):
             false = 0
             el = (y-z)
 
+            true50 = 0
+            false50 = 0
+
             for idx, i in enumerate(el):
                 if i < 0.1:
                     true += 1
@@ -290,7 +293,14 @@ class NN(pl.LightningModule):
                     # print(f"true: {y[idx]}")
                     # print(f"predicted: {predicted[idx]}")
 
+                if i < 0.5:
+                    true50 += 1
+                else:
+                    false50 += 1
+
             test_acc = true/(true+false)
+            test_acc50 = true50/(true50+false50)
+            print(f"test_acc(0.5): {test_acc50}")
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
