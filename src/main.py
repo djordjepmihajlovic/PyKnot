@@ -96,9 +96,6 @@ def main():
 
     elif pdct in properties: 
 
-        # StS predict dowker unseen **wed 7th Feb**
-
-        # Renzo ricca helicity 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
             #datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))

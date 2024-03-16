@@ -139,32 +139,21 @@ class FFNN_Combinatoric(nn.Module):
 class RNNModel(nn.Module):
     def __init__(self, input_shape, output_shape, norm, predict):
         super(RNNModel, self).__init__()
-        # sequence len, input len = (100)
-        # hidden size = 128
-        # num layers = 2
-        # num classes = output_shape
 
         self.hidden_size = 128
         self.num_layers = 2
         self.seq = self.inp = input_shape[0]
 
-        if norm:
-            self.bn_layer = nn.BatchNorm1d(input_shape[0])
-            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], self.hidden_size)
-        else:
-            self.lstm1 = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True, bidirectional=False)
-
+        self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, output_shape)
         self.pred = predict
 
     def forward(self, x):
 
-        # self.lstm1.flatten_parameters()
-        x = x.view(-1, self.seq, self.inp)
-        hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
-        cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
+        hidden = (torch.zeros(self.num_layers, 256, self.hidden_size).to(x.device))
+        cell = (torch.zeros(self.num_layers, 256, self.hidden_size).to(x.device))
         
-        out, _ = self.lstm1(x, (hidden, cell)) # need to triple check what hidden and cell are? 
+        out, _ = self.lstm(x, (hidden, cell)) # need to triple check what hidden and cell are? 
         out = self.fc(out[:, -1, :])  # take output from last time step
 
         # return out # <- std
