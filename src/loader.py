@@ -235,7 +235,12 @@ class data_2_inv(Dataset):
 
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
-        self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
+        # self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
+
+        if net == "CNN":
+            self.dataset = self.dataset.view(-1, 1, Nbeads, n_col_feature)
+        else:
+            self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
 
         if dtype == "XYZ":
             self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
