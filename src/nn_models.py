@@ -143,16 +143,16 @@ class RNNModel(nn.Module):
         self.num_layers = 2
         self.seq = self.inp = input_shape[0]
 
-        self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
+        self.lstm = nn.RNN(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, 1)
         self.pred = predict
 
     def forward(self, x):
 
-        hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
-        cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
+        hidden = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        cell = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         
-        out, _ = self.lstm(x, (hidden, cell)) # need to triple check what hidden and cell are? 
+        out, _ = self.lstm(x, hidden) # need to triple check what hidden and cell are? 
         out = self.fc(out[:, -1, :])  # take output from last time step
 
         # return out # <- std
