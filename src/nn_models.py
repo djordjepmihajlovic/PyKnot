@@ -145,12 +145,11 @@ class RNNModel(nn.Module):
 
         self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, output_shape)
-        self.fc2 = nn.Linear(input_shape[0]*input_shape[1], output_shape)
         self.pred = predict
 
     def forward(self, x):
 
-        hidden = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        hidden = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) # nb. x.size(0) is the feature per timestep
         cell = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         
         out, _ = self.lstm(x, (hidden, cell)) 
@@ -158,10 +157,57 @@ class RNNModel(nn.Module):
 
         # return out # <- std
         if self.pred == "class":
-            return F.softmax(x, dim=1) 
+            return F.softmax(out, dim=1) 
         
         elif self.pred == "v2" or self.pred == "v3":
             return out.view(-1, 1)
+        
+        elif self.pred == "dowker":
+            return out.view(-1, 32, 1) # 
+        
+        elif self.pred == "jones":
+            return out.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
+        
+        elif self.pred == "quantumA2":
+            return out.view(-1, 31, 2) # <- same as Jones
+
+################## <--CNN--> ###################
+
+class CNNModel(nn.Module):
+    def __init__(self, input_shape, output_shape, norm, predict):
+        super(CNNModel, self).__init__()
+
+        #nb. input_shape = (256, 100, 100)
+        self.pred = predict
+
+        # Convolutional layers
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        
+        # Max pooling
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        
+        self.fc1 = nn.Linear(32 * 25 * 25, 128)  
+        self.fc2 = nn.Linear(128, output_shape)  
+
+    def forward(self, x):
+
+        x = self.pool(self.relu(self.conv1(x)))  # [256, 16, 100, 100] -> [256, 16, 50, 50]
+        x = self.pool(self.relu(self.conv2(x)))  # [256, 32, 50, 50] -> [256, 32, 25, 25]
+        
+        # Flatten the feature maps
+        x = x.view(-1, 32 * 25 * 25)  # Reshape to [256, 32 * 25 * 25]
+        
+        # Fully connected layers with activation
+        x = self.relu(self.fc1(x))  # [256, 32 * 25 * 25] -> [256, 128]
+        x = self.fc2(x)  # [256, 128] -> [256, 1]
+        
+        # return out # <- std
+        if self.pred == "class":
+            return F.softmax(x, dim=1) 
+        
+        elif self.pred == "v2" or self.pred == "v3":
+            return x.view(-1, 1)
         
         elif self.pred == "dowker":
             return x.view(-1, 32, 1) # 
@@ -171,46 +217,6 @@ class RNNModel(nn.Module):
         
         elif self.pred == "quantumA2":
             return x.view(-1, 31, 2) # <- same as Jones
-
-################## <--CNN--> ###################
-
-class CNNModel(nn.Module):
-    def __init__(self, input_shape, output_shape, norm):
-        super(CNNModel, self).__init__()
-
-        # init layers
-        self.norm = norm
-        if self.norm:
-            self.bn_layer = nn.BatchNorm2d(input_shape[0])
-
-        # hidden layers to CNN
-        # in -> out -> kernel 
-        self.conv_layer1 = nn.Conv1d(input_shape[0]*input_shape[1], 32, kernel_size = 3, stride = 1, padding = 1)
-        # takes in input shape (100) -> outputs shape (32) with a 2D kernel size? (3, 3)
-        # self.max_pool_layer1 = nn.MaxPool1d(kernel_size = 2, stride = 2)
-        self.conv_layer2 = nn.Conv2d(256, 20, kernel_size = 3, stride=1, padding=1)
-        self.flatten_layer = nn.Flatten()
-        self.dense_layer = nn.Linear(32, 80)
-
-        # output layer
-        self.output_layer = nn.Linear(80, output_shape)
-
-    def forward(self, x):
-
-        # if self.mask_value is not None:
-        #     x = x * self.g
-        if self.norm:
-            x = self.bn_layer(x)
-
-        x = F.relu(self.conv_layer1(x))
-        # x = self.max_pool_layer1(x)
-        x = F.relu(self.conv_layer2(x))
-        x = self.flatten_layer(x)
-        x = F.relu(self.dense_layer(x))
-        x = self.output_layer(x)
-        x = F.softmax(self.output_layer(x), dim=1)
-
-        return x
     
 
 ################## <--Graph Neural Network--> ###################   
@@ -380,7 +386,7 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss, predict):
 
 ################## <--CNN config--> ###################
 
-def setup_CNN(input_shape, output_shape, opt, norm, loss):
+def setup_CNN(input_shape, output_shape, opt, norm, loss, predict):
     """setup function --> defines required network using helper
 
     Args:
@@ -397,7 +403,7 @@ def setup_CNN(input_shape, output_shape, opt, norm, loss):
     """
 
     # model
-    model = CNNModel(input_shape, output_shape, norm)
+    model = CNNModel(input_shape, output_shape, norm, predict)
 
     # loss function 
     if loss == "CEL":
