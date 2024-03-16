@@ -149,11 +149,11 @@ class RNNModel(nn.Module):
 
         if norm:
             self.bn_layer = nn.BatchNorm1d(input_shape[0])
-            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100)
+            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], self.hidden_size)
         else:
-            self.lstm1 = nn.LSTM(input_shape[0], 100, 2, batch_first=True, bidirectional=False)
+            self.lstm1 = nn.LSTM(input_shape[0], self.hidden_size, 2, batch_first=True, bidirectional=False)
 
-        self.fc = nn.Linear(100, output_shape)
+        self.fc = nn.Linear(self.hidden_size, output_shape)
         self.pred = predict
 
     def forward(self, x):
