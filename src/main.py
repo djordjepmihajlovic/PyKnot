@@ -206,21 +206,20 @@ def main():
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
     if model_type == "NN":
-        neural = NN(model=model, loss=loss_fn, opt=optimizer)
-        # neural = NN.load_from_checkpoint("../trained models/StA_standard_prediction_2_ls/checkpoints/epoch=31-step=4224.ckpt", model=model, loss=loss_fn, opt=optimizer)
-        # neural = NN.load_from_checkpoint("../trained models/StA_standard_prediction_2ls_SQRGRN8/checkpoints/epoch=28-step=2320.ckpt", model=model, loss=loss_fn, opt=optimizer)
+        neural = NN(model=model, loss=loss_fn, opt=optimizer, predict=pdct)
         early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
         trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
         trainer.fit(neural, train_loader, val_loader)
         trainer.test(dataloaders=test_loader)
-        ## will need to add back to function arguments
+
 
     elif model_type == "DT":
         algorithm = DecisionTree(prob, train_loader, test_loader)
         tree_structure, importance, test_point, decision_path = algorithm.classification()
         analysis = Analysis(test_loader, algorithm, prob)
         analysis.DT_interpreter(tree_structure, importance, test_point, decision_path)
-
+        
+        
     elif model_type == "testing":
         data_gen = StA(prob, train_loader, test_loader)
         data_gen.calc_area()

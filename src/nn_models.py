@@ -22,6 +22,7 @@ class FFNNModel(nn.Module):
             input_shape (list): dim of input array
             output_shape (int): size of output array
             norm (bool): norm
+            predict (str): prediction type
 
         Returns:
             nn.Module
@@ -67,7 +68,7 @@ class FFNNModel(nn.Module):
             return x.view(-1, 1)
         
         elif self.pred == "dowker":
-            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
+            return x.view(-1, 32, 1) 
         
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
@@ -138,31 +139,31 @@ class FFNN_Combinatoric(nn.Module):
 class RNNModel(nn.Module):
     def __init__(self, input_shape, output_shape, norm, predict):
         super(RNNModel, self).__init__()
+        # sequence len, input len = (100)
+        # hidden size = 128
+        # num layers = 2
+        # num classes = output_shape
 
-        # if norm:
-        #     self.bn_layer = nn.BatchNorm1d(input_shape[0])
-        #     self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100)
-        # else:
-        #     self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100, batch_first=True, bidirectional=False)
+        self.hidden_size = 128
+        self.num_layers = 2
 
-        # self.lstm2 = nn.LSTM(100, 100, batch_first=True, bidirectional=True)
-        # self.lstm3 = nn.LSTM(100 * 2, 100, batch_first=True, bidirectional=False)
+        if norm:
+            self.bn_layer = nn.BatchNorm1d(input_shape[0])
+            self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], 100)
+        else:
+            self.lstm1 = nn.LSTM(input_shape[0], 100, 2, batch_first=True, bidirectional=False)
 
-        self.lstm1 = nn.LSTM(input_shape[1], 64, batch_first=True, bidirectional=False)
-        self.lstm2 = nn.LSTM(64, 32, batch_first=True, bidirectional=True)
-
-        self.fc = nn.Linear(64, output_shape)
+        self.fc = nn.Linear(100, (output_shape[0]*output_shape[1]))
         self.pred = predict
 
     def forward(self, x):
 
-        self.lstm1.flatten_parameters()
-
-        out, _ = self.lstm1(x)
-        out = F.tanh(out)
+        # self.lstm1.flatten_parameters()
+        hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
+        cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         
-        out, _ = self.lstm2(out)
-        out = F.tanh(out[:, -1, :])  # taking output from the last time step
+        out, _ = self.lstm1(x, (hidden, cell)) # need to triple check what hidden and cell are? 
+        out = F.tanh(out[:, -1, :])  # take output from last time step
         
         out = self.fc(out)
 
@@ -170,11 +171,11 @@ class RNNModel(nn.Module):
         if self.pred == "class":
             return F.softmax(x, dim=1) 
         
-        elif self.pred == "v2":
-            return x.view(-1, 1, 1)
+        elif self.pred == "v2" or self.pred == "v3":
+            return x.view(-1, 1)
         
         elif self.pred == "dowker":
-            return x.view(-1, 7, 1) # <- have: StA_2_DT (-1, 32, 1) (32 is for generated dowker code)
+            return x.view(-1, 32, 1) # 
         
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
@@ -225,13 +226,12 @@ class CNNModel(nn.Module):
 
 ################## <--Graph Neural Network--> ###################   
     
-    
-
+# wouldve loved to implement... would be extremely interesting for studying knots... future work perhaps
 
 ################## <--General Neural Network, Pytorch LightningModule for train/val/test config--> ###################
     
 class NN(pl.LightningModule):
-    def __init__(self, model, loss, opt):
+    def __init__(self, model, loss, opt, predict):
         """pl.LightningModule --> builds train/val/test 
 
         Args:
@@ -246,6 +246,7 @@ class NN(pl.LightningModule):
         self.model = model
         self.loss = loss
         self.optimiser = opt
+        self.predict = predict
 
     def forward(self, x):
         # apply model layers
@@ -275,26 +276,26 @@ class NN(pl.LightningModule):
         z = self.forward(x)
         loss = self.loss(z, y) 
 
-        # calculate acc
+        if self.predict == "class":
+        # std. label
+            _, predicted = torch.max(z.data, 1) 
+            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        # # std. label
-        # _, predicted = torch.max(z.data, 1) 
-        # test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
-
+        else:
         # ## invariant
-        true = 0
-        false = 0
-        el = (y-z)
+            true = 0
+            false = 0
+            el = (y-z)
 
-        for idx, i in enumerate(el):
-            if i < 0.1:
-                true += 1
-            else:
-                false += 1
-                # print(f"true: {y[idx]}")
-                # print(f"predicted: {predicted[idx]}")
+            for idx, i in enumerate(el):
+                if i < 0.1:
+                    true += 1
+                else:
+                    false += 1
+                    # print(f"true: {y[idx]}")
+                    # print(f"predicted: {predicted[idx]}")
 
-        test_acc = true/(true+false)
+            test_acc = true/(true+false)
 
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
@@ -378,7 +379,7 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.00001)
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:
