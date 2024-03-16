@@ -107,7 +107,7 @@ def main():
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
-        print(torch.size(dataset))
+        print((dataset.size()))
 
         ninputs = len(dataset) # total dataset length
         print(ninputs)
