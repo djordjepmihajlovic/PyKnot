@@ -146,6 +146,7 @@ class RNNModel(nn.Module):
 
         self.hidden_size = 128
         self.num_layers = 2
+        self.seq = self.inp = input_shape[0]
 
         if norm:
             self.bn_layer = nn.BatchNorm1d(input_shape[0])
@@ -159,6 +160,7 @@ class RNNModel(nn.Module):
     def forward(self, x):
 
         # self.lstm1.flatten_parameters()
+        x = x.view(-1, self.seq, self.inp)
         hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         
@@ -382,6 +384,8 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss, predict):
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:
         raise ValueError("Invalid optimizer choice; 'adam' or 'sgd'.")
+    
+    print(model)
 
     return model, loss_fn, optimizer
 
