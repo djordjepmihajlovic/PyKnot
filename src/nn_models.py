@@ -145,6 +145,7 @@ class RNNModel(nn.Module):
 
         self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, output_shape)
+        self.fc2 = nn.Linear(input_shape[0]*input_shape[1], output_shape)
         self.pred = predict
 
     def forward(self, x):
@@ -154,6 +155,7 @@ class RNNModel(nn.Module):
         
         out, _ = self.lstm(x, (hidden, cell)) 
         out = self.fc(out[:, -1, :])  # take output from last time step
+        out = self.fc2(out)
 
         # return out # <- std
         if self.pred == "class":
