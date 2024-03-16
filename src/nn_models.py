@@ -150,8 +150,10 @@ class RNNModel(nn.Module):
 
     def forward(self, x):
 
-        hidden = (torch.zeros(self.num_layers, 256, self.hidden_size).to(x.device))
-        cell = (torch.zeros(self.num_layers, 256, self.hidden_size).to(x.device))
+        x = x.reshape(-1, self.seq, self.inp)
+
+        hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
+        cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         
         out, _ = self.lstm(x, (hidden, cell)) # need to triple check what hidden and cell are? 
         out = self.fc(out[:, -1, :])  # take output from last time step
