@@ -6,7 +6,6 @@ import torch.nn.functional as F
 
 # lightning modules
 import pytorch_lightning as pl
-from torchmetrics.regression import MeanAbsolutePercentageError
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -145,7 +144,7 @@ class RNNModel(nn.Module):
         self.seq = self.inp = input_shape[0]
 
         self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
-        self.fc = nn.Linear(self.hidden_size, output_shape)
+        self.fc = nn.Linear(self.hidden_size, 1)
         self.pred = predict
 
     def forward(self, x):

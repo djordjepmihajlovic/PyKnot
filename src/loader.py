@@ -245,8 +245,8 @@ class data_2_inv(Dataset):
 
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
-            dowker_lb = math.floor(idx/100) # get label attributed to 100 bead section
-            return self.dataset[idx], self.label[dowker_lb] 
+            per100 = math.floor(idx/100) # get label attributed to 100 bead section
+            return self.dataset[idx], self.label[per100] 
         else:
             return self.dataset[idx]
         
