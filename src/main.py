@@ -107,7 +107,7 @@ def main():
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
-        print(dataset[0])
+        print(torch.size(dataset))
 
         ninputs = len(dataset) # total dataset length
         print(ninputs)
@@ -219,7 +219,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         analysis = Analysis(test_loader, algorithm, prob)
         analysis.DT_interpreter(tree_structure, importance, test_point, decision_path)
         
-        
+
     elif model_type == "testing":
         data_gen = StA(prob, train_loader, test_loader)
         data_gen.calc_area()

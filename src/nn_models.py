@@ -151,7 +151,7 @@ class RNNModel(nn.Module):
             self.bn_layer = nn.BatchNorm1d(input_shape[0])
             self.lstm1 = nn.LSTM(input_shape[0]*input_shape[1], self.hidden_size)
         else:
-            self.lstm1 = nn.LSTM(input_shape[0], self.hidden_size, 2, batch_first=True, bidirectional=False)
+            self.lstm1 = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True, bidirectional=False)
 
         self.fc = nn.Linear(self.hidden_size, output_shape)
         self.pred = predict
@@ -163,9 +163,7 @@ class RNNModel(nn.Module):
         cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         
         out, _ = self.lstm1(x, (hidden, cell)) # need to triple check what hidden and cell are? 
-        out = F.tanh(out[:, -1, :])  # take output from last time step
-        
-        out = self.fc(out)
+        out = self.fc(out[:, -1, :])  # take output from last time step
 
         # return out # <- std
         if self.pred == "class":
