@@ -111,8 +111,6 @@ def main():
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
-        print(train_dataset[0].shape)
-
         ## unsupervised predictions
 
         #dataset_unsupervised= Subset(data_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)
@@ -200,6 +198,11 @@ def main():
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
     if model_type == "NN":
+        for batch in train_loader:
+            x, y = batch
+            print(x.shape)
+            print(y.shape)
+            break
         neural = NN(model=model, loss=loss_fn, opt=optimizer, predict=pdct)
         early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
         trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
