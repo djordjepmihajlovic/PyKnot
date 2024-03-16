@@ -154,15 +154,14 @@ class RNNModel(nn.Module):
         cell = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         
         out, _ = self.lstm(x, (hidden, cell)) 
-        out = self.fc(out[:, -1, :])  # take output from last time step
-        out = self.fc2(out)
+        out = self.fc(out[:, -1, :])  # take output from last time step for all sequences (i think)
 
         # return out # <- std
         if self.pred == "class":
             return F.softmax(x, dim=1) 
         
         elif self.pred == "v2" or self.pred == "v3":
-            return x
+            return out.view(-1, 1)
         
         elif self.pred == "dowker":
             return x.view(-1, 32, 1) # 
