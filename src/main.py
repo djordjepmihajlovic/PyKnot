@@ -111,6 +111,8 @@ def main():
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
+        print(train_dataset[0].shape)
+
         ## unsupervised predictions
 
         #dataset_unsupervised= Subset(data_2_inv(master_knots_dir, "5_2", net, dtype, Nbeads, pers_len, 4, pdct), indicies)

@@ -150,8 +150,6 @@ class RNNModel(nn.Module):
 
     def forward(self, x):
 
-        x = x.reshape(-1, self.seq, self.inp)
-
         hidden = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         cell = (torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device))
         
