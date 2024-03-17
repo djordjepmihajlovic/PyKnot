@@ -175,9 +175,9 @@ def get_params():
     par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train, test, generate")
     par.add_argument("-ldb", "--len_db", type=int, default=100000, help="Database size for each of the classes")
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") 
-    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
+    #par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
     ## below is location on cluster..
-    #par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/", help="Batch size")
+    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
     par.add_argument("-pdct", "--predictor", type=str, default="class", help="Options: class, dual")
     par.add_argument("-modtyp", "--model_type", type=str, default="NN", help="Options: NN, DT, LogR, LinR")
