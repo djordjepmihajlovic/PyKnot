@@ -143,7 +143,7 @@ class RNNModel(nn.Module):
         self.num_layers = 2
         self.seq = self.inp = input_shape[0]
 
-        self.lstm = nn.LSTM(input_shape[0], self.hidden_size, self.num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_shape[1], self.hidden_size, self.num_layers, batch_first=True)
         self.fc = nn.Linear(self.hidden_size, output_shape)
         self.pred = predict
 
@@ -153,7 +153,7 @@ class RNNModel(nn.Module):
         cell = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
         
         out, _ = self.lstm(x, (hidden, cell)) 
-        out = self.fc(out[:, -1, :])  # take output from last time step for all sequences (i think)
+        out = self.fc(out[:, -1, :])  # take output from last time step for all sequences 
 
         # return out # <- std
         if self.pred == "class":
@@ -163,13 +163,13 @@ class RNNModel(nn.Module):
             return out.view(-1, 1)
         
         elif self.pred == "dowker":
-            return out.view(-1, 32, 1) # 
+            return out.view(-1, 32, 1) 
         
         elif self.pred == "jones":
             return out.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
         
         elif self.pred == "quantumA2":
-            return out.view(-1, 31, 2) # <- same as Jones
+            return out.view(-1, 31, 2) 
 
 ################## <--CNN--> ###################
 
