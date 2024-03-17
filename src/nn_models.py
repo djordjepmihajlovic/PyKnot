@@ -298,10 +298,6 @@ class NN(pl.LightningModule):
                 else:
                     false50 += 1
 
-            test_acc = true/(true+false)
-            test_acc50 = true50/(true50+false50)
-            print(f"test_acc(0.5): {test_acc50}")
-
         # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
 
