@@ -245,7 +245,10 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
         # Display confusion matrix
         ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
-        plt.title(f"{prob} StS Knot Classification")
+        if dtype == "SIGWRITHE":
+            plt.title(f"{prob} StA Knot Classification")
+        elif dtype == "2DSIGWRITHE":
+            plt.title(f"{prob} StS Knot Classification")
         plt.savefig(f"confusion_matrix_{prob}.png")
         plt.close()
 
