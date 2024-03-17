@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
 knot = "0_1"
-KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2"]
-KnotIDtex = [r'$0_{1}$', r'$3_{1}$', r'$4_{1}$', r'$5_{1}$', r'$5_{2}$']
+KnotID = ["5_1", "7_2"]
+KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[],[],[],[],[]]
 peak_separations = [[],[],[],[],[]]
 sta_area = [[],[],[],[],[]]
-avg_peak = [[],[],[],[],[]]
+avg_peak = [[],[]]
 
 for indx, knot in enumerate(KnotID):
 
@@ -83,18 +83,29 @@ for indx, knot in enumerate(KnotID):
     #     writer = csv.writer(f)
     #     writer.writerows(peak_count_data[indx]) 
 
-sns.set_theme(style="darkgrid")
-plt.plot(x, ideal_4_1)
+sns.set_theme(style="white")
+plt.plot(x, sta[0])
 ax = plt.gca()
-ax.get_yaxis().set_visible(False)
-plt.title(f"StA writhe")
+plt.ylabel(r'$\omega_{StA}(x_{i})$')
+plt.xlabel(r'Bead index, $x_{i}$')
+plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+plt.gca().xaxis.set_ticks_position('both')
+plt.gca().yaxis.set_ticks_position('both')
+for i, idx in enumerate(peaks):
+    plt.plot(peaks[i], sta[0][peaks[i]], "x", color = "k")
+    if i ==0:
+        plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
+           ymax = sta[0][peaks[i]], color = "k", linestyle = "--", label=f"Peaks")
+    else:
+        plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
+            ymax = sta[0][peaks[i]], color = "k", linestyle = "--")
+plt.legend()
+# plt.title(r'$\omega_{StA}$ and peaks at 0.5 prominence.')
 plt.tight_layout()
 plt.show()
-# for i, idx in enumerate(peaks):
-#     plt.plot(peaks[i], sta[0][peaks[i]], "x")
-#     plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
-#            ymax = sta[0][peaks[i]], color = "C1", linestyle = "dotted")
-# print(avg_peak)
+
+print(avg_peak)
 
 for indx, x in enumerate(avg_peak):
     # if indx < 5:

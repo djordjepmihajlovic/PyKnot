@@ -40,9 +40,9 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-                # datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+                datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -251,8 +251,8 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
         # Choose an input image and its corresponding label
 
-        analysis = Analysis(data=test_loader, model=neural, prob=prob)
-        analysis.saliency_map(knots=knots)
+        #analysis = Analysis(data=test_loader, model=neural, prob=prob)
+        #analysis.saliency_map(knots=knots)
 
 
     if pdct == "latent":
