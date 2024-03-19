@@ -34,13 +34,11 @@ for indx, knot in enumerate(KnotID):
     dirname = os.path.join(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"))
     fname = os.path.join("SIGWRITHEMATRIX", f"3DSignedWritheMatrix_{knot}.dat.lp{pers_len}.dat")
 
-    f = open(os.path.join(dirname, fname), "r")
-
     len_db = 100000
     knot_count = int(len_db/100)
     knot_count = np.arange(0, knot_count, 1)
 
-    STS = np.loadtxt(os.path.join(master_knots_dir, fname))
+    STS = np.loadtxt(os.path.join(dirname, fname))
     STS = STS.reshape(-1, Nbeads, Nbeads)
 
     peak_count_data = [[] for _ in KnotID]
