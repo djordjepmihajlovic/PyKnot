@@ -50,7 +50,7 @@ for indx, knot in enumerate(KnotID):
 
     # for j in range(0, len(prominences)):
 
-    peak_count_data = [[],[],[],[],[],[],[],[]]
+    peak_count_data = [[] for _ in KnotID]
 
     for i in range(0, len(knot_count)): 
 
