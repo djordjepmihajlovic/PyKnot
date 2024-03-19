@@ -42,7 +42,7 @@ for indx, knot in enumerate(KnotID):
     STS = STS.reshape(-1, Nbeads, Nbeads)
 
     peak_count_data = [[] for _ in KnotID]
-    
+
 
     # for i in range(0, 1): 
     #     detect_peaks(STS[i])
@@ -64,10 +64,11 @@ if plot == True:
     fig.suptitle('Peak count for knots', fontsize=16)
     sample = STS[0]
     sample_peaks = detect_peaks(sample)
-    plt.subplot(4, 2, 1)
+    plt.subplot(1, 2, 1)
     plt.imshow(sample, cmap='viridis')
-    plt.subplot(4, 2, 2)
+    plt.subplot(1, 2, 2)
     plt.imshow(sample_peaks, cmap='viridis')
     plt.savefig('peaks StS.png')
+    print(sample_peaks)
 
 # knot data/sta concepts
