@@ -222,7 +222,7 @@ class onlyconceptNN(pl.LightningModule):
         self.model = onlyconceptFFNNModel(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape)
         self.loss_concept = nn.MSELoss()
         self.loss_classify = loss
-        self.optimiser = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimiser = optim.Adam(self.model.parameters(), lr=0.000001)
 
     def forward(self, x):
         # apply model layers
