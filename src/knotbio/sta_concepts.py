@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
 plot = False
-KnotID = ["7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
+KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[],[],[],[],[],[],[]]
 peak_separations = [[],[],[],[],[], [], [], []]
