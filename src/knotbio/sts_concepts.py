@@ -69,6 +69,6 @@ if plot == True:
     plt.subplot(1, 2, 2)
     plt.imshow(sample_peaks, cmap='viridis')
     plt.savefig('peaks StS.png')
-    print(sample_peaks)
+    print(sample_peaks.sum())
 
 # knot data/sta concepts
