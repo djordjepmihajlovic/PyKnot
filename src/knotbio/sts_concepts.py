@@ -44,9 +44,9 @@ for indx, knot in enumerate(KnotID):
 
     for i in range(0, len(knot_count)): 
         count = detect_peaks(STS[i])
-        peak_count_data[indx].append(count.sum())
+        peak_count_data[indx].append([count.sum()])
 
-    print(peak_count_data[indx][0])
+    print(peak_count_data[indx][0:10])
 
     with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
