@@ -7,8 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
-plot = True
-KnotID = ["3_1"]
+plot = False
+KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[] for _ in KnotID]
 peak_separations = [[] for _ in KnotID]
@@ -44,14 +44,13 @@ for indx, knot in enumerate(KnotID):
     peak_count_data = [[] for _ in KnotID]
 
 
-    # for i in range(0, 1): 
-    #     detect_peaks(STS[i])
-    #     peak_count_data[indx].append(len(detect_peaks(STS[i])))
+    for i in range(0, len(knot_count)): 
+        count = detect_peaks(STS[i])
+        peak_count_data[indx].append(count.sum())
 
-
-    # with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}.csv', 'w', newline='') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerows(peak_count_data[indx]) 
+    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(peak_count_data[indx]) 
 
     # with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', 'w', newline='') as f:
     #     writer = csv.writer(f)
