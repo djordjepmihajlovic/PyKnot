@@ -60,8 +60,6 @@ for indx, knot in enumerate(KnotID):
 if plot == True:
 
     sns.set_theme(style="white")
-    fig, ax = plt.subplots(3, 5, figsize=(15, 10))
-    fig.suptitle('Peak count for knots', fontsize=16)
     sample = STS[0]
     sample_peaks = detect_peaks(sample)
     plt.subplot(1, 2, 1)
