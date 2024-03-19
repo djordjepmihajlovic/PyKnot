@@ -83,6 +83,9 @@ for indx, knot in enumerate(KnotID):
         writer = csv.writer(f)
         writer.writerows(peak_count_data[indx]) 
 
+    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(sta_area[indx]) 
 
 if plot == True:
 
