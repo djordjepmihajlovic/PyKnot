@@ -66,6 +66,7 @@ if plot == True:
     plt.imshow(sample, cmap='viridis')
     plt.subplot(1, 2, 2)
     plt.imshow(sample_peaks, cmap='viridis')
+    plt.tight_layout()
     plt.savefig('peaks StS.png')
     print(sample_peaks.sum())
 
