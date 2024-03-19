@@ -80,8 +80,8 @@ class RNNModel(nn.Module):
     def __init__(self, input_shape, output_shape, norm, predict):
         super(RNNModel, self).__init__()
 
-        self.hidden_size = 320
-        self.num_layers = 4
+        self.hidden_size = 128
+        self.num_layers = 2
         self.seq = self.inp = input_shape[0]
 
         self.lstm = nn.LSTM(input_shape[1], self.hidden_size, self.num_layers, batch_first=True)
@@ -289,7 +289,7 @@ def setup_FFNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.000001)
+        optimizer = optim.Adam(model.parameters(), lr=0.0001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:
