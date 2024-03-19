@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
 knot = "0_1"
-KnotID = ["5_1", "7_2"]
+plot = False
+KnotID = ["7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[],[],[],[],[]]
 peak_separations = [[],[],[],[],[]]
@@ -16,7 +17,7 @@ avg_peak = [[],[]]
 
 for indx, knot in enumerate(KnotID):
 
-    dirname = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data/"
+    dirname = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
     fname = os.path.join("SIGWRITHE", f"3DSignedWrithe_{knot}.dat.lp{10}.dat.nos")
 
     f = open(os.path.join(dirname, fname), "r")
@@ -79,46 +80,49 @@ for indx, knot in enumerate(KnotID):
 
 
 
-    # with open(f'../../knot data/sta concepts/peaks prominence=variable/peak count/peakcount_{knot}_prom=var.csv', 'w', newline='') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerows(peak_count_data[indx]) 
+    with open(f'../../knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(peak_count_data[indx]) 
 
-sns.set_theme(style="white")
-plt.plot(x, sta[0])
-ax = plt.gca()
-plt.ylabel(r'$\omega_{StA}(x_{i})$')
-plt.xlabel(r'Bead index, $x_{i}$')
-plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
-plt.gca().xaxis.set_ticks_position('both')
-plt.gca().yaxis.set_ticks_position('both')
-for i, idx in enumerate(peaks):
-    plt.plot(peaks[i], sta[0][peaks[i]], "x", color = "k")
-    if i ==0:
-        plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
-           ymax = sta[0][peaks[i]], color = "k", linestyle = "--", label=f"Peaks")
-    else:
-        plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
-            ymax = sta[0][peaks[i]], color = "k", linestyle = "--")
-plt.legend()
-# plt.title(r'$\omega_{StA}$ and peaks at 0.5 prominence.')
-plt.tight_layout()
-plt.show()
 
-print(avg_peak)
+if plot == True:
 
-for indx, x in enumerate(avg_peak):
-    # if indx < 5:
-    plt.plot(x, prominences, label = f"{KnotIDtex[indx]}")
-plt.legend()
-plt.ylabel("Peak prominence")
-plt.xlabel(r'Avg. $\omega_{StA}$ peak count')
-plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
-plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
-plt.gca().xaxis.set_ticks_position('both')
-plt.gca().yaxis.set_ticks_position('both')
-plt.axhline(y=0.5, color='k', linestyle='--')
-plt.show()
+    sns.set_theme(style="white")
+    plt.plot(x, sta[0])
+    ax = plt.gca()
+    plt.ylabel(r'$\omega_{StA}(x_{i})$')
+    plt.xlabel(r'Bead index, $x_{i}$')
+    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().xaxis.set_ticks_position('both')
+    plt.gca().yaxis.set_ticks_position('both')
+    for i, idx in enumerate(peaks):
+        plt.plot(peaks[i], sta[0][peaks[i]], "x", color = "k")
+        if i ==0:
+            plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
+            ymax = sta[0][peaks[i]], color = "k", linestyle = "--", label=f"Peaks")
+        else:
+            plt.vlines(peaks[i], ymin=sta[0][peaks[i]] - properties["prominences"][i],
+                ymax = sta[0][peaks[i]], color = "k", linestyle = "--")
+    plt.legend()
+    # plt.title(r'$\omega_{StA}$ and peaks at 0.5 prominence.')
+    plt.tight_layout()
+    plt.show()
+
+    print(avg_peak)
+
+    for indx, x in enumerate(avg_peak):
+        # if indx < 5:
+        plt.plot(x, prominences, label = f"{KnotIDtex[indx]}")
+    plt.legend()
+    plt.ylabel("Peak prominence")
+    plt.xlabel(r'Avg. $\omega_{StA}$ peak count')
+    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().xaxis.set_ticks_position('both')
+    plt.gca().yaxis.set_ticks_position('both')
+    plt.axhline(y=0.5, color='k', linestyle='--')
+    plt.show()
 
 # knot data/sta concepts
 

@@ -11,10 +11,6 @@ from pathlib import Path
 import seaborn as sns
 from helper import *
 
-# want to set up decision tree, linear regression predictor of sta from jones
-# check results and interpretability...
-# idea, assign color to point if it is indicating positive prediction for class
-
 class DecisionTree:
     def __init__(self, prob, train_data, test_data):
         self.prob = prob

@@ -34,7 +34,7 @@ def main():
     datasets = []
 ################## <--classic classification problem + reconstruction--> ###################
 
-    if pdct == "class" or pdct == "combinatoric": # used for doing a std classify problem, note combinatoric tries learn multiplications of data.
+    if pdct == "class": # used for doing a std classify problem, note combinatoric tries learn multiplications of data.
         for i, knot in enumerate(knots): 
             indicies = np.arange(0, len_db) # first len_db
             if mode == "conditional": # generate tensors for conditional labels
@@ -74,7 +74,7 @@ def main():
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
-            print(model_type)
+            print(model)
             train(model = model, model_type = model_type, loss_fn = loss_fn, optimizer = optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
         
         if mode == "test":
@@ -98,7 +98,7 @@ def main():
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            #datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            # datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
             datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
@@ -129,7 +129,7 @@ def main():
             in_layer = (Nbeads, 1) # input layer
 
         if pdct == "dowker":
-            out_layer = 7 # max length of longest row in dowker_{knot_choice}
+            out_layer = 32 # max length of longest row in dowker_{knot_choice}
 
         elif pdct == "jones":
             out_layer = 20 #[10*2]
@@ -142,6 +142,7 @@ def main():
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
+            print(model)
             loss_fn = nn.MSELoss()
             train(model, model_type, loss_fn, optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
@@ -153,6 +154,7 @@ def main():
         for i, knot in enumerate(knots):
             indicies = np.arange(0, len_db) # first len_db
             datasets.append(Subset(ConceptKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+            # datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
         print(dataset[0])
@@ -294,9 +296,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         
 def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    neural = conceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
-    # neural = onlyconceptNN.load_from_checkpoint("lightning_logs/version_310/checkpoints/epoch=25-step=6500.ckpt", input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
-    #version 302
+    neural = onlyconceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
@@ -325,10 +325,8 @@ def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, opt
     conf_mat = confusion_matrix(all_y, all_predicted)
 
     # Display confusion matrix
-    knot_labels = ["0_1", "3_1", "4_1", "5_1", "5_2"]
-    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knot_labels).plot()
-    plt.title("2-Concept bottleneck model (global writhe + no. peaks)")
-    plt.show()
+    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
+    plt.savefig(f"confusion_matrix_{prob}.png")
 
 
     print(conf_mat)
@@ -620,20 +618,6 @@ def conditional_generate(input_shape, cond_shape, latent_dims, loss_fn, optimize
     e_s, e_l, l_s, d_s, new_sta_label = analysis.generative_latent_space() # e_s is the encoded samples latent spaces
 
     # plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=d_s, new_data_label=new_sta_label)
-
-
-def generate_with_attention(input_shape, output_shape, latent_dims, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
-
-    neural = AttentionAutoencoder(input_shape = input_shape, output_shape= output_shape, latent_dims = latent_dims, loss=loss_fn, opt=optimizer)
-
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
-    trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
-    trainer.fit(neural, train_loader, val_loader)
-    trainer.test(dataloaders=test_loader)
-
-    analysis = Analysis(test_loader, neural, prob)
-    e_s, e_l, l_s, new_xyz, new_xyz_label = analysis.generative_latent_space()
-    plotter = analysis.dimensional_reduction_plot("PCA", encoded_samples=e_s, encoded_labels=e_l, latent_space=l_s, new_data=new_xyz, new_data_label=new_xyz_label)
 
 
 

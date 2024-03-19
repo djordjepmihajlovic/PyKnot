@@ -47,8 +47,7 @@ class KnotDataset(Dataset):
 
         # Reshape data
         self.dataset = self.dataset.view(-1, Nbeads, n_col)
-        # reshape below is for the convolutional neural network, remember to change it back 
-        # self.dataset = self.dataset.reshape(-1, 1, Nbeads, 3, 1)
+
         self.label = label
 
         if dtype == "XYZ":
@@ -295,7 +294,7 @@ class ConceptKnotDataset(Dataset):
 
         # Loading the dataset labels
 
-        concept1 = np.loadtxt(f'../knot data/sta concepts/peaks prominence=0.2/peak count/peakcount_{knot}_prom=0.2.csv', delimiter=',', dtype=np.float32)
+        concept1 = np.loadtxt(f'../knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', delimiter=',', dtype=np.float32)
         concept2 = np.loadtxt(f'../knot data/sta concepts/area/area_{knot}.csv', delimiter=',', dtype=np.float32)
 
 

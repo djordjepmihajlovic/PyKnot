@@ -29,7 +29,7 @@ knots_multi_seg = []
 n = 0
 dowker_dat = []
 
-for knot_choice in range(n, n+100):
+for knot_choice in range(n, n+1):
     knot_x = np.zeros((knot_count, 100))
     knot_y = np.zeros((knot_count, 100))
     knot_z = np.zeros((knot_count, 100))
@@ -160,11 +160,20 @@ ax = plt.axes(projection='3d')
 
 
 ## projection in 2D
-ax.plot(knot_x[knot_choice], knot_y[knot_choice], 'r-', zdir='z')
-ax.plot(knot_x_overcrossing, knot_y_overcrossing, 'gx', zdir = 'z')
-ax.plot([knot_x[knot_choice][0], knot_x[knot_choice][-1]], [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 'r-', zdir='z')
+ax.plot(knot_x[knot_choice], knot_y[knot_choice], 'r-')
+ax.plot(knot_x_overcrossing, knot_y_overcrossing, 'gx')
+ax.plot([knot_x[knot_choice][0], knot_x[knot_choice][-1]], [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 'r-')
 for x, y, value in zip(knot_x_overcrossing, knot_y_overcrossing, dowker):
     ax.text(x, y, 0, str(value), color='black')
+
+ax.set_xticklabels([])
+ax.set_yticklabels([])
+ax.set_zticklabels([])
+
+# Remove tick marks
+ax.tick_params(axis='x', which='both', bottom=False, top=False)
+ax.tick_params(axis='y', which='both', left=False, right=False)
+ax.tick_params(axis='z', which='both', bottom=False, top=False)
 
 plt.tight_layout()
 plt.show()
