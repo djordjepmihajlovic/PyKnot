@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
-plot = False
+plot = True
 KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[] for _ in KnotID]
@@ -15,9 +15,11 @@ peak_separations = [[] for _ in KnotID]
 sta_area = [[] for _ in KnotID]
 avg_peak = [[] for _ in KnotID]
 peak_count_data = [[] for _ in KnotID]
+size = 5
 
 def detect_peaks(image):
-    neighborhood = generate_binary_structure(2,2)   
+    # neighborhood = generate_binary_structure(2,2)   
+    neighborhood = np.ones((5,5))
 
     local_max = maximum_filter(image, footprint=neighborhood)==image
     background = (image == 0)
@@ -48,7 +50,7 @@ for indx, knot in enumerate(KnotID):
 
     print(peak_count_data[indx][0:10])
 
-    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}.csv', 'w', newline='') as f:
+    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}_{size}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(peak_count_data[indx]) 
 
