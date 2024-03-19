@@ -220,7 +220,7 @@ class data_2_inv(Dataset):
         if invariant == "dowker":
 
             ## used for generated dowker code
-            labels = np.loadtxt(f'../knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 32, 1)
 
