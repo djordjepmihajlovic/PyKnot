@@ -14,6 +14,7 @@ peak_order_data = [[] for _ in KnotID]
 peak_separations = [[] for _ in KnotID]
 sta_area = [[] for _ in KnotID]
 avg_peak = [[] for _ in KnotID]
+peak_count_data = [[] for _ in KnotID]
 
 def detect_peaks(image):
     neighborhood = generate_binary_structure(2,2)   
@@ -41,12 +42,11 @@ for indx, knot in enumerate(KnotID):
     STS = np.loadtxt(os.path.join(dirname, fname))
     STS = STS.reshape(-1, Nbeads, Nbeads)
 
-    peak_count_data = [[] for _ in KnotID]
-
-
     for i in range(0, len(knot_count)): 
         count = detect_peaks(STS[i])
         peak_count_data[indx].append(count.sum())
+
+    print(peak_count_data[indx][0])
 
     with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}.csv', 'w', newline='') as f:
         writer = csv.writer(f)
