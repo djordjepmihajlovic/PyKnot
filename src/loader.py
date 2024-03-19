@@ -294,8 +294,8 @@ class ConceptKnotDataset(Dataset):
 
         # Loading the dataset labels
 
-        concept1 = np.loadtxt(f'../knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', delimiter=',', dtype=np.float32)
-        concept2 = np.loadtxt(f'../knot data/sta concepts/area/area_{knot}.csv', delimiter=',', dtype=np.float32)
+        concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', delimiter=',', dtype=np.float32)
+        concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', delimiter=',', dtype=np.float32)
 
 
         self.concept1 = torch.tensor(concept1, dtype=torch.float32)
