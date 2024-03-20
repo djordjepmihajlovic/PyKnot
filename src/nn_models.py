@@ -333,7 +333,7 @@ def setup_RNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = optim.Adam(model.parameters(), lr=0.00001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
     else:
