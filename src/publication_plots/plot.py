@@ -40,9 +40,8 @@ def plot_vassiliev():
     mse_t = 0
     error_percentage = 0
     modulo = []
-    for idx, i in enumerate(avgs):
-        if idx < 15:
-            mse_t += i
+    for idx, i in enumerate(avgs_v3):
+            mse_t += (i-true_vals_v3[idx])**2
     
     mse_t/=len(avgs)
     print(mse_t)
@@ -56,12 +55,23 @@ def plot_vassiliev():
     }, index=knots)
     custom_palette = sns.color_palette("Set1")  
 
-    sns.set_style("darkgrid")
+    indexes = [avgs_v3.index(x) for x in sorted(avgs_v3)]
+    print(indexes)
+
+    sns.set_style("white")
     sns.set_palette(custom_palette)
-    df_vassiliev.plot(kind = 'bar', rot= 0, width = 0.7, figsize=(10,5), linewidth=1, edgecolor = "black")
-    plt.xlabel("Knot Type")
-    plt.ylabel(r'$2^{nd}$-Order Vassiliev Invariant ($v_{2}$)')
-    # plt.title(r'$I(K)_{(1,3)(2,4)} = \oint\oint\oint\oint_{K}\frac{r_{1}-r_{3}}{|r_{1}-r_{3}|^{3}} \cdot \frac{r_{2}-r_{4}}{|r_{2}-r_{4}|^{3}} \approx \sum_{1<2<3<4}\omega_{StS}[1][3]*\omega_{StS}[2][4]$', y=1.05)
+    # df_vassiliev.plot(kind = 'bar', rot= 0, width = 0.7, figsize=(10,5), linewidth=1, edgecolor = "black")
+    plt.xlabel("Knots (unsorted)")
+    plt.ylabel(r'$3^{rd}$-Order Vassiliev Invariant ($v_{3}$)')
+    # # plt.title(r'$I(K)_{(1,3)(2,4)} = \oint\oint\oint\oint_{K}\frac{r_{1}-r_{3}}{|r_{1}-r_{3}|^{3}} \cdot \frac{r_{2}-r_{4}}{|r_{2}-r_{4}|^{3}} \approx \sum_{1<2<3<4}\omega_{StS}[1][3]*\omega_{StS}[2][4]$', y=1.05)
+    plt.plot(sorted(true_vals_v3), label='True', linestyle='-', color='black')
+    plt.scatter(range(len(avgs_v3)), sorted(avgs_v3), label='Measured', marker='x')
+    for i in range(0, len(sorted(avgs_v3)), 10):
+        plt.text(i-0.5, sorted(avgs_v3)[i]+0.2, f'{knots[indexes[i]]}', ha='right', va='bottom', fontsize=12)   
+        circle = plt.Circle((i, sorted(avgs_v3)[i]), 0.5, color='black', fill=False, linestyle='--')
+        plt.gca().add_patch(circle)
+    # plt.gca().set_aspect('equal', adjustable='box')
+    plt.legend()
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
     plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
     plt.gca().xaxis.set_ticks_position('both')

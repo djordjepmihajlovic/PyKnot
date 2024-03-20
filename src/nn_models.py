@@ -122,25 +122,30 @@ class CNNModel(nn.Module):
         self.pred = predict
 
         # Convolutional layers
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, stride=1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1)
         
         # Max pooling
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+
+        self.pool2 = nn.MaxPool2d(kernel_size=5, stride=5, padding=0)
         
-        self.fc1 = nn.Linear(32 * 25 * 25, 128)  
+        self.fc1 = nn.Linear(128 * 5 * 5, 128)  
         self.fc2 = nn.Linear(128, output_shape)  
 
     def forward(self, x):
 
         x = self.pool(F.relu(self.conv1(x)))  # [256, 16, 100, 100] -> [256, 16, 50, 50]
         x = self.pool(F.relu(self.conv2(x)))  # [256, 32, 50, 50] -> [256, 32, 25, 25]
+        x = self.pool(F.relu(self.conv3(x)))  # [256, 64, 25, 25] -> [256, 64, 5, 5]
+
         
         # Flatten the feature maps
-        x = x.view(-1, 32 * 25 * 25)  # Reshape to [256, 32 * 25 * 25]
+        x = x.view(-1, 128 * 5 * 5)  # Reshape to [256, 128 * 5 * 5]
         
         # Fully connected layers with activation
-        x = F.relu(self.fc1(x))  # [256, 32 * 25 * 25] -> [256, 128]
+        x = F.relu(self.fc1(x))  # [256, 128 * 5 * 5] -> [256, 128]
         x = self.fc2(x)  # [256, 128] -> [256, 1]
         
         # return out # <- std
@@ -369,7 +374,7 @@ def setup_CNN(input_shape, output_shape, opt, norm, loss, predict):
 
     # optimizer
     if opt == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.0001)
+        optimizer = optim.Adam(model.parameters(), lr=0.000001)
     elif opt == 'sgd':
         optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     else:
