@@ -1,4 +1,4 @@
-# PyKnot for Machine Learned Knots & Knot Polynomial.
+# PyKnot for Machine Learned Knots & Knot Polynomial Coefficients.
 
 ### PyTorch MLKnotsProject code for TAPLAB 
 
