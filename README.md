@@ -20,30 +20,27 @@ The argument parameters are as follows:
 
 -modtyp: takes in the required machine learning model.
 Options: NN, DT, LR
--pdct: takes in the prediction being made. "class" arguments correspond to classification of knots, whereas other invariants/codes can be specified. For example, -pred dowker will return a training on dowker code prediction capability.
-Options: class, dowker, jones, quantumA2
--p: 
--m: 
--d:
--t: 
+
+-pdct: takes in the prediction being made. "class" arguments correspond to classification of knots, whereas other invariants/codes can be specified. For example, "dowker" will return a training on dowker code prediction capability.
+Options: class, dowker, v2, v3, jones, quantumA2
 
 
 ## +  Additions :
 
 The following additions have been implemented into the existing framework in the new PyTorch version:
 
-* Prediction (-pred): new code capability to compute other prediction types other than standard class predicition, such as XYZ coordinate to SIGWRITHE predicitions
-    * "std" (standard classification prediction) - [x] 
-    * "dual" ('dual' classification prediction e.g. StA2XYZ) - [x]
+* Prediction (-pdct): new code capability to compute other prediction types other than standard class predicition, such as XYZ coordinate to SIGWRITHE predicitions
 
 * Generative models (nn_generative_models.py): Torch.nn generative modules
-    * VariationalAutoencoder(pl.LightningModule) - [x]
-    * Autoencoder(pl.LightningModule) - [x]
+    * VariationalAutoencoder(pl.LightningModule)
+    * Autoencoder(pl.LightningModule)
+
+* Concept Bottle neck models (nn_concept_models.py): Torch.nn concept modules
+    * ConceptNN(pl.LightningModule) 
+    * OnlyConceptNN(pl.LightningModule)
 
 * ml_models.py: other machine learning methods
-    * Decision tree - [-]
-    * Logistic Regression - [-]
-    * Linear Regression - [-]
+    * Decision trees
 
 ## - Removals :
 
@@ -54,69 +51,3 @@ Currently, not implemented into the PyTorch version:
 * FFNN2 (network) - [-]
 * localise_* (network) - [-]
 * randFOR (network) - [-]
-
-## = Difference :
-
-The following methods are implemented differently to the TensorFlow base code and are subject to change:
-
-*Currently no separate train/test functionality; testing occurs immediately after training
-
-
-## ! W.I.P :
-
-* Implementation of XYZ to StA predicition & vice versa.
-     Model | XYZ2StA  | StA2XYZ
-    ------| ------------- | -------------
-    FFNN | - [x] | - [x]
-    RNN  | - [x] | - [x]
-    CNN  | - [ ] | - [ ]
-
-      >> Current implementation using FFNN however results are bad - can achieve a general shape but far off from true prediction. 
-
-* Generative models.
-    * VAE
-    *     >> VAE current implementation works, however the latent space is still somewhat entangled -> main work is to generate a disentangled latent space.
-        * ! WIP (StA complete, working on XYZ) --> disentangling the latent space: possible avenues
-            * beta-VAE - [x]
-            * CNN Encoder - [ ]
-            * LSTM Encoder - [x]
-            * Attention mechanisms - [ ]  
-
-* Model analysis.
-*     >> These need to be fully understood to make meaningful analysis! 
-    * SHAP - [ ]
-    * LIME - [ ]
-    * Partial Dependence Plots - [ ] 
-
-
-NOTE:
-
-for source activation (slurm cluster usage on University of Edinburgh compute nodes) run:
-
-```
-conda activate pyknot
-```
-
-THINGS TO DO!
-
-- XYZ reconstruction/attention with StS on cluster
-- analyze trained StS models (latent dims 10: 35000, latent dims 20: 25000, latent dims 50: )
-- ideal latent dim size 
-- concept bottleneck models:
-
---> BOTTLENECK CONCEPTS <--
-StA:
-* Peak number
-* Peak prominence order
-* Avg peak separation
-* Avg peak width
-
-
-* Test different prominences for peak number?
-* How to deal with `looping'?
-
-
-
-Want to connect StA `peaks' meaning semantically with knot diagrams - can maybe investigate effects of reidemeister moves?
-
-
