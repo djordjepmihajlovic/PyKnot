@@ -6,8 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
-plot = False
+plot = True
 KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
+KnotID = ["5_1"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[] for _ in KnotID]
 peak_separations = [[] for _ in KnotID]
@@ -17,9 +18,10 @@ avg_peak = [[] for _ in KnotID]
 for indx, knot in enumerate(KnotID):
 
     master_knots_dir = "/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/"
+    my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
     Nbeads = 100
     pers_len = 10
-    dirname = os.path.join(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"))
+    dirname = os.path.join(os.path.join(my_knot_dir))
     fname = os.path.join("SIGWRITHE", f"3DSignedWrithe_{knot}.dat.lp{10}.dat.nos")
 
     f = open(os.path.join(dirname, fname), "r")
@@ -52,7 +54,7 @@ for indx, knot in enumerate(KnotID):
 
     peak_count_data = [[] for _ in KnotID]
 
-    for i in range(0, len(knot_count)): 
+    for i in range(0, 1): 
 
         indices = np.arange(0, len(sta[i]), 1)
         area = np.trapz(y=sta[i], x=indices)
@@ -78,14 +80,13 @@ for indx, knot in enumerate(KnotID):
     avg_peak[indx].append(np.sum(peak_count_data[indx])/len(peak_count_data[indx]))
 
 
+    # with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', 'w', newline='') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(peak_count_data[indx]) 
 
-    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(peak_count_data[indx]) 
-
-    with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(sta_area[indx]) 
+    # with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', 'w', newline='') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerows(sta_area[indx]) 
 
 if plot == True:
 

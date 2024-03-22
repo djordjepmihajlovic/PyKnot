@@ -29,7 +29,7 @@ Options: class, dowker, v2, v3, jones, quantumA2
 
 The following additions have been implemented into the existing framework in the new PyTorch version:
 
-* Prediction (-pdct): new code capability to compute other prediction types other than standard class predicition, such as XYZ coordinate to SIGWRITHE predicitions
+* Prediction (-pdct): new code capability to compute other prediction types other than standard class predicition
 
 * Generative models (nn_generative_models.py): Torch.nn generative modules
     * VariationalAutoencoder(pl.LightningModule)

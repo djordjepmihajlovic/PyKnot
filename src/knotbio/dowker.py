@@ -138,17 +138,20 @@ for indx, i in enumerate(crossings):
         knot_y_undercrossing.append(knot_y[knot_choice][i[1]])
 
 
-sns.set_theme()
-fig = plt.figure()
+sns.set_style("white")
+# fig = plt.figure()
 ax = plt.axes(projection='3d') 
 
-## plot in 3D 
+# ## plot in 3D 
 # ax.plot3D(knot_x[knot_choice], knot_y[knot_choice], knot_z[knot_choice], 'b-')
 # ax.plot3D([knot_x[knot_choice][0], knot_x[knot_choice][-1]], 
 #         [knot_y[knot_choice][0], knot_y[knot_choice][-1]], 
 #         [knot_z[knot_choice][0], knot_z[knot_choice][-1]], 'b-')
+# plt.title('3D Knot Configuration')
 
-
+# plt.savefig('3Dconfig.png')
+# plt.show()
+# plt.clf()
 ## k-means clustering algorithm to try produce knot graph
 
 # data_kmeans = np.column_stack((knot_x[knot_choice], knot_y[knot_choice]))
@@ -174,8 +177,10 @@ ax.set_zticklabels([])
 ax.tick_params(axis='x', which='both', bottom=False, top=False)
 ax.tick_params(axis='y', which='both', left=False, right=False)
 ax.tick_params(axis='z', which='both', bottom=False, top=False)
+plt.title('2D Knot Projection')
+plt.show()
 
 plt.tight_layout()
-plt.show()
+
 
 

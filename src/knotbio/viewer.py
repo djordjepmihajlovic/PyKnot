@@ -79,13 +79,15 @@ ax = plt.axes(projection='3d')
 
 floor_Z = min(Z_dat) * np.ones(len(Z_dat)) * 3
 floor_Y = min(Y_dat) * np.ones(len(Y_dat)) * 3
-ax.plot3D(X_dat, Y_dat, Z_dat, 'b-', label='3D 3_1')
-ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [Z_dat[-1], Z_dat[0]], 'b-')
-ax.plot3D(X_dat, Y_dat, floor_Z, 'r-', label='2D projection')
-ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [floor_Z[-1], floor_Z[0]], 'r-')
-ax.plot3D(X_dat, floor_Y, Z_dat, 'r-')
-ax.plot3D([X_dat[-1], X_dat[0]], [floor_Y[-1], floor_Y[0]], [Z_dat[-1], Z_dat[0]], 'r-')
+sns.set_theme("white")
+ax.plot3D(X_dat, Y_dat, Z_dat, 'b-')
+# ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [Z_dat[-1], Z_dat[0]], 'b-')
+# ax.plot3D(X_dat, Y_dat, floor_Z, 'r-', label='2D projection')
+# ax.plot3D([X_dat[-1], X_dat[0]], [Y_dat[-1], Y_dat[0]], [floor_Z[-1], floor_Z[0]], 'r-')
+# ax.plot3D(X_dat, floor_Y, Z_dat, 'r-')
+# ax.plot3D([X_dat[-1], X_dat[0]], [floor_Y[-1], floor_Y[0]], [Z_dat[-1], Z_dat[0]], 'r-')
 ax.legend()
+
 
 ## 4_1 ideals
 # ax.plot3D(X_dat[9], Y_dat[9], Z_dat[9], 'yo')
