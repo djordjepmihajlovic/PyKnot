@@ -6,12 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
-plot = True
+plot = False
 KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]
-KnotID = ["5_1"]
+KnotID = ["0_1", "3_1", "4_1", "5_1", "5_2"]
 KnotIDtex = [r'$5_{1}$', r'$7_{2}$']
 peak_order_data = [[] for _ in KnotID]
 peak_separations = [[] for _ in KnotID]
+trough_count_data = [[] for _ in KnotID]
 sta_area = [[] for _ in KnotID]
 avg_peak = [[] for _ in KnotID]
 
@@ -48,26 +49,30 @@ for indx, knot in enumerate(KnotID):
 
 
 
-    prominences = np.linspace(0.75, 0.75, 1)
+    prominences = np.linspace(0.25, 0.25, 1)
 
     # for j in range(0, len(prominences)):
 
     peak_count_data = [[] for _ in KnotID]
 
-    for i in range(0, 1): 
+    for i in range(0, len(knot_count)): 
 
         indices = np.arange(0, len(sta[i]), 1)
         area = np.trapz(y=sta[i], x=indices)
         if knot == "4_1" and i == 0:
             ideal_4_1 = sta[i]
 
-        peaks, properties = find_peaks(sta[i], prominence=0.75)
+        mean = np.mean(sta[i])
+        peaks, properties = find_peaks([j-mean for j in sta[i]], prominence=1.5)
+        troughs, trproperties = find_peaks([-j-mean for j in sta[i]], prominence=1.5)
         vals = properties['prominences']
+        trvals = trproperties['prominences']
         prom_sum = np.prod(vals)
+        trprom_sum = -1 * np.prod(trvals)
         prominence_order = np.array(vals).argsort().tolist()[::-1] # should be invariant to permutation
         prominence_order = [k+1 for k in prominence_order]
         peak_order_data[indx].append(prominence_order)
-        peak_count_data[indx].append([len(prominence_order)])
+        peak_count_data[indx].append([len(prominence_order)*(prom_sum+trprom_sum)])
         if len(peaks) > 1:
             sep = np.diff(peaks).tolist()
             extr = 100-peaks[-1]+peaks[0] # looping back
@@ -77,7 +82,8 @@ for indx, knot in enumerate(KnotID):
 
         peak_separations[indx].append(sep)
         sta_area[indx].append([area])
-    avg_peak[indx].append(np.sum(peak_count_data[indx])/len(peak_count_data[indx]))
+    avg_peak[indx].append((np.sum(peak_count_data[indx]))/(len(peak_count_data[indx])))
+    print(avg_peak[indx])
 
 
     # with open(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', 'w', newline='') as f:
@@ -110,13 +116,13 @@ if plot == True:
     plt.legend()
     # plt.title(r'$\omega_{StA}$ and peaks at 0.5 prominence.')
     plt.tight_layout()
-    plt.show()
+    plt.clf()
 
     print(avg_peak)
 
     for indx, x in enumerate(avg_peak):
         # if indx < 5:
-        plt.plot(x, prominences, label = f"{KnotIDtex[indx]}")
+        plt.plot(x, label = f"{KnotID[indx]}")
     plt.legend()
     plt.ylabel("Peak prominence")
     plt.xlabel(r'Avg. $\omega_{StA}$ peak count')
@@ -124,7 +130,7 @@ if plot == True:
     plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
     plt.gca().xaxis.set_ticks_position('both')
     plt.gca().yaxis.set_ticks_position('both')
-    plt.axhline(y=0.5, color='k', linestyle='--')
+    # plt.axhline(y=0.5, color='k', linestyle='--')
     plt.show()
 
 # knot data/sta concepts
