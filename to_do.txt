@@ -1,0 +1,4 @@
+Things to do:
+
+Get data for *all* 100,000 knots -> currently only have 1000.
+Get the data for the training of v2 and v3 (predicted values) so can compare to measured values.

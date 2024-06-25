@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 import math
 from matplotlib.ticker import AutoMinorLocator
 
@@ -78,4 +79,84 @@ def plot_vassiliev():
     plt.gca().yaxis.set_ticks_position('both')
     plt.show()
 
-plot_vassiliev()
+def v_variance():
+    '''
+    Load the measured v2 data for some knot type
+    '''
+
+    f = open("../../knot data/vassiliev/vassiliev_6_2_v3.csv", "r")
+    data = []
+
+    for i in f:
+        data.append(float(i)*(10/(4 * math.pi)))
+    
+    n_bins = 20
+
+    data_array = np.array(data)
+    print(f'Mean: {np.mean(data_array)}')
+    print(f'Std: {np.std(data_array)}')
+
+    sns.set_style("whitegrid")
+    fig, axs = plt.subplots(1, 1, sharey=True, tight_layout=True)
+    axs.hist(data, bins=n_bins)
+
+    plt.gca().tick_params(which="both", direction="in", right=True, top=True)
+    plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().yaxis.set_minor_locator(AutoMinorLocator())
+    plt.gca().xaxis.set_ticks_position('both')
+    plt.gca().yaxis.set_ticks_position('both')
+
+    plt.ylabel('Frequency')
+    plt.xlabel(r'$3^{rd}$-Order Vassiliev Invariant ($v_{3}$) measure')
+
+    plt.title('PLACEHOLDER - v3 (single knot/6_2)')
+
+    plt.show()
+
+def total_v_variance():
+    '''
+    Compare all v2 and v3 measurements via box plots
+    '''
+
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2", "6_1", "6_2", "6_3", "7_1", "7_2", "7_3"]
+    data = [[], [], [], [], [], [], [], [], [], [], []]
+
+    for idx, i in enumerate(knots):
+
+        # f = open(f"../../knot data/vassiliev/vassiliev_{i}_comb_4.csv", "r")
+        f = open(f"../../knot data/vassiliev/vassiliev_{i}_v3.csv", "r") # v3
+
+        for i in f:
+            data[idx].append((float(i)) * 10/(4 * math.pi))
+
+    fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(9, 4))
+
+    # generate some random test data
+    all_data = [np.random.normal(0, std, 100) for std in range(6, 10)]
+
+    # plot violin plot
+    axs.violinplot(data,
+                    showmeans=False,
+                    showmedians=True)
+    
+    true_v2 = [0, 1, -1, 3, 2, -2, -1, 1, 6, 3, 5]
+    true_v3 = [0, -1, 0, -5, -3, 1, 1, 0, -14, -6, 11]
+
+    inds = np.arange(1, len(true_v3) + 1)
+    axs.scatter(inds, true_v3, marker='x', color='red', s=30, zorder=3)
+
+    # adding horizontal grid lines
+    axs.yaxis.grid(True)
+    axs.xaxis.grid(True)
+    axs.set_xlabel('Knots')
+    axs.set_ylabel(r'$v_{3}$ Measurement')
+
+    plt.title('PLACEHOLDER - v3')
+
+    plt.show()
+
+    # plt.ylabel('MSE reconstruction loss: $\\frac{1}{n}\sum^{n}_{i=1}(y_{i}-\hat{y_{i}})^{2}$')
+    # plt.xlabel('Latent Space Dimension $\hat{z_{i}}$')
+
+
+v_variance()
