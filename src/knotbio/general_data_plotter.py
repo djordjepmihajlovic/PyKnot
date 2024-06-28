@@ -75,14 +75,14 @@ STS = load_STS(knot_type, Nbeads, pers_len)
 XYZ = False
 STA = False
 
-if STS == True:
-    sns.set_theme(style="white")
-    plt.imshow(STS[0], cmap='viridis')
-    plt.colorbar()
-    plt.xlabel(r'Segment $(x)$')
-    plt.ylabel(r'Segment $(y)$')
-    plt.savefig('STS_5_2.png')
-    plt.clf()
+
+sns.set_theme(style="white")
+plt.imshow(STS[0], cmap='viridis')
+plt.colorbar()
+plt.xlabel(r'Segment $(x)$')
+plt.ylabel(r'Segment $(y)$')
+plt.savefig('STS_5_2.png')
+plt.clf()
 
 if STA == True:
     sns.set_theme(style="white")
