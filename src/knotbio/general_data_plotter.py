@@ -65,7 +65,7 @@ def load_XYZ(knot_type, Nbeads, pers_len):
     XYZ = XYZ.reshape(-1, Nbeads, 3)
     return XYZ
 
-knot_type = "5_2"
+knot_type = "3_1"
 
 Nbeads = 100
 pers_len = 10
@@ -81,7 +81,7 @@ plt.imshow(STS[0], cmap='viridis')
 plt.colorbar()
 plt.xlabel(r'Segment $(x)$')
 plt.ylabel(r'Segment $(y)$')
-plt.savefig('STS_5_2.png')
+plt.savefig('STS_3_1.png')
 plt.clf()
 
 if STA == True:
