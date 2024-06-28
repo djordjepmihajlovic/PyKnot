@@ -79,9 +79,8 @@ if STS == True:
     sns.set_theme(style="white")
     plt.imshow(STS[0], cmap='viridis')
     plt.colorbar()
-    plt.title(r'$\omega_{StS}$')
-    plt.xlabel(r'Segment $(x_{i})$')
-    plt.ylabel(r'Segment $(x_{j})$')
+    plt.xlabel(r'Segment $(x)$')
+    plt.ylabel(r'Segment $(y)$')
     plt.savefig('STS_5_2.png')
     plt.clf()
 
