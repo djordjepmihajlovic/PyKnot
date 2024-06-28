@@ -15,7 +15,8 @@ def load_STS(knot_type, Nbeads, pers_len):
 
     fname_sts = f"SIGWRITHEMATRIX/3DSignedWritheMatrix_{knot_type}.dat.lp10.dat"
     my_knot_dir = "/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data"
-    STS = np.loadtxt(os.path.join(my_knot_dir, fname_sts))
+    STS = np.loadtxt(os.path.join(master_knots_dir, fname_sts))
+    # STS = np.loadtxt(os.path.join(my_knot_dir, fname_sts))
     STS = STS.reshape(-1, Nbeads, Nbeads)
     return STS
 
@@ -64,14 +65,14 @@ def load_XYZ(knot_type, Nbeads, pers_len):
     XYZ = XYZ.reshape(-1, Nbeads, 3)
     return XYZ
 
-knot_type = "3_1"
+knot_type = "5_2"
 
 Nbeads = 100
 pers_len = 10
 x = np.arange(0, Nbeads, 1)
 
-STS = False
-XYZ = load_XYZ(knot_type, Nbeads, pers_len)
+STS = load_STS(knot_type, Nbeads, pers_len)
+XYZ = False
 STA = False
 
 if STS == True:
@@ -81,7 +82,7 @@ if STS == True:
     plt.title(r'$\omega_{StS}$')
     plt.xlabel(r'Segment $(x_{i})$')
     plt.ylabel(r'Segment $(x_{j})$')
-    plt.savefig('STS.png')
+    plt.savefig('STS_5_2.png')
     plt.clf()
 
 if STA == True:
@@ -97,12 +98,12 @@ if STA == True:
     plt.savefig('STA.png')
     plt.clf()
 
-
-ax = plt.axes(projection='3d') 
-ax.plot(XYZ[0][:,0], XYZ[0][:,1], XYZ[0][:,2])
-plt.title('3D Knot Configuration')
-plt.savefig('XYZ.png')
-plt.clf()
+if XYZ == True:
+    ax = plt.axes(projection='3d') 
+    ax.plot(XYZ[0][:,0], XYZ[0][:,1], XYZ[0][:,2])
+    plt.title('3D Knot Configuration')
+    plt.savefig('XYZ_5_2.png')
+    plt.clf()
 
 
 
