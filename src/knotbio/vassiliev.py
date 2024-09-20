@@ -105,7 +105,7 @@ def main():
         print("Calculating Vassiliev invariants...")
         v_d, av = vassiliev_combinatorical_STS(STS)
 
-        with open(f'vassiliev_{x}_v3.csv', 'w', newline='') as f:
+        with open(f'vassiliev_{x}_v3_100000.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for item in v_d:
                 writer.writerow([item])
