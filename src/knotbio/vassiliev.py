@@ -45,8 +45,8 @@ def vassiliev_combinatorical_STS(STS):
 
     for idy in range(0, samples): # samples
         integral = 0
-        # integral1 = 0
-        # integral2 = 0
+        integral1 = 0
+        integral2 = 0
         N = 100
         for i in range(0, N):
             for j in range(0, N):
@@ -54,17 +54,17 @@ def vassiliev_combinatorical_STS(STS):
                     for k in range(0, N):
                         for l in range(0, N):
                             if j>k and k>l:
-                                integral += STS[idy][i, k]*STS[idy][j, l]
-                                # for m in range(0, N):
-                                #     for n in range(0, N):
-                                #         if l<m and m<n:
-                                #             integral1 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n] 
-                                #             integral2 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
+                                # integral += STS[idy][i, k]*STS[idy][j, l]
+                                for m in range(0, N):
+                                    for n in range(0, N):
+                                        if l<m and m<n:
+                                            integral1 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n] 
+                                            integral2 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
 
-        self_linking = integral / (100 * 100 * 8 * math.pi)
-        vassiliev = (6 * self_linking) + (1/4)
-        # integral = (0.5 * integral1) + integral2
-        # vassiliev = integral / (100 * 100 * 100 * -2)
+        # self_linking = integral / (100 * 100 * 8 * math.pi)
+        # vassiliev = (6 * self_linking) + (1/4)
+        integral = (0.5 * integral1) + integral2
+        vassiliev = integral / (100 * 100 * 100 * -2) * 10/(4 * math.pi)
         vassiliev_data.append(vassiliev)
 
     avg_vassiliev = sum(vassiliev_data) / len(vassiliev_data)
@@ -105,7 +105,7 @@ def main():
         print("Calculating Vassiliev invariants...")
         v_d, av = vassiliev_combinatorical_STS(STS)
 
-        with open(f'vassiliev_{x}_v2_100,000.csv', 'w', newline='') as f:
+        with open(f'vassiliev_{x}_v3.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for item in v_d:
                 writer.writerow([item])
