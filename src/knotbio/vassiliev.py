@@ -3,7 +3,7 @@ import csv
 import numpy as np
 import itertools
 import math
-from numba import njit
+from numba import njit, prange
 from argparse import ArgumentParser
 
 def load_STS(knot_type, Nbeads, pers_len):
@@ -35,15 +35,15 @@ def load_STA(knot_type, Nbeads, pers_len):
     STA = STA.reshape(-1, Nbeads)
     return STA
 
-@njit
+@njit(parallel=True)
 def vassiliev_combinatorical_STS(STS):
     '''
     Calculate the Vassiliev invariants for a given knot
     '''
     samples = 100000 # number of knots to be calculated.
-    vassiliev_data = []
+    vassiliev_data = np.empty(samples)
 
-    for idy in range(0, samples): # samples
+    for idy in prange(0, samples): # samples
         integral = 0
         integral1 = 0
         integral2 = 0
