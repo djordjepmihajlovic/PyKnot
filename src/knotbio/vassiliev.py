@@ -61,13 +61,13 @@ def vassiliev_combinatorical_STS(STS):
                                 for m in range(0, N):
                                     for n in range(0, N):
                                         if l<m and m<n:
-                                            integral1 += STS[idy][i, k]*STS[idy][j, m]*STS[idy][l, n] 
+                                            integral1 += STS[idy][i, l]*STS[idy][j, n]*STS[idy][k, m] 
                                             integral2 += STS[idy][i, l]*STS[idy][j, m]*STS[idy][k, n]
 
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
         integral = (0.5 * integral1) + integral2
-        vassiliev = integral / (100 * 100 * 100 * -2) * 10/(4 * math.pi)
+        vassiliev = (integral / (100 * 100 * 100)) * (10/(-8 * math.pi))
         vassiliev_data[idy] = vassiliev
 
     avg_vassiliev = np.sum(vassiliev_data) / len(vassiliev_data)
