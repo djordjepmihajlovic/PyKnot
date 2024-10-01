@@ -14,6 +14,10 @@ import matplotlib.pyplot as plt
 
 ################## <--FFNN--> ###################
 
+# goal right now is to remodel the conceptNN to have a concept bottleneck
+# models needed = g(x) -> c
+#                = f(g(x)) -> y
+
 class conceptFFNNModel(nn.Module):
     # define model structure i.e. layers
     def __init__(self, input_shape, concept_shape, output_shape):

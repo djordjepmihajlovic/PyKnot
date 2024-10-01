@@ -7,3 +7,4 @@ src/latent_plots
 src/__pycache__/
 *.pyc
 /knot data
+src/concept_models.py
