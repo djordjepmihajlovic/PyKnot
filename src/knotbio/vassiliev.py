@@ -67,7 +67,8 @@ def vassiliev_combinatorical_STS(STS):
         # self_linking = integral / (100 * 100 * 8 * math.pi)
         # vassiliev = (6 * self_linking) + (1/4)
         integral = (0.5 * integral1) + integral2
-        vassiliev = (integral / (100 * 100 * 100)) * (10/(-8 * math.pi))
+        # vassiliev = (integral / (100 * 100 * 100)) * (10/(-8 * math.pi))
+        vassiliev = (integral / (100 * 100 * 100))
         vassiliev_data[idy] = vassiliev
 
     avg_vassiliev = np.sum(vassiliev_data) / len(vassiliev_data)
