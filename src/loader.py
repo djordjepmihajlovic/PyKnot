@@ -57,17 +57,6 @@ class KnotDataset(Dataset):
             # self.dataset = self.dataset.unsqueeze(2)
             self.dataset = self.dataset
 
-        # Add Kymoknot labels if loading for a localization problem
-        if "localise" in net:
-            label_data = np.loadtxt(dirname + f"KYMOKNOT/BU__KN_{knot}.dat.cleaned")[:, 2]
-            label_dataset = torch.tensor(label_data, dtype=torch.float32)
-            label_dataset = label_dataset.view(-1, Nbeads, 1)
-            self.dataset = TensorDataset(self.dataset, label_dataset)
-
-        elif "FOR" in net:
-            self.dataset = self.dataset.view(-1, Nbeads * n_col)
-            self.label = label
-
     def __len__(self):
         return len(self.dataset)
 
@@ -131,16 +120,6 @@ class CondKnotDataset(Dataset):
             # self.dataset = self.dataset.unsqueeze(2)
             self.dataset = self.dataset
 
-        # Add Kymoknot labels if loading for a localization problem
-        if "localise" in net:
-            label_data = np.loadtxt(dirname + f"KYMOKNOT/BU__KN_{knot}.dat.cleaned")[:, 2]
-            label_dataset = torch.tensor(label_data, dtype=torch.float32)
-            label_dataset = label_dataset.view(-1, Nbeads, 1)
-            self.dataset = TensorDataset(self.dataset, label_dataset)
-
-        elif "FOR" in net:
-            self.dataset = self.dataset.view(-1, Nbeads * n_col)
-            self.label = label
 
     def __len__(self):
         return len(self.dataset)
@@ -173,20 +152,6 @@ class data_2_inv(Dataset):
         super(data_2_inv, self).__init__()
 
         header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-        
-        self.jones = {"0_1":[[0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                             [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-                      "3_1":[[0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0], 
-                             [0.0, 0.0, 0.0, 1.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0]],
-                      "4_1":[[1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
-                             [1.0, -1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-                      "5_1":[[0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0], 
-                             [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, -1.0, 1.0, -1.0]],
-                      "5_2":[[0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], 
-                             [0.0, 0.0, 0.0, 1.0, -1.0, 2.0, -1.0, 1.0, -1.0, 0.0]],
-                      "6_1":[[0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], 
-                             [0.0, 0.0, 0.0, 1.0, -1.0, 2.0, -1.0, 1.0, -1.0, 0.0]],}
-        
 
         n_col_feature = len(select_cols)
         
@@ -223,14 +188,6 @@ class data_2_inv(Dataset):
             labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/dowker/dowker_{knot}_padded.csv', delimiter=',', dtype=np.float32)
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 32, 1)
-
-        elif invariant == "jones":
-            self.label = torch.tensor(self.jones[self.knot])
-            self.label = self.label.view(10, 2)
-
-        elif invariant == "quantumA2":
-            self.label = torch.tensor(self.quantumA2[self.knot])
-            self.label = self.label.view(31, 2)
 
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
@@ -319,41 +276,6 @@ class ConceptKnotDataset(Dataset):
     def __getitem__(self, idx):
         lb = math.floor(idx/100) # get concepts attributed to 100 bead section
         return self.dataset[idx], self.concept1[lb], self.concept2[lb], self.label
-    
-class LatentKnotDataset(Dataset):
-
-    def __init__(self):
-        """Class wrapper for dataset generation --> prediction problem
-
-        Returns:
-            torch.Dataset
-        """
-        super(LatentKnotDataset, self).__init__()
-
-        dataset = np.loadtxt(f'../knot data/latent space 5Class/encoded_samples_2.csv', delimiter=',', dtype=np.float32)
-        labels = np.loadtxt(f'../knot data/latent space 5Class/encoded_labels_2.csv', delimiter=',', dtype=np.float32)
-
-        feature_1 = dataset[:, 0]
-        feature_2 = dataset[:, 1]
-
-        print(np.max(feature_1), np.min(feature_1))
-        print(np.max(feature_2), np.min(feature_2))
-
-        self.dataset = torch.tensor(dataset, dtype=torch.float32)
-        self.dataset = self.dataset.view(-1, 2, 1) # 5 is max length of peak order (padded)
-
-
-        # self.labels = torch.tensor(labels, dtype=torch.float32)
-        # self.labels = self.labels.view(-1, 1, 1)
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.dataset)
-
-    def __getitem__(self, idx):
-        lb = math.floor(idx/10) # get label attributed to 10 latent dimension
-        return self.dataset[idx], int(self.labels[idx])
-        
 
         
 

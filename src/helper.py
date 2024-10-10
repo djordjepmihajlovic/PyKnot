@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import os
 import numpy as np
 
-from nn_models import *
+from models.nn_models import *
 
 def datafile_structure(dtype, knot, Nbeads, pers_len):
     """Returns datafile struct according to data type
