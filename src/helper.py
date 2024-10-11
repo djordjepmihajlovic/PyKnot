@@ -109,6 +109,9 @@ def get_knots(problem):
     if problem == "Conway":
         Knotind = ["0_1", "conway", "kt"]
 
+    if problem == "test":
+        Knotind = ["3_1", "4_1"]
+
     elif problem == "unknot":
         Knotind = ["0_1"]
 
@@ -165,7 +168,7 @@ def get_params():
     """
     par = ArgumentParser()
 
-    par.add_argument("-p", "--problem", type=str, default="5Class", help="Options: Conway, 5Class, SQRGRN8, 10Crossings, ...")
+    par.add_argument("-p", "--problem", type=str, default="test", help="Options: Conway, 5Class, SQRGRN8, 10Crossings, ...")
     par.add_argument("-d", "--datatype", type=str, default="SIGWRITHE", help="Options: XYZ, SIGWRITHE, UNSIGWRITHE, DENSXSIGWRITHE, 2DSIGWRITHE")
     par.add_argument("-a", "--adjacent", type=bool, default=False, help="Flag to use adjacent datatype from XYZ (deprecated)")
     par.add_argument("-n", "--normalised", type=bool, default=False, help="Flag to use normalised version of datatype")
@@ -175,9 +178,9 @@ def get_params():
     par.add_argument("-m", "--mode", type=str, default="train", help="Mode: train, test, generate")
     par.add_argument("-ldb", "--len_db", type=int, default=100000, help="Database size for each of the classes")
     par.add_argument("-bs", "--b_size", type=int, default=256, help="Batch size") 
-    # par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/djordjemihajlovic/Desktop/Theoretical Physics/MPhys/Data", help="Batch size")
+    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/Users/s1910360/Desktop/ML for Knot Theory/sample_data", help="Batch size")
     ## below is location on cluster..
-    par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/", help="Batch size")
+    # par.add_argument("-mkndir", "--master_knots_dir", type=str, default="/storage/cmstore04/projects/TAPLabKnotsDatabase/knots_database/", help="Batch size")
     par.add_argument("-lp", "--pers_len", type=int, default=10, help="Persistence Length")
     par.add_argument("-pdct", "--predictor", type=str, default="class", help="Options: class, dual")
     par.add_argument("-modtyp", "--model_type", type=str, default="NN", help="Options: NN, DT, LogR, LinR")

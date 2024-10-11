@@ -84,12 +84,13 @@ def v_variance():
     Load the measured v2 data for some knot type
     '''
 
-    f = open("../../../sample_data/vassiliev_4_1_v3.csv", "r")
+    f = open("../../../sample_data/vassiliev/vassiliev_7_5_v3_10000.csv", "r")
+
 
     data = []
 
     for i in f:
-        data.append(float(i)/(2*math.pi))
+        data.append(float(i)/(-2*math.pi))
     
     n_bins = 20
 

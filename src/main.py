@@ -15,6 +15,7 @@ from helper import *
 from loader import *
 from models.nn_models import *
 from models.nn_concept_models import *
+from models.concept_models import *
 from analysis import *
 
 
@@ -32,9 +33,9 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-                datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+                #datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -74,9 +75,9 @@ def main():
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            # datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
-            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            #datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -113,9 +114,9 @@ def main():
 
     elif pdct == "concept":
         for i, knot in enumerate(knots):
-            indicies = np.arange(0, len_db) # first len_db
-            # datasets.append(Subset(ConceptKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
-            datasets.append(Subset(ConceptKnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+            indicies = np.arange(0, len_db) # note want len_db to be 10,000
+            datasets.append(Subset(ConceptKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+            # datasets.append(Subset(ConceptKnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
         print(dataset[0])
@@ -128,14 +129,14 @@ def main():
         val_len = ninputs - (train_len + test_len)
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
-        in_layer = (Nbeads, 1)
-        concept_layer = (1, 1) # 5x1 tensor 
+        in_layer = (Nbeads, Nbeads)
+        concept_layer = (1, 2) # 5x1 tensor 
         out_layer = len(knots)
 
         if mode == "train":
             loss_fn = nn.CrossEntropyLoss()
             optimizer = "adam"
-            train_with_bottleneck(input_shape=in_layer, concept_shape=concept_layer, output_shape=out_layer, loss_fn=loss_fn, optimizer=optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            train_concept(input_shape=in_layer, concept_shape=concept_layer, output_shape=out_layer, loss_fn=loss_fn, optimizer=optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
 
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
@@ -190,42 +191,43 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
 
         
-def train_with_bottleneck(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
+def train_concept(input_shape, concept_shape, output_shape, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    neural = onlyconceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
+    neural = postmodelNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn)
+    # neural = onlyconceptNN(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss=loss_fn, opt=optimizer)
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.001, patience=10, verbose=True, mode="min")
     trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
 
-    all_predicted = []
-    all_y = []
+    # all_predicted = []
+    # all_y = []
 
-    with torch.no_grad():
-        for x, c1, c2, y in test_loader:
-            # cp1, cp2, z = neural.forward(x)
-            z = neural.forward(torch.cat((c1, c2), 1)) # only concepts
+    # with torch.no_grad():
+    #     for x, c1, c2, y in test_loader:
+    #         # cp1, cp2, z = neural.forward(x)
+    #         z = neural.forward(torch.cat((c1, c2), 1)) # only concepts
         
-            _, predicted = torch.max(z.data, 1) 
-            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+    #         _, predicted = torch.max(z.data, 1) 
+    #         test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-            predicted_np = predicted.cpu().numpy()
-            y_np = y.cpu().numpy()
+    #         predicted_np = predicted.cpu().numpy()
+    #         y_np = y.cpu().numpy()
 
-            # Accumulate predictions
-            all_predicted.extend(predicted_np)
-            all_y.extend(y_np)
+    #         # Accumulate predictions
+    #         all_predicted.extend(predicted_np)
+    #         all_y.extend(y_np)
 
-    # Calculate confusion matrix over all batches
-    conf_mat = confusion_matrix(all_y, all_predicted)
+    # # Calculate confusion matrix over all batches
+    # conf_mat = confusion_matrix(all_y, all_predicted)
 
-    # Display confusion matrix
-    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
-    plt.savefig(f"confusion_matrix_{prob}.png")
+    # # Display confusion matrix
+    # ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
+    # plt.savefig(f"confusion_matrix_{prob}.png")
 
 
-    print(conf_mat)
+    # print(conf_mat)
 
     # print(f"prediction {z[0]}, true {y[0]}")
     # print(f"peaks {cp1[0]}, true {c1[0]}")

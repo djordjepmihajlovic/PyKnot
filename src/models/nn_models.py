@@ -244,7 +244,7 @@ class NN(pl.LightningModule):
             false50 = 0
 
             for idx, i in enumerate(el):
-                if i < 0.5:
+                if i < 0.05:
                     true += 1
                 else:
                     false += 1

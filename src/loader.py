@@ -171,7 +171,8 @@ class data_2_inv(Dataset):
         #on cluster use
 
         if invariant == "v2":
-            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
+            # labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
+            labels = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
 
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
@@ -246,6 +247,8 @@ class ConceptKnotDataset(Dataset):
         if dtype == "SIGWRITHE":
             data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
 
+        if dtype == "2DSIGWRITHE":
+            data = np.loadtxt(os.path.join(dirname, fname))
 
         self.knot = knot
 
@@ -255,11 +258,16 @@ class ConceptKnotDataset(Dataset):
         # concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}_5.csv', delimiter=',', dtype=np.float32)
         # concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', delimiter=',', dtype=np.float32)
 
-        concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_comb_4.csv', delimiter=',', dtype=np.float32)
-        concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_v3.csv', delimiter=',', dtype=np.float32)
+        #concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+        #concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_v3_10000.csv', delimiter=',', dtype=np.float32)
+
+        # locally stored
+
+        concept1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+        concept2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v3_10000.csv', delimiter=',', dtype=np.float32)
 
         self.concept1 = torch.tensor(concept1, dtype=torch.float32)
-        self.concept1 = self.concept1.view(-1, 1, 1) # 5 is max length of peak order (padded)
+        self.concept1 = self.concept1.view(-1, 1, 1) 
 
         self.concept2 = torch.tensor(concept2, dtype=torch.float32)
         self.concept2 = self.concept2.view(-1, 1, 1)
