@@ -192,36 +192,46 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
     predictions = []
     true_vals = []
     labels = []
-    if pdct == "v2":
+    if pdct == "v2" or "v3":
         with torch.no_grad():
             for x, y, c in test_loader:
                 z = neural.forward(x)
-                predictions.append(z.tolist())
-                true_vals.append(y.tolist())
-                labels.append(c.tolist())
 
-    predictions = [item[0] for sublist in predictions for item in sublist]
-    true_vals = [item[0] for sublist in true_vals for item in sublist]
+                # predictions.append(z.tolist())
+                # true_vals.append(y.tolist())
+                # labels.append(c.tolist())
 
-    output_data = [[] for i in range(0, len(knots))]
-    for idx, i in enumerate(labels[0]):
-        output_data[int(i)].append(predictions[idx])
+                predicted_np = z.cpu().numpy()
+                true_vals_np = y.cpu().numpy()
+                labels_np = c.cpu().numpy()
 
-    output_data_corr = [[] for i in range(0, len(knots))]
-    for idx, i in enumerate(labels[0]):
-        output_data_corr[int(i)].append(true_vals[idx])
+                # Accumulate predictions
+                predictions.extend(predicted_np)
+                true_vals.extend(true_vals_np)
+                labels.extend(labels_np)
 
-    for idx, i in enumerate(output_data):
-        with open(f'vassiliev_{knots[idx]}_v2_solo_predictions.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in i:
-                writer.writerow([item])
+        predictions = [item.item() for array in predictions for item in array]
+        true_vals = [item.item() for array in true_vals for item in array]
 
-    for idx, i in enumerate(output_data_corr):
-        with open(f'vassiliev_{knots[idx]}_v2_solo_true.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in i:
-                writer.writerow([item])
+        output_data = [[] for i in range(0, len(knots))]
+        for idx, i in enumerate(labels):
+            output_data[int(i)].append(predictions[idx])
+
+        output_data_corr = [[] for i in range(0, len(knots))]
+        for idx, i in enumerate(labels):
+            output_data_corr[int(i)].append(true_vals[idx])
+
+        for idx, i in enumerate(output_data):
+            with open(f'vassiliev_{knots[idx]}_v2_solo_predictions.csv', 'w', newline='') as f:
+                writer = csv.writer(f)
+                for item in i:
+                    writer.writerow([item])
+
+        for idx, i in enumerate(output_data_corr):
+            with open(f'vassiliev_{knots[idx]}_v2_solo_true.csv', 'w', newline='') as f:
+                writer = csv.writer(f)
+                for item in i:
+                    writer.writerow([item])
 
 
         
