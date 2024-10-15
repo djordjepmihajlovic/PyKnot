@@ -33,9 +33,9 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
-                #datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
+                datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -75,9 +75,9 @@ def main():
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            # datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
-            #datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
 
@@ -188,6 +188,28 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
         #analysis = Analysis(data=test_loader, model=neural, prob=prob)
         #analysis.saliency_map(knots=knots)
+
+    predictions = []
+    labels = []
+    if pdct == "v2":
+        with torch.no_grad():
+            for x, y in test_loader:
+                z = neural.forward(x)
+                predictions.append(z.tolist())
+                labels.append(y.tolist())
+
+    predictions = [item[0] for sublist in predictions for item in sublist]
+    labels = [item[0] for sublist in labels for item in sublist]
+
+    output_data = [[] for i in range(0, len(knots))]
+    for idx, i in enumerate(labels):
+        output_data[int(i)].append(predictions[idx])
+
+    for idx, i in enumerate(output_data):
+        with open(f'vassiliev_{knots[idx]}_v2_solo_predictions.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in i:
+                writer.writerow([item])
 
 
         

@@ -171,14 +171,14 @@ class data_2_inv(Dataset):
         #on cluster use
 
         if invariant == "v2":
-            # labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_comb_4.csv', delimiter=',', dtype=np.float32)
-            labels = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            # labels = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
 
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
 
         if invariant == "v3":
-            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3.csv', delimiter=',', dtype=np.float32)
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_data/vassiliev_{self.knot}_v3.csv', delimiter=',', dtype=np.float32)
 
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
