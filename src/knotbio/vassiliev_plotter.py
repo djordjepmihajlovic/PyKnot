@@ -84,24 +84,35 @@ def v_variance():
     Load the measured v2 data for some knot type
     '''
 
-    f = open("../../../sample_data/vassiliev/vassiliev_data/vassiliev_3_1_v3_10000_fix.csv", "r")
+    f = open("../../../sample_data/vassiliev/vassiliev_data/vassiliev_4_1_v2_100,000.csv", "r")
+    f = open("../vassiliev_4_1_v2_solo_predictions.csv", "r")
+    q = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_4_1_v2_solo_predictions.csv", "r")
+    q = open("../vassiliev_4_1_v2_solo_true.csv", "r")
+    
 
 
     data = []
+    data_p = []
 
     for i in f:
-        data.append(float(i)/(-2.5))
-        # data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        # data.append(float(i)/(-2.5))
+        data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+
+    for i in q:
+        # data_p.append(float(i)/(-2.5))
+        data_p.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        # data_p.append(float(i))
     
     n_bins = 20
 
-    data_array = np.array(data)
+    data_array = np.array(data_p)
     print(f'Mean: {np.mean(data_array)}')
     print(f'Std: {np.std(data_array)}')
 
     sns.set_style("whitegrid")
     fig, axs = plt.subplots(1, 1, sharey=True, tight_layout=True)
     axs.hist(data, bins=n_bins)
+    axs.hist(data_p, bins=n_bins, alpha=0.5)
 
     plt.gca().tick_params(which="both", direction="in", right=True, top=True)
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
@@ -110,8 +121,8 @@ def v_variance():
     plt.gca().yaxis.set_ticks_position('both')
 
     y_min, y_max = axs.get_ylim()
-    axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
-    axs.vlines(-1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
+    # axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
+    # axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
 
     plt.legend()
 

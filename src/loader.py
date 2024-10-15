@@ -190,6 +190,8 @@ class data_2_inv(Dataset):
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 32, 1)
 
+        self.tag = label
+
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
         # self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)
@@ -208,7 +210,7 @@ class data_2_inv(Dataset):
     def __getitem__(self, idx):
         if hasattr(self, 'label'):
             per100 = math.floor(idx/100) # get label attributed to 100 bead section
-            return self.dataset[idx], self.label[per100] 
+            return self.dataset[idx], self.label[per100], self.tag
         else:
             return self.dataset[idx]
         

@@ -193,7 +193,11 @@ class NN(pl.LightningModule):
 
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
-        x, y = batch
+        if self.predict != "class":
+            x, y, c = batch
+        else:
+            x, y = batch
+
         z = self.forward(x)
         loss = self.loss(z, y)
         self.log(loss_name, loss, on_epoch=True, on_step=True)
@@ -201,7 +205,11 @@ class NN(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
         # validation
-        x, y = batch
+        if self.predict != "class":
+            x, y, c = batch
+        else:
+            x, y = batch
+
         z = self.forward(x)
         loss = self.loss(z, y) 
         self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
@@ -210,7 +218,11 @@ class NN(pl.LightningModule):
     def test_step(self, batch, batch_idx, loss_name ='test_loss'):
 
         #test
-        x, y = batch 
+        if self.predict != "class":
+            x, y, c = batch
+        else:
+            x, y = batch
+
         z = self.forward(x)
         loss = self.loss(z, y) 
 

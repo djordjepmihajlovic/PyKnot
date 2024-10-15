@@ -33,7 +33,7 @@ def main():
             if mode == "conditional": # generate tensors for conditional labels
                 datasets.append(Subset(CondKnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             else:
-                # datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
+                #datasets.append(Subset(KnotDataset(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i), indicies))
             ##on cluster use below:
                 datasets.append(Subset(KnotDataset(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i), indicies))
 
@@ -143,7 +143,7 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
     if model_type == "NN":
         for batch in train_loader:
-            x, y = batch
+            x, c, y = batch
             print(x.shape)
             print(y.shape)
             break
@@ -190,23 +190,35 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         #analysis.saliency_map(knots=knots)
 
     predictions = []
+    true_vals = []
     labels = []
     if pdct == "v2":
         with torch.no_grad():
-            for x, y in test_loader:
+            for x, y, c in test_loader:
                 z = neural.forward(x)
                 predictions.append(z.tolist())
-                labels.append(y.tolist())
+                true_vals.append(y.tolist())
+                labels.append(c.tolist())
 
     predictions = [item[0] for sublist in predictions for item in sublist]
-    labels = [item[0] for sublist in labels for item in sublist]
+    true_vals = [item[0] for sublist in true_vals for item in sublist]
 
     output_data = [[] for i in range(0, len(knots))]
-    for idx, i in enumerate(labels):
+    for idx, i in enumerate(labels[0]):
         output_data[int(i)].append(predictions[idx])
+
+    output_data_corr = [[] for i in range(0, len(knots))]
+    for idx, i in enumerate(labels[0]):
+        output_data_corr[int(i)].append(true_vals[idx])
 
     for idx, i in enumerate(output_data):
         with open(f'vassiliev_{knots[idx]}_v2_solo_predictions.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            for item in i:
+                writer.writerow([item])
+
+    for idx, i in enumerate(output_data_corr):
+        with open(f'vassiliev_{knots[idx]}_v2_solo_true.csv', 'w', newline='') as f:
             writer = csv.writer(f)
             for item in i:
                 writer.writerow([item])
