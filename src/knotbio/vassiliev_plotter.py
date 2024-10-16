@@ -84,9 +84,9 @@ def v_variance():
     Load the measured v2 data for some knot type
     '''
 
-    f = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v2_solo_true.csv", "r")
+    f = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v3_solo_true.csv", "r")
     # f = open("../vassiliev_4_1_v2_solo_predictions.csv", "r")
-    q = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v2_solo_predictions.csv", "r")
+    q = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v3_solo_predictions.csv", "r")
     # q = open("../vassiliev_4_1_v2_solo_true.csv", "r")
     
 
@@ -95,12 +95,12 @@ def v_variance():
     data_p = []
 
     for i in f:
-        # data.append(float(i)/(-2.5))
-        data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        data.append(float(i)/(-2.5))
+        # data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
 
     for idx, i in enumerate(q):
-        # data_p.append(float(i)/(-2.5))
-        data_p.append(((8*math.pi*(float(i)-(1/4))/6)/3.7))
+        data_p.append(float(i)/(-2.5))
+        # data_p.append(((8*math.pi*(float(i)-(1/4))/6)/3.7))
         # data_p.append(float(i))
 
     print(data_p)
@@ -125,15 +125,15 @@ def v_variance():
     plt.gca().yaxis.set_ticks_position('both')
 
     y_min, y_max = axs.get_ylim()
-    axs.set_xlim([0.7, 1.35])
+    # axs.set_xlim([0.7, 1.35])
     # axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
-    axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
+    # axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
     plt.legend()
 
     plt.ylabel('Frequency')
-    plt.xlabel(r'$2^{nd}$-Order Vassiliev Invariant ($v_{2}$) measure')
+    plt.xlabel(r'$3^{rd}$-Order Vassiliev Invariant ($v_{3}$) measure')
 
-    plt.title(r'Second order Vassiliev invariant measure ($3_{1}$ knot)')
+    plt.title(r'Third order Vassiliev invariant measure ($3_{1}$ knot)')
 
     plt.show()
 
@@ -151,7 +151,7 @@ def total_v_variance():
 
         # f = open(f"../../knot data/vassiliev/vassiliev_{i}_comb_4.csv", "r")
         #f = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v2_100,000.csv", "r") # v3
-        f = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_{i}_v2_solo_predictions.csv", "r")
+        f = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_{i}_v3_solo_predictions.csv", "r")
         # f = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v3_10000_fix.csv", "r")
         # f = open(f"../../knot data/vassiliev/vassiliev_data/vassiliev_{i}_v3.csv", "r") # v3
 
@@ -159,7 +159,8 @@ def total_v_variance():
         for i in f:
             #   datav2[idx].append((8*math.pi*(((float(i))/6) - (1/4)))/-1)
         #     # datav2[idx].append(float(i))
-                datav2[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+                # datav2[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+                datav2[idx].append(float(i)/(-2.5))
         
         # for i in f:
         #     # datav3[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
@@ -181,10 +182,10 @@ def total_v_variance():
                     showmedians=True)
     
     true_v2 = [0, 1, -1, 3, 2, -2, -1, 1, 6, 3, 5, 4, 4, 1, -1]
-    true_v3 = [0, -1, 0, -5, -3, 1, 1, 0, -14, -6, 11, 8, -8, -2, -1]
+    true_v3 = [0, -1, 0, -5, -3]#, 1, 1, 0, -14, -6, 11, 8, -8, -2, -1]
 
     inds = np.arange(1, len(true_v3) + 1)
-    axs.scatter(inds, true_v2, marker='x', color='red', s=30, zorder=3, label='True $v_{3}$')
+    axs.scatter(inds, true_v3, marker='x', color='red', s=30, zorder=3, label='True $v_{3}$')
     # axs.scatter(inds, true_v2, marker='x', color='red', s=30, zorder=3)
 
     # adding horizontal grid lines

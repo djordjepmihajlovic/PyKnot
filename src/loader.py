@@ -178,8 +178,8 @@ class data_2_inv(Dataset):
             self.label = self.label.view(-1, 1)
 
         if invariant == "v3":
-            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-            
+            labels = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
         
