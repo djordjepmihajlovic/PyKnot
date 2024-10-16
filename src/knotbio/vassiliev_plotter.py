@@ -113,8 +113,10 @@ def v_variance():
 
     sns.set_style("whitegrid")
     fig, axs = plt.subplots(1, 1, sharey=True, tight_layout=True)
-    axs.hist(data, bins=n_bins, color='blue', alpha=0.5, label='True')
-    axs.hist(data_p, bins=n_bins, alpha=0.5, color='red', label='Predicted')
+    bins=np.histogram(np.hstack((data,data_p)), bins=100)[1] #get the bin edges
+
+    axs.hist(data, bins=bins, color='blue', alpha=0.5, label='True')
+    axs.hist(data_p, bins=bins, alpha=0.5, color='red', label='Predicted')
 
     plt.gca().tick_params(which="both", direction="in", right=True, top=True)
     plt.gca().xaxis.set_minor_locator(AutoMinorLocator())
@@ -123,8 +125,9 @@ def v_variance():
     plt.gca().yaxis.set_ticks_position('both')
 
     y_min, y_max = axs.get_ylim()
+    axs.set_xlim([0.7, 1.35])
     # axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
-    # axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
+    axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
     plt.legend()
 
     plt.ylabel('Frequency')
@@ -139,7 +142,7 @@ def total_v_variance():
     Compare all v2 and v3 measurements via box plots
     '''
 
-    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"]#, "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7", "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21", "9_1", "9_2", "9_3", "9_4", "9_5", "9_6", "9_7", "9_8", "9_9", "9_10", "9_11", "9_12", "9_13", "9_14", "9_15", "9_16", "9_17", "9_18", "9_19", "9_20", "9_21", "9_22"] #, "9_23", "9_24", "9_25", "9_26", "9_27", "9_28", "9_29", "9_30", "9_31", "9_32", "9_33", "9_34", "9_35", "9_36", "9_37", "9_38", "9_39", "9_40", "9_41", "9_42", "9_43", "9_44", "9_45", "9_46", "9_47", "9_48", "9_49"]
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"] #, "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]#, "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21", "9_1", "9_2", "9_3", "9_4", "9_5", "9_6", "9_7", "9_8", "9_9", "9_10", "9_11", "9_12", "9_13", "9_14", "9_15", "9_16", "9_17", "9_18", "9_19", "9_20", "9_21", "9_22"] #, "9_23", "9_24", "9_25", "9_26", "9_27", "9_28", "9_29", "9_30", "9_31", "9_32", "9_33", "9_34", "9_35", "9_36", "9_37", "9_38", "9_39", "9_40", "9_41", "9_42", "9_43", "9_44", "9_45", "9_46", "9_47", "9_48", "9_49"]
 
     datav2 = [[] for i in range(len(knots))]
     datav3 = [[] for i in range(len(knots))]
@@ -147,20 +150,20 @@ def total_v_variance():
     for idx, i in enumerate(knots):
 
         # f = open(f"../../knot data/vassiliev/vassiliev_{i}_comb_4.csv", "r")
-        f = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v2_100,000.csv", "r") # v3
-        t = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_{i}_v2_solo_predictions.csv", "r")
-        #t = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v3_10000_fix.csv", "r")
+        #f = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v2_100,000.csv", "r") # v3
+        f = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_{i}_v2_solo_predictions.csv", "r")
+        # f = open(f"../../../sample_data/vassiliev/vassiliev_data/vassiliev_{i}_v3_10000_fix.csv", "r")
         # f = open(f"../../knot data/vassiliev/vassiliev_data/vassiliev_{i}_v3.csv", "r") # v3
 
 
         for i in f:
-            # datav2[idx].append((8*math.pi*(((float(i))/6) - (1/4)))/-1)
-            # datav2[idx].append(float(i))
-            datav2[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+            #   datav2[idx].append((8*math.pi*(((float(i))/6) - (1/4)))/-1)
+        #     # datav2[idx].append(float(i))
+                datav2[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
         
-        for i in t:
-            datav3[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
-            # datav3[idx].append(float(i)/(-2.5))
+        # for i in f:
+        #     # datav3[idx].append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        #     datav3[idx].append(float(i)/(-2.5))
 
 
     fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(9, 4))
@@ -169,11 +172,11 @@ def total_v_variance():
     all_data = [np.random.normal(0, std, 100) for std in range(6, 10)]
 
     # plot violin plot
-    axs.violinplot(datav2,
-                    showmeans=False,
-                    showmedians=True)
+    # axs.violinplot(datav2,
+    #                 showmeans=False,
+    #                 showmedians=True)
     
-    axs.violinplot(datav3,
+    axs.violinplot(datav2,
                     showmeans=False,
                     showmedians=True)
     
@@ -181,7 +184,7 @@ def total_v_variance():
     true_v3 = [0, -1, 0, -5, -3, 1, 1, 0, -14, -6, 11, 8, -8, -2, -1]
 
     inds = np.arange(1, len(true_v3) + 1)
-    # axs.scatter(inds, true_v2, marker='x', color='red', s=30, zorder=3)
+    axs.scatter(inds, true_v2, marker='x', color='red', s=30, zorder=3, label='True $v_{3}$')
     # axs.scatter(inds, true_v2, marker='x', color='red', s=30, zorder=3)
 
     # adding horizontal grid lines
@@ -189,12 +192,13 @@ def total_v_variance():
     axs.xaxis.grid(True)
     axs.set_xticklabels([])
     axs.set_xlabel('Knots')
-    axs.set_ylabel(r'$v_{2}$ Measurement')
+    axs.set_ylabel(r'$v_{3}$ Measurement')
+    plt.legend()
 
-    plt.title('Second order Vassiliev Invariant Measurements')
+    plt.title('Third order Vassiliev Invariant Measurements')
 
     plt.show()
 
 
 
-v_variance()
+total_v_variance()

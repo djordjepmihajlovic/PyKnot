@@ -222,13 +222,13 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
             output_data_corr[int(i)].append(true_vals[idx])
 
         for idx, i in enumerate(output_data):
-            with open(f'vassiliev_{knots[idx]}_v2_solo_predictions.csv', 'w', newline='') as f:
+            with open(f'vassiliev_{knots[idx]}_{pdct}_solo_predictions.csv', 'w', newline='') as f:
                 writer = csv.writer(f)
                 for item in i:
                     writer.writerow([item])
 
         for idx, i in enumerate(output_data_corr):
-            with open(f'vassiliev_{knots[idx]}_v2_solo_true.csv', 'w', newline='') as f:
+            with open(f'vassiliev_{knots[idx]}_{pdct}_solo_true.csv', 'w', newline='') as f:
                 writer = csv.writer(f)
                 for item in i:
                     writer.writerow([item])
