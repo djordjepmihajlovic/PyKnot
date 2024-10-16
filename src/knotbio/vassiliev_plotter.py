@@ -125,7 +125,7 @@ def v_variance():
     plt.gca().yaxis.set_ticks_position('both')
 
     y_min, y_max = axs.get_ylim()
-    # axs.set_xlim([0.7, 1.35])
+    axs.set_xlim([-1.5, -0.5])
     # axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
     # axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
     plt.legend()
@@ -202,4 +202,4 @@ def total_v_variance():
 
 
 
-total_v_variance()
+v_variance()
