@@ -67,14 +67,14 @@ class FFNNModel(nn.Module):
         elif self.pred == "dowker":
             return x.view(-1, 32, 1) 
         
+        elif self.pred == "v2v3":
+            return x.view(-1, 2)
+        
         elif self.pred == "jones":
             return x.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
         
         # i think the neural network is just 'learning' the different knot types
         # and then choosing the correct label :(
-        
-        elif self.pred == "quantumA2":
-            return x.view(-1, 31, 2) # <- same as Jones
 
 ################## <--RNN--> ###################
 
@@ -106,7 +106,7 @@ class RNNModel(nn.Module):
             return out.view(-1, 1)
         
         elif self.pred == "v2v3":
-            return out.view(-1, 2, 1)
+            return out.view(-1, 2)
         
         elif self.pred == "dowker":
             return out.view(-1, 32, 1) 
@@ -156,6 +156,7 @@ class CNNModel(nn.Module):
         
         elif self.pred == "v2" or self.pred == "v3":
             return x.view(-1, 1)
+        
         
         elif self.pred == "dowker":
             return x.view(-1, 32, 1) # 
@@ -347,60 +348,57 @@ class NN(pl.LightningModule):
 
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
-        if self.predict != "class":
+        if self.predict == "v2" or self.predict == "v3":
             x, y, c = batch
+            z = self.forward(x)
+            loss = self.loss(z, y)
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
+
+        elif self.predict == "v2v3":
+            x, y1, y2, c = batch
+            z = self.forward(x)
+            loss = self.loss(z, torch.cat((y1, y2), 1))
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
+
         else:
             x, y = batch
+            z = self.forward(x)
+            loss = self.loss(z, y)
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
 
-        z = self.forward(x)
-        loss = self.loss(z, y)
-        self.log(loss_name, loss, on_epoch=True, on_step=True)
+
         return loss
     
     def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
         # validation
-        if self.predict != "class":
+        if self.predict == "v2" or self.predict == "v3":
             x, y, c = batch
+            z = self.forward(x)
+            loss = self.loss(z, y)
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
+
+        elif self.predict == "v2v3":
+            x, y1, y2, c = batch
+            z = self.forward(x)
+            loss = self.loss(z, torch.cat((y1, y2), 1))
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
+
         else:
             x, y = batch
+            z = self.forward(x)
+            loss = self.loss(z, y)
+            self.log(loss_name, loss, on_epoch=True, on_step=True)
 
-        z = self.forward(x)
-        loss = self.loss(z, y) 
-        self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
+
         return loss
     
     def test_step(self, batch, batch_idx, loss_name ='test_loss'):
 
         #test
-        if self.predict != "class":
+        if self.predict == "v2" or self.predict == "v3":
             x, y, c = batch
-        else:
-            x, y = batch
-
-        z = self.forward(x)
-        loss = self.loss(z, y) 
-
-        if self.predict == "class":
-        # std. label
-            _, predicted = torch.max(z.data, 1) 
-            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
-
-        elif self.predict == "dowker":
-            # invariant
-            true = 0
-            false = 0
-            el = (y-z)
-
-            for idx, i in enumerate(el):
-                x = torch.round(i)
-                if torch.sum(x) == 0.0:
-                    true += 1
-                else:
-                    false += 1
-
-            test_acc = true / (true + false)
-
-        else:
+            z = self.forward(x)
+            loss = self.loss(z, y)
         # invariant
             true = 0
             false = 0
@@ -419,15 +417,37 @@ class NN(pl.LightningModule):
 
             test_acc = true / (true + false)
 
-        with open(f'5_class_errors_{self.predict}.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            for item in i:
-                writer.writerow([item])
-
         # log outputs
-        self.log_dict({'test_loss': loss, 'test_acc': test_acc})
+            self.log_dict({'test_loss': loss, 'test_acc': test_acc})
 
-        return loss
+            return loss
+
+        elif self.predict == "class":
+            x, y = batch
+            z = self.forward(x)
+            loss = self.loss(z, y)
+            _, predicted = torch.max(z.data, 1) 
+            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+
+            self.log_dict({'test_loss': loss, 'test_acc': test_acc})
+
+            return loss
+
+        elif self.predict == "v2v3":
+            x, y1, y2, c = batch 
+            z = self.forward(x)
+            loss = self.loss(z, torch.cat((y1, y2), 1))
+
+            true = 0
+            false = 0
+            total_errors  = []
+            el = ((torch.cat((y1, y2), 1)-z))
+
+            test_acc = 0
+
+            # log outputs
+            self.log_dict({'test_loss': loss, 'test_acc': test_acc})
+            return loss
 
     def configure_optimizers(self):
         return self.optimiser

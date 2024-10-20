@@ -75,11 +75,12 @@ def main():
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            # datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
-            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            # datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
+        print(dataset[0])
 
         ninputs = len(dataset) # total dataset length
         print(ninputs)
@@ -102,6 +103,9 @@ def main():
 
         elif pdct == "v2" or pdct == "v3":
             out_layer = 1
+
+        elif pdct == "v2v3":
+            out_layer = 2
 
         if mode == "train":
             model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, pdct)
@@ -142,11 +146,6 @@ def main():
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
 
     if model_type == "NN":
-        for batch in train_loader:
-            x, c, y = batch
-            print(x.shape)
-            print(y.shape)
-            break
         neural = NN(model=model, loss=loss_fn, opt=optimizer, predict=pdct)
         early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.0005, patience=10, verbose=True, mode="min")
         trainer = Trainer(max_epochs=epochs, limit_train_batches=250, callbacks=[early_stop_callback])  # steps per epoch = 250
@@ -191,47 +190,89 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
 
     predictions = []
     true_vals = []
+    true_vals_v2 = []
+    true_vals_v3 = []
     labels = []
-    if pdct == "v2" or "v3":
-        with torch.no_grad():
-            for x, y, c in test_loader:
-                z = neural.forward(x)
+    if pdct != "class":
+        if pdct == "v2" or pdct == "v3":
+            with torch.no_grad():
+                for x, y, c in test_loader:
+                    z = neural.forward(x)
 
-                # predictions.append(z.tolist())
-                # true_vals.append(y.tolist())
-                # labels.append(c.tolist())
+                    predicted_np = z.cpu().numpy()
+                    true_vals_np = y.cpu().numpy()
+                    labels_np = c.cpu().numpy()
 
-                predicted_np = z.cpu().numpy()
-                true_vals_np = y.cpu().numpy()
-                labels_np = c.cpu().numpy()
+                    # Accumulate predictions
+                    predictions.extend(predicted_np)
+                    true_vals.extend(true_vals_np)
+                    labels.extend(labels_np)
 
-                # Accumulate predictions
-                predictions.extend(predicted_np)
-                true_vals.extend(true_vals_np)
-                labels.extend(labels_np)
+            predictions = [item.item() for array in predictions for item in array]
+            true_vals = [item.item() for array in true_vals for item in array]
 
-        predictions = [item.item() for array in predictions for item in array]
-        true_vals = [item.item() for array in true_vals for item in array]
+            output_data = [[] for i in range(0, len(knots))]
+            for idx, i in enumerate(labels):
+                output_data[int(i)].append(predictions[idx])
 
-        output_data = [[] for i in range(0, len(knots))]
-        for idx, i in enumerate(labels):
-            output_data[int(i)].append(predictions[idx])
+            output_data_corr = [[] for i in range(0, len(knots))]
+            for idx, i in enumerate(labels):
+                output_data_corr[int(i)].append(true_vals[idx])
 
-        output_data_corr = [[] for i in range(0, len(knots))]
-        for idx, i in enumerate(labels):
-            output_data_corr[int(i)].append(true_vals[idx])
+            for idx, i in enumerate(output_data):
+                with open(f'vassiliev_{knots[idx]}_{pdct}_solo_predictions.csv', 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    for item in i:
+                        writer.writerow([item])
 
-        for idx, i in enumerate(output_data):
-            with open(f'vassiliev_{knots[idx]}_{pdct}_solo_predictions.csv', 'w', newline='') as f:
-                writer = csv.writer(f)
-                for item in i:
-                    writer.writerow([item])
+            for idx, i in enumerate(output_data_corr):
+                with open(f'vassiliev_{knots[idx]}_{pdct}_solo_true.csv', 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    for item in i:
+                        writer.writerow([item])
+        
+        elif pdct == "v2v3":
+            with torch.no_grad():
+                for x, y1, y2, c in test_loader:
+                    z = neural.forward(x)
+                    y = torch.cat((y1, y2), 1)
 
-        for idx, i in enumerate(output_data_corr):
-            with open(f'vassiliev_{knots[idx]}_{pdct}_solo_true.csv', 'w', newline='') as f:
-                writer = csv.writer(f)
-                for item in i:
-                    writer.writerow([item])
+                    predicted_np = z.cpu().numpy()
+                    true_vals_np1 = y1.cpu().numpy()
+                    true_vals_np2 = y2.cpu().numpy()
+                    labels_np = c.cpu().numpy()
+
+                    # Accumulate predictions
+                    predictions.extend(predicted_np)
+                    true_vals_v2.extend(true_vals_np1)
+                    true_vals_v3.extend(true_vals_np2)
+                    labels.extend(labels_np)
+
+            predictions = [item.item() for array in predictions for item in array]
+            true_vals_v2 = [item.item() for array in true_vals_v2 for item in array]
+            true_vals_v3 = [item.item() for array in true_vals_v3 for item in array]
+
+            output_data = [[] for i in range(0, len(knots))]
+            for idx, i in enumerate(labels):
+                output_data[int(i)].append(predictions[idx])
+
+            output_data_corr = [[] for i in range(0, len(knots))]
+            for idx, i in enumerate(labels):
+                output_data_corr[int(i)].append([true_vals_v2[idx], true_vals_v3[idx]])
+
+            for idx, i in enumerate(output_data):
+                with open(f'vassiliev_{knots[idx]}_{pdct}_solo_predictions.csv', 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    for item in i:
+                        writer.writerow([item])
+
+            for idx, i in enumerate(output_data_corr):
+                with open(f'vassiliev_{knots[idx]}_{pdct}_solo_true.csv', 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    for item in i:
+                        writer.writerow([item])
+
+
 
 
         
