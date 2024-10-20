@@ -75,9 +75,9 @@ def main():
 
         indicies = np.arange(0, len_db) # first 100000
         for i, knot in enumerate(knots): 
-            datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            #datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
-            # datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
         print(dataset[0])
