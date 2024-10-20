@@ -182,6 +182,17 @@ class data_2_inv(Dataset):
 
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
+
+        elif invariant == "v2v3":
+            labels_1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            labels_2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+
+            labels_1 = torch.tensor(labels_1, dtype=torch.float32)
+            labels_1 = labels_1.view(-1, 1)
+            labels_2 = torch.tensor(labels_2, dtype=torch.float32)
+            labels_2 = labels_2.view(-1, 1)
+
+            self.label = torch.cat((labels_1, labels_2), 1)
         
         if invariant == "dowker":
 
@@ -191,7 +202,6 @@ class data_2_inv(Dataset):
             self.label = self.label.view(-1, 32, 1)
 
         self.tag = label
-
 
         self.dataset = torch.tensor(data, dtype=torch.float32)
         # self.dataset = self.dataset.view(-1, Nbeads, n_col_feature)

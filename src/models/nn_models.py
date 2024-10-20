@@ -105,14 +105,14 @@ class RNNModel(nn.Module):
         elif self.pred == "v2" or self.pred == "v3":
             return out.view(-1, 1)
         
+        elif self.pred == "v2v3":
+            return out.view(-1, 2, 1)
+        
         elif self.pred == "dowker":
             return out.view(-1, 32, 1) 
         
         elif self.pred == "jones":
             return out.view(-1, 10, 2) # <- have: polynomial (power, factor) [one hot encoding] nb. 3_1: q^(-1)+q^(-3)-q^(-4) = [1, 0, 1, 1][1, 0, 1, -1]
-        
-        elif self.pred == "quantumA2":
-            return out.view(-1, 31, 2) 
 
 ################## <--CNN--> ###################
 

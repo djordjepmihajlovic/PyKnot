@@ -22,7 +22,7 @@ from analysis import *
 device = torch.device("cpu")
 def main():
 
-    properties = {"dowker", "v2", "v3"}
+    properties = {"dowker", "v2", "v3", "v2v3"}
     datasets = []
 ################## <--classic classification problem + reconstruction--> ###################
 

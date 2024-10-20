@@ -84,9 +84,11 @@ def v_variance():
     Load the measured v2 data for some knot type
     '''
 
-    f = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v3_solo_true.csv", "r")
+    param = "v3"
+
+    f = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_predictions_2/vassiliev_0_1_{param}_solo_true.csv", "r")
     # f = open("../vassiliev_4_1_v2_solo_predictions.csv", "r")
-    q = open("../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_3_1_v3_solo_predictions.csv", "r")
+    q = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_predictions_2/vassiliev_0_1_{param}_solo_predictions.csv", "r")
     # q = open("../vassiliev_4_1_v2_solo_true.csv", "r")
     
 
@@ -95,16 +97,18 @@ def v_variance():
     data_p = []
 
     for i in f:
-        data.append(float(i)/(-2.5))
-        # data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        if param == "v2":
+            data.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        elif param == "v3":
+            data.append(float(i)/(-2.5))
 
     for idx, i in enumerate(q):
-        data_p.append(float(i)/(-2.5))
-        # data_p.append(((8*math.pi*(float(i)-(1/4))/6)/3.7))
-        # data_p.append(float(i))
+        if param == "v2":
+            data_p.append((8*math.pi*(float(i)-(1/4))/6)/3.7)
+        elif param == "v3":
+            data_p.append(float(i)/(-2.5))
 
-    print(data_p)
-    
+
     n_bins = 20
 
     data_array = np.array(data_p)
@@ -125,17 +129,69 @@ def v_variance():
     plt.gca().yaxis.set_ticks_position('both')
 
     y_min, y_max = axs.get_ylim()
-    axs.set_xlim([-1.5, -0.5])
+    axs.set_xlim([-0.25, 0.1])
     # axs.vlines(np.mean(data_array), y_min, y_max, color='red', linestyle='-', label='Average')
-    # axs.vlines(1, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
+    # axs.vlines(0, y_min, y_max, color='black', linestyle='-', label=r'True $v_{2}$')
     plt.legend()
 
     plt.ylabel('Frequency')
     plt.xlabel(r'$3^{rd}$-Order Vassiliev Invariant ($v_{3}$) measure')
 
-    plt.title(r'Third order Vassiliev invariant measure ($3_{1}$ knot)')
+    plt.title(r'Third order Vassiliev invariant measure ($0_{1}$ knot)')
 
     plt.show()
+
+def v_tolerance():
+    '''
+    Load the measured v2 data for some knot type
+    '''
+
+    knots = ["0_1", "3_1", "4_1", "5_1", "5_2"] #, "6_1", "6_2", "6_3", "7_1", "7_2", "7_3", "7_4", "7_5", "7_6", "7_7"]#, "8_1", "8_2", "8_3", "8_4", "8_5", "8_6", "8_7", "8_8", "8_9", "8_10", "8_11", "8_12", "8_13", "8_14", "8_15", "8_16", "8_17", "8_18", "8_19", "8_20", "8_21", "9_1", "9_2", "9_3", "9_4", "9_5", "9_6", "9_7", "9_8", "9_9", "9_10", "9_11", "9_12", "9_13", "9_14", "9_15", "9_16", "9_17", "9_18", "9_19", "9_20", "9_21", "9_22"] #, "9_23", "9_24", "9_25", "9_26", "9_27", "9_28", "9_29", "9_30", "9_31", "9_32", "9_33", "9_34", "9_35", "9_36", "9_37", "9_38", "9_39", "9_40", "9_41", "9_42", "9_43", "9_44", "9_45", "9_46", "9_47", "9_48", "9_49"]
+    tolerances = [0.2, 0.1, 0.05]
+
+    data_true = [[] for i in range(len(knots))]
+    data_predict = [[] for i in range(len(knots))]
+    total_tolerance = [[] for i in range(len(tolerances))]
+
+
+    for idx, i in enumerate(knots):
+
+        f = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_predictions_2/vassiliev_{i}_v3_solo_predictions.csv", "r")
+        q  = open(f"../../../sample_data/vassiliev/vassiliev_predictions/vassiliev_predictions_2/vassiliev_{i}_v3_solo_true.csv", "r")
+
+        for x in f:
+            data_true[idx].append(float(x)/(-2.5))
+        for x in q:
+            data_predict[idx].append(float(x)/(-2.5))
+    
+        tolerance_10 = []
+        tolerance_5 = []    
+        tolerance_1 = []
+
+        for idy, t in enumerate(data_true[idx]):
+            error = abs(data_predict[idx][idy]-t)/abs(t)
+            if error < tolerances[0]:
+                tolerance_10.append(error)
+            if error < tolerances[1]:
+                tolerance_5.append(error)
+            if error < tolerances[2]:
+                tolerance_1.append(error)
+
+        tol_10_val = len(tolerance_10)/len(data_true[idx])
+        tol_5_val = len(tolerance_5)/len(data_true[idx])
+        tol_1_val = len(tolerance_1)/len(data_true[idx])
+
+        total_tolerance[0].append(tol_10_val)
+        total_tolerance[1].append(tol_5_val)
+        total_tolerance[2].append(tol_1_val)
+
+        print(f'{i} Tolerance 10%: {tol_10_val}')
+        print(f'{i} Tolerance 5%: {tol_5_val}')
+        print(f'{i} Tolerance 1%: {tol_1_val}')
+
+    print(f'Total Tolerance 10%: {sum(total_tolerance[0])/len(total_tolerance[0])}')
+    print(f'Total Tolerance 5%: {sum(total_tolerance[1])/len(total_tolerance[1])}')
+    print(f'Total Tolerance 1%: {sum(total_tolerance[2])/len(total_tolerance[2])}')
 
 def total_v_variance():
     '''
