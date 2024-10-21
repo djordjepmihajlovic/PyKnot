@@ -276,7 +276,11 @@ def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_
         
 def train_concept(model, input_shape, concept_shape, output_shape, loss_fn_bottleneck, loss_fn_classify, optimizer, train_loader, val_loader, test_loader, epochs):
 
-    G_x = NN.load_from_checkpoint("../trained models/v2v3_5Class_RNN/checkpoints/epoch=480-step=84656.ckpt", model=model, loss=loss_fn_bottleneck, opt=optim.Adam(model.parameters(), lr=0.000001), predict="v2v3")
+    #model_name = "/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/trained models/v2v3_5Class_RNN/checkpoints/epoch=480-step=84656.ckpt"
+    model_name = "../PyKnot/trained models/v2v3_5Class_RNN/checkpoints/epoch=480-step=84656.ckpt"
+    #model_name = "../trained models/v2v3_5Class_RNN/checkpoints/epoch=480-step=84656.ckpt"
+    G_x = NN.load_from_checkpoint(model_name, model=model, loss=loss_fn_bottleneck, opt=optim.Adam(model.parameters(), lr=0.000001), predict="v2v3")
+
 
     neural = postmodelNN(model=model, input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape, loss_fn_bottleneck=loss_fn_bottleneck, loss_fn_classify=loss_fn_classify, G_x=G_x)
 
