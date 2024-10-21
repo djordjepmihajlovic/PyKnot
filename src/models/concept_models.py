@@ -81,6 +81,9 @@ class postmodelNN(pl.LightningModule):
         self.loss_classify = loss_fn_classify
         self.optimiser = optim.Adam(self.model.parameters(), lr=0.0001)
 
+        for param in self.G_x.parameters():
+            param.requires_grad = False
+
     def forward(self, x):
         # apply model layers
 
@@ -92,6 +95,8 @@ class postmodelNN(pl.LightningModule):
         x, c1, c2, y = batch
         self.G_x.eval()
         x = self.G_x(x)
+
+        self.model.train()
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
@@ -104,6 +109,8 @@ class postmodelNN(pl.LightningModule):
         x, c1, c2, y = batch
         self.G_x.eval()
         x = self.G_x(x)
+
+        self.model.eval()
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
@@ -117,6 +124,8 @@ class postmodelNN(pl.LightningModule):
         x, c1, c2, y = batch
         self.G_x.eval()
         x = self.G_x(x)
+
+        self.model.eval()
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
