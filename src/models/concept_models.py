@@ -39,11 +39,7 @@ class f_c(nn.Module):
         # init layers
 
         self.dense_layer1 = nn.Linear(concept_shape, 320)
-
-        # hidden layers to FFNN
         self.dense_layer2 = nn.Linear(320, 320)
-        self.dense_layer3 = nn.Linear(320, 320)
-        self.dense_layer4 = nn.Linear(320, 320)
 
         # output layer
         self.output_layer = nn.Linear(320, output_shape)
@@ -53,8 +49,6 @@ class f_c(nn.Module):
 
         x = F.relu(self.dense_layer1(x))
         x = F.relu(self.dense_layer2(x))
-        x = F.relu(self.dense_layer3(x))
-        x = F.relu(self.dense_layer4(x))
 
         x = self.output_layer(x)
 
@@ -79,7 +73,7 @@ class postmodelNN(pl.LightningModule):
         self.G_x = G_x # load pre-trained model
         self.model = f_c(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape)
         self.loss_classify = loss_fn_classify
-        self.optimiser = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimiser = optim.Adam(self.model.parameters(), lr=0.00001)
 
         for param in self.G_x.parameters():
             param.requires_grad = False
