@@ -115,9 +115,9 @@ def main():
     elif pdct == "concept": # this class uses a pretrained model as its concept bottleneck
         for i, knot in enumerate(knots):
             indicies = np.arange(0, len_db) # note want len_db to be 10,000
-            datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            #datasets.append(Subset(data_2_inv(master_knots_dir, knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
             ##on cluster use below:
-            #datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
+            datasets.append(Subset(data_2_inv(os.path.join(master_knots_dir,knot,f"N{Nbeads}",f"lp{pers_len}"), knot, net, dtype, Nbeads, pers_len, i, pdct), indicies))
 
         dataset = ConcatDataset(datasets) # concatenate datasets together
         print(dataset[0])
@@ -285,32 +285,32 @@ def train_concept(model, input_shape, concept_shape, output_shape, loss_fn_bottl
     trainer.fit(neural, train_loader, val_loader)
     trainer.test(dataloaders=test_loader)
 
-    # all_predicted = []
-    # all_y = []
+    all_predicted = []
+    all_y = []
 
-    # with torch.no_grad():
-    #     for x, c1, c2, y in test_loader:
-    #         # cp1, cp2, z = neural.forward(x)
-    #         z = neural.forward(torch.cat((c1, c2), 1)) # only concepts
+    with torch.no_grad():
+        for x, c1, c2, y in test_loader:
+            # cp1, cp2, z = neural.forward(x)
+            z = neural.forward(torch.cat((c1, c2), 1)) # only concepts
         
-    #         _, predicted = torch.max(z.data, 1) 
-    #         test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
+            _, predicted = torch.max(z.data, 1) 
+            test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-    #         predicted_np = predicted.cpu().numpy()
-    #         y_np = y.cpu().numpy()
+            predicted_np = predicted.cpu().numpy()
+            y_np = y.cpu().numpy()
 
-    #         # Accumulate predictions
-    #         all_predicted.extend(predicted_np)
-    #         all_y.extend(y_np)
+            # Accumulate predictions
+            all_predicted.extend(predicted_np)
+            all_y.extend(y_np)
 
-    # # Calculate confusion matrix over all batches
-    # conf_mat = confusion_matrix(all_y, all_predicted)
+    # Calculate confusion matrix over all batches
+    conf_mat = confusion_matrix(all_y, all_predicted)
 
-    # # Display confusion matrix
-    # ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
-    # plt.savefig(f"confusion_matrix_{prob}.png")
+    # Display confusion matrix
+    ConfusionMatrixDisplay(confusion_matrix=conf_mat, display_labels=knots).plot(include_values=False)
+    plt.savefig(f"confusion_matrix_{prob}.png")
 
-    # print(conf_mat)
+    print(conf_mat)
 
 
 if __name__ == "__main__":

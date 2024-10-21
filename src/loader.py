@@ -121,10 +121,10 @@ class data_2_inv(Dataset):
             self.label = self.label.view(-1, 1)
 
         elif invariant == "v2v3" or invariant == "concept":
-            #labels_1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-            #labels_2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
-            labels_1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-            labels_2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+            labels_1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            labels_2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+            #labels_1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            #labels_2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
 
             labels_1 = torch.tensor(labels_1, dtype=torch.float32)
             labels_1 = labels_1.view(-1, 1)
