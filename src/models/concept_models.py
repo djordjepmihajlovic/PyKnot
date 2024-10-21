@@ -83,14 +83,15 @@ class postmodelNN(pl.LightningModule):
 
     def forward(self, x):
         # apply model layers
-        self.G_x.eval()
-        x = self.G_x(x)
+
         x = self.model(x)
         return x
 
     def training_step(self, batch, batch_idx, loss_name = 'train_loss'):
         # training
         x, c1, c2, y = batch
+        self.G_x.eval()
+        x = self.G_x(x)
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
@@ -101,6 +102,8 @@ class postmodelNN(pl.LightningModule):
     def validation_step(self, batch, batch_idx, loss_name = 'val_loss'):
         # validation
         x, c1, c2, y = batch
+        self.G_x.eval()
+        x = self.G_x(x)
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
@@ -112,6 +115,8 @@ class postmodelNN(pl.LightningModule):
     def test_step(self, batch, batch_idx, loss_name ='test_loss'):
         #test
         x, c1, c2, y = batch
+        self.G_x.eval()
+        x = self.G_x(x)
         z = self.forward(x)
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
