@@ -12,17 +12,17 @@ import pytorch_lightning as pl
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-################## <--FFNN--> ###################
+from models.nn_models import *
 
-# goal right now is to remodel the conceptNN to have a concept bottleneck
-# models needed = g(x) -> c
-#                = f(g(x)) -> y
+# goal 
+# = g(x) -> c
+# = f(g(x)) -> y
     
 ################## <--FFNN--> ###################
 
 class f_c(nn.Module):
     # define model structure i.e. layers
-    def __init__(self, input_shape, concept_shape, output_shape, G_x):
+    def __init__(self, input_shape, concept_shape, output_shape):
         """nn.Module initialization --> builds neural network
 
         Args:
@@ -36,8 +36,6 @@ class f_c(nn.Module):
         super(f_c, self).__init__()
         self.flatten_layer = nn.Flatten()
 
-        self.G_x = G_x
-        
         # init layers
 
         self.dense_layer1 = nn.Linear(concept_shape[0]+concept_shape[0], 320)
@@ -53,8 +51,6 @@ class f_c(nn.Module):
     def forward(self, x):
         x = self.flatten_layer(x)
 
-        x = self.Gx(x) # pass through pre trained model
-
         x = F.relu(self.dense_layer1(x))
         x = F.relu(self.dense_layer2(x))
         x = F.relu(self.dense_layer3(x))
@@ -68,7 +64,7 @@ class f_c(nn.Module):
 ################## <--(only concept) Pytorch LightningModule for train/val/test config--> ###################
     
 class postmodelNN(pl.LightningModule):
-    def __init__(self, input_shape, concept_shape, output_shape, loss, G_x):
+    def __init__(self, model, input_shape, concept_shape, output_shape, loss_fn_bottleneck, loss_fn_classify, G_x):
         """pl.LightningModule --> builds train/val/test 
 
         Args:
@@ -80,13 +76,15 @@ class postmodelNN(pl.LightningModule):
             loss
         """
         super().__init__()
+        self.G_x = G_x # load pre-trained model
         self.model = f_c(input_shape=input_shape, concept_shape=concept_shape, output_shape=output_shape)
-        self.loss_concept = nn.MSELoss()
-        self.loss_classify = loss
+        self.loss_classify = loss_fn_classify
         self.optimiser = optim.Adam(self.model.parameters(), lr=0.0001)
 
     def forward(self, x):
         # apply model layers
+        self.G_x.eval()
+        x = self.G_x(x)
         x = self.model(x)
         return x
 
@@ -118,41 +116,13 @@ class postmodelNN(pl.LightningModule):
         loss_prediction = self.loss_classify(z, y)
         loss = loss_prediction 
 
-
         # calculate acc
 
         # # std. label
         _, predicted = torch.max(z.data, 1) 
         test_acc = torch.sum(y == predicted).item() / (len(y)*1.0) 
 
-        ## concepts
-        # true = 0
-        # false = 0
-        # predicted = torch.round(z)
-        # el = (y-predicted)
-
-        # for idx, i in enumerate(el):
-        #     if torch.sum(i) == 0.0:
-        #         true += 1
-        #     else:
-        #         false += 1
-                # print(f"true: {y[idx]}")
-                # print(f"predicted: {predicted[idx]}")
-
-        # test_acc = true/(true+false)
-        #test_acc = (torch.sum(el).item()/ (len(y)*1.0))**(1/2)
-
-        # log outputs
         self.log_dict({'test_loss': loss, 'test_acc': test_acc})
-
-        # predicted_np = predicted.cpu().numpy()
-        # y_np = y.cpu().numpy()
-
-        # # Calculate confusion matrix
-        # confusion_mat = confusion_matrix(y_np, predicted_np)
-        # print(confusion_mat)
-
-        # self.log(loss_name, loss, prog_bar=True, on_epoch=True, on_step=True)
         return loss
 
     def configure_optimizers(self):

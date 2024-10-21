@@ -66,69 +66,6 @@ class KnotDataset(Dataset):
         else:
             return self.dataset[idx]
         
-class CondKnotDataset(Dataset):
-
-    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
-        """Class wrapper for dataset generation --> conditional classification problem
-
-        Args:
-            dirname (str): knot master directory location
-            knot (str): knot being called
-            net (str): neural network trype
-            dtype (str): problem type
-            Nbeads (int): number of beads
-            pers_len (int): persistence length
-            label (int): corresponding label of data being called
-
-        Returns:
-            torch.Dataset
-        """
-        super(CondKnotDataset, self).__init__()
-
-        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-
-        n_col = len(select_cols)
-        type_list = [torch.float32] * n_col
-        
-        print((os.path.join(dirname, fname)))
-
-        # Loading the dataset file
-
-        if dtype == "XYZ":
-            data = np.loadtxt(os.path.join(dirname, fname))
-
-        if dtype == "SIGWRITHE":
-            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
-
-        if dtype == "2DSIGWRITHE":
-            data = np.loadtxt(os.path.join(dirname, fname))
-
-        self.dataset = torch.tensor(data, dtype=torch.float32)
-
-        # Reshape data
-        self.dataset = self.dataset.view(-1, Nbeads, n_col)
-        # reshape below is for the convolutional neural network, remember to change it back 
-        # self.dataset = self.dataset.reshape(-1, 1, Nbeads, 3, 1)
-        self.label = label
-        self.conditional = torch.zeros(5)
-        self.conditional[label] = 1
-
-        if dtype == "XYZ":
-            self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
-
-        if "CNN" in net:
-            # self.dataset = self.dataset.unsqueeze(2)
-            self.dataset = self.dataset
-
-
-    def __len__(self):
-        return len(self.dataset)
-
-    def __getitem__(self, idx):
-        if hasattr(self, 'label'):
-            return self.dataset[idx], self.conditional, self.label
-        else:
-            return self.dataset[idx]
         
 class data_2_inv(Dataset):
 
@@ -183,11 +120,11 @@ class data_2_inv(Dataset):
             self.label = torch.tensor(labels, dtype=torch.float32)
             self.label = self.label.view(-1, 1)
 
-        elif invariant == "v2v3":
-            labels_1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-            labels_2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
-            # labels_1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-            # labels_2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+        elif invariant == "v2v3" or invariant == "concept":
+            #labels_1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            #labels_2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{self.knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
+            labels_1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
+            labels_2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_data/vassiliev_{knot}_v3_10000_fix.csv', delimiter=',', dtype=np.float32)
 
             labels_1 = torch.tensor(labels_1, dtype=torch.float32)
             labels_1 = labels_1.view(-1, 1)
@@ -224,81 +161,8 @@ class data_2_inv(Dataset):
     def __getitem__(self, idx):
         per100 = math.floor(idx/100) # get label attributed to 100 bead section
         return self.dataset[idx], self.label_1[per100], self.label_2[per100], self.tag
-        
 
-class ConceptKnotDataset(Dataset):
-
-    def __init__(self, dirname, knot, net, dtype, Nbeads, pers_len, label):
-        """Class wrapper for dataset generation --> Concept bottleneck classifiers
-
-        Args:
-            (example: SIGWRITHE --> DT code)
-            dirname (str): knot master directory location
-            knot (str): knot being called
-            net (str): neural network trype
-            dtype (str): data type used for features (eg. SIGWRITHE)
-            Nbeads (int): number of beads
-            pers_len (int): persistence length
-            concept: corresponding concept(s) of data being called
-            label: corresponding label of data being called
-
-        Returns:
-            torch.Dataset
-        """
-        super(ConceptKnotDataset, self).__init__()
-
-        header, fname, select_cols = datafile_structure(dtype, knot, Nbeads, pers_len)
-
-        n_col = len(select_cols)
-        
-        print((os.path.join(dirname, fname)))
-
-        self.label = label
-
-        # Loading the dataset file
-
-        if dtype == "SIGWRITHE":
-            data = np.loadtxt(os.path.join(dirname,fname), usecols=(2,))
-
-        if dtype == "2DSIGWRITHE":
-            data = np.loadtxt(os.path.join(dirname, fname))
-
-        self.knot = knot
-
-        # Loading the dataset labels
-
-        # concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/peaks prominence=0.75/peak count/peakcount_{knot}_prom=0.75.csv', delimiter=',', dtype=np.float32)
-        # concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sts concepts/peaks/peakcount_{knot}_5.csv', delimiter=',', dtype=np.float32)
-        # concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/PyKnot/knot data/sta concepts/area/area_{knot}.csv', delimiter=',', dtype=np.float32)
-
-        #concept1 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-        #concept2 = np.loadtxt(f'/storage/cmstore02/groups/TAPLab/djordje_mlknots/vassiliev/vassiliev_{knot}_v3_10000.csv', delimiter=',', dtype=np.float32)
-
-        # locally stored
-
-        concept1 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v2_100,000.csv', delimiter=',', dtype=np.float32)
-        concept2 = np.loadtxt(f'/Users/s1910360/Desktop/ML for Knot Theory/sample_data/vassiliev/vassiliev_{knot}_v3_10000.csv', delimiter=',', dtype=np.float32)
-
-        self.concept1 = torch.tensor(concept1, dtype=torch.float32)
-        self.concept1 = self.concept1.view(-1, 1, 1) 
-
-        self.concept2 = torch.tensor(concept2, dtype=torch.float32)
-        self.concept2 = self.concept2.view(-1, 1, 1)
-
-        self.dataset = torch.tensor(data, dtype=torch.float32)
-        self.dataset = self.dataset.view(-1, Nbeads, n_col)
-
-        if dtype == "XYZ":
-            self.dataset = self.dataset - torch.mean(self.dataset, dim=0)
-
-    def __len__(self):
-        return len(self.dataset)
-
-    def __getitem__(self, idx):
-        lb = math.floor(idx/100) # get concepts attributed to 100 bead section
-        return self.dataset[idx], self.concept1[lb], self.concept2[lb], self.label
-
-        
+  
 
 def split_train_test_validation(dataset, train_size, test_size, val_size, batch_size):
     """Generate split dataset
