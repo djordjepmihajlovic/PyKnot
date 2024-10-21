@@ -135,7 +135,7 @@ def main():
         out_layer = len(knots)
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, "v2v3")
+            model, loss_fn, optimizer = generate_model(net, in_layer, concept_layer, norm, "v2v3")
             print(model)
             loss_fn_bottleneck = nn.MSELoss()
             loss_fn_classify = nn.CrossEntropyLoss()
