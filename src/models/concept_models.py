@@ -38,7 +38,7 @@ class f_c(nn.Module):
 
         # init layers
 
-        self.dense_layer1 = nn.Linear(concept_shape[0]+concept_shape[0], 320)
+        self.dense_layer1 = nn.Linear(concept_shape, 320)
 
         # hidden layers to FFNN
         self.dense_layer2 = nn.Linear(320, 320)
