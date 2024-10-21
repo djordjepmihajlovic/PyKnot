@@ -131,16 +131,17 @@ def main():
         train_dataset, test_dataset, val_dataset = split_train_test_validation(dataset, train_len, test_len, val_len, bs)
 
         in_layer = (Nbeads, Nbeads)
-        concept_layer = (1, 2) 
+        concept_layer = 2
         out_layer = len(knots)
 
         if mode == "train":
-            model, loss_fn, optimizer = generate_model(net, in_layer, concept_layer, norm, "v2v3")
+            model, loss_fn, optimizer = generate_model(net, in_layer, out_layer, norm, "v2v3")
             print(model)
+            model_g_x, loss_fn_g_x, optimizer_g_x = generate_model(net, in_layer, concept_layer, norm, "v2v3")
             loss_fn_bottleneck = nn.MSELoss()
             loss_fn_classify = nn.CrossEntropyLoss()
             optimizer = "adam"
-            train_concept(model= model, input_shape=in_layer, concept_shape=concept_layer, output_shape=out_layer, loss_fn_bottleneck=loss_fn_bottleneck, loss_fn_classify=loss_fn_classify, optimizer=optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
+            train_concept(model= model_g_x, input_shape=in_layer, concept_shape=concept_layer, output_shape=out_layer, loss_fn_bottleneck=loss_fn_bottleneck, loss_fn_classify=loss_fn_classify, optimizer=optimizer, train_loader = train_dataset, val_loader = val_dataset, test_loader= test_dataset, epochs = epochs)
 
 
 def train(model, model_type, loss_fn, optimizer, train_loader, val_loader, test_loader, epochs):
